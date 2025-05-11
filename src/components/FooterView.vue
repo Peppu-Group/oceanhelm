@@ -44,9 +44,7 @@
                 <ul>
                     <li><a href="#home">Home</a></li>
                     <li><a href="#features">Features</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#blog">Blog</a></li>
+                    <li><a href="#platform">About Us</a></li>
                 </ul>
             </div>
             
