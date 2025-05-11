@@ -60,6 +60,16 @@
         
         <div class="footer-bottom">
             <p>&copy; 2025 MarineTech. All rights reserved.</p>
+            <div class="made-in-nigeria">
+                    <span class="nigeria-flag">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" width="21" height="14">
+                            <rect width="36" height="24" fill="#fff"/>
+                            <rect width="12" height="24" fill="#008751"/>
+                            <rect x="24" width="12" height="24" fill="#008751"/>
+                        </svg>
+                    </span>
+                    <span>Proudly made in Nigeria</span>
+            </div>
         </div>
     </div>
 </footer>
@@ -70,3 +80,18 @@ export default {
     name: 'FooterView',
 }
 </script>
+
+<style scoped>
+.made-in-nigeria {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.nigeria-flag {
+  margin-right: 8px;
+  display: inline-flex;
+}
+
+</style>
