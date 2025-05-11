@@ -1,30 +1,41 @@
 <template>
-    <div id="ierl" class="navbar navbar-expand-lg nav-contain">
-      <div id="ih29" class="container-fluid"><a href="/" id="id2c" class="navbar-brand"><img
-            src="../assets/logo.png" id="ib8t"></a><button type="button" data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent" id="ill39" class="navbar-toggler"><span id="iz30a"
-            class="navbar-toggler-icon"></span></button>
-        <div id="navbarSupportedContent" class="collapse navbar-collapse">
-          <ul id="ixp3j" class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li id="i3bzx" class="nav-item"><a aria-current="page" href="/" id="i5k3z" class="nav-link active">Home</a>
-            </li>
-            <li id="ipg0l" class="nav-item"><a aria-current="page" href="/pricing.html" id="iak5w-2"
-                class="nav-link">Pricing</a></li><a aria-current="page" href="/contact" id="iak5w-2-6"
-              class="nav-link">Contact</a>
-              <a aria-current="page" href="/app" id="iak5w-2-6"
-              class="nav-link">Dashboard</a>
-            <li id="i8u3z" class="nav-item dropdown"></li>
-          </ul>
-          <form id="i3sse" class="d-flex">
-            <div id="iy6fr"><a href="/app" type="button" id="ia06o" class="btn btn-primary">Get Started Now!</a></div>
-          </form>
+  <!-- Header -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="../assets/logo.png" style="height: 40px; width: 40px; margin-right: 20px"/>
+                <h1 class="mb-0 fs-4 fw-bold text-primary">Marine<span class="text-info">Tech</span> - Peppubuild</h1>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" href="#platform">Platform</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" href="#benefits">Benefits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold px-3" href="#testimonials">Testimonials</a>
+                    </li>
+                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                        <a class="btn btn-primary px-4 fw-semibold" href="#contact">Contact Us</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-      </div>
-    </div>
+    </nav>
+</header>
 </template>
 
 <script>
 export default {
-    name: 'NavBar',
+  name: 'NavBar',
 }
 </script>
