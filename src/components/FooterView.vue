@@ -92,4 +92,119 @@ export default {
   display: inline-flex;
 }
 
+/* Footer */
+footer {
+  background-color: var(--dark);
+  color: white;
+  padding: 80px 0 30px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 60px;
+}
+
+.footer-about h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.footer-about p {
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.social-icon:hover {
+  background-color: var(--secondary);
+}
+
+.social-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: white;
+}
+
+.footer-links h4 {
+  font-size: 18px;
+  margin-bottom: 25px;
+  color: white;
+}
+
+.footer-links ul {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: #ccc;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: var(--secondary);
+}
+
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  margin-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .platform-grid,
+  .benefits-wrapper,
+  .footer-grid {
+      grid-template-columns: 1fr;
+  }
+  
+  .hero h2 {
+      font-size: 32px;
+  }
+  
+  .hero p {
+      font-size: 18px;
+  }
+  
+  .hero-buttons {
+      flex-direction: column;
+      gap: 15px;
+  }
+  
+  .testimonial-card {
+      padding: 30px 20px;
+  }}
 </style>
