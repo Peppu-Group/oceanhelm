@@ -102,7 +102,8 @@
             </section>
 
             <!-- Maintenance Tasks Form -->
-            <section :class="['form-section', { active: activeSection === 'maintenance' }]" v-show="activeSection === 'maintenance'">
+            <section :class="['form-section', { active: activeSection === 'maintenance' }]"
+                v-show="activeSection === 'maintenance'">
                 <h2>🛠️ Maintenance Tasks</h2>
                 <form>
                     <div class="form-group">
@@ -235,7 +236,8 @@
             </section>
 
             <!-- Maintenance Schedule Form -->
-            <section :class="['form-section', { active: activeSection === 'schedule' }]" v-show="activeSection === 'schedule'">
+            <section :class="['form-section', { active: activeSection === 'schedule' }]"
+                v-show="activeSection === 'schedule'">
                 <h2>📅 Maintenance Schedule</h2>
                 <form>
                     <div class="form-group">
@@ -340,7 +342,8 @@
             </section>
 
             <!-- Personnel Form -->
-            <section :class="['form-section', { active: activeSection === 'personnel' }]" v-show="activeSection === 'personnel'">
+            <section :class="['form-section', { active: activeSection === 'personnel' }]"
+                v-show="activeSection === 'personnel'">
                 <h2>🧑‍🔧 Personnel & Technician Info</h2>
                 <form>
                     <div class="input-group">
@@ -447,7 +450,8 @@
             </section>
 
             <!-- Inspection Form -->
-            <section :class="['form-section', { active: activeSection === 'inspection' }]" v-show="activeSection ==='inspection'">
+            <section :class="['form-section', { active: activeSection === 'inspection' }]"
+                v-show="activeSection === 'inspection'">
                 <h2>📷 Inspection & Audit Logs</h2>
                 <form>
                     <div class="input-group">
@@ -546,32 +550,56 @@
             </section>
 
             <!-- Inventory Form -->
-            <section :class="['form-section', { active: activeSection === 'inventory' }]" v-show="activeSection ==='inventory'">
-                <h2>🧾 Parts and Inventory</h2>
-                <form>
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="part-name">Part Name</label>
-                            <input type="text" id="part-name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="part-number">Part Number</label>
-                            <input type="text" id="part-number" required>
+            <section :class="['form-section', { active: activeSection === 'inventory' }]"
+                v-show="activeSection === 'inventory'">
+                <h2>All Maintenance</h2>
+                <div class="task-table-wrapper">
+                    <!-- Filters and Controls -->
+                    <div class="table-controls">
+                        <div class="filters">
+                            <button :class="{ active: activeFilter === 'due' }" @click="setFilter('due')">Due</button>
+                            <button :class="{ active: activeFilter === 'all' }" @click="setFilter('all')">All</button>
+                            <button :class="{ active: activeFilter === 'completed' }"
+                                @click="setFilter('completed')">Completed</button>
+                            <input type="text" v-model="searchQuery" placeholder="Search..." />
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="part-category">Category</label>
-                        <select id="part-category" required>
-                            <option value="">-- Select Category --</option>
-                            <option value="engine">Engine Parts</option>
-                            <option value="electrical">Electrical</option>
-                            <option value="plumbing">Plumbing</option>
-                            <option value="deck">Deck Equipment</option>
-                        </select>
-                    </div>
-                </form>
+                    <!-- Task Table -->
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Task Name</th>
+                                <th>Assigned To</th>
+                                <th>Intervals</th>
+                                <th>Remaining</th>
+                                <th>Next Due</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="task in filteredTasks" :key="task.id">
+                                <td>{{ task.equipment }}</td>
+                                <td>{{ task.taskName }}</td>
+                                <td>{{ task.assignedTo }}</td>
+                                <td>{{ task.intervals }}</td>
+                                <td>{{ task.remaining }}</td>
+                                <td>{{ task.nextDue }}</td>
+                                <td>
+                                    <span :class="['status-badge', task.status.toLowerCase().replace(' ', '-')]">
+                                        {{ task.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button @click="showMaintenance()" v-if="task.status === 'Completed'" class="status-action">Print</button>
+                                    <button v-else class="status-action">Start</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </div>
     </div>
@@ -580,18 +608,96 @@
 <script>
 export default {
     data() {
-    return {
-      activeSection: 'vessel',
-      sections: [
-        { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
-        { id: 'maintenance', name: 'Maintenance', icon: '🛠️' },
-        { id: 'schedule', name: 'Schedule', icon: '📅' },
-        { id: 'personnel', name: 'Personnel', icon: '🧑‍🔧' },
-        { id: 'inspection', name: 'Inspection', icon: '📷' },
-        { id: 'inventory', name: 'Inventory', icon: '🧾' },
-      ],
-    };
-  },
+        return {
+            activeSection: 'vessel',
+            sections: [
+                { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
+                { id: 'maintenance', name: 'Maintenance', icon: '🛠️' },
+                { id: 'schedule', name: 'Schedule', icon: '📅' },
+                { id: 'personnel', name: 'Personnel', icon: '🧑‍🔧' },
+                { id: 'inspection', name: 'Inspection', icon: '📷' },
+                { id: 'inventory', name: 'All Maintenance', icon: '♻️' },
+            ],
+            activeFilter: 'all',
+            searchQuery: '',
+            activeFilters: [1, 2], // example filter count
+
+            tasks: [
+                {
+                    id: 1,
+                    equipment: 'Transmission - Port',
+                    taskName: 'Every 25 Service Hours',
+                    assignedTo: 'Tyler Vaughn',
+                    intervals: '25 H\n1 M',
+                    remaining: '24 H\n-8 D',
+                    nextDue: '710 Hours\nOct 27, 2023',
+                    status: 'Soon'
+                },
+                {
+                    id: 2,
+                    equipment: 'Transmission - Stbd',
+                    taskName: 'Every 25 Service Hours',
+                    assignedTo: 'Melissa Arciere',
+                    intervals: '25 H\n1 M',
+                    remaining: '25 H\n-8 D',
+                    nextDue: '710 Hours\nOct 27, 2023',
+                    status: 'Overdue'
+                },
+                {
+                    id: 3,
+                    equipment: 'Alternator - Stbd',
+                    taskName: '150 Service Hours',
+                    assignedTo: 'Unassigned',
+                    intervals: '150 H\n1 Y',
+                    remaining: '150 H\n-2 D',
+                    nextDue: '150 Hours\nNov 2, 2023',
+                    status: 'Overdue'
+                },
+                {
+                    id: 4,
+                    equipment: 'Transmission - Port',
+                    taskName: 'Every 250 Service Hours',
+                    assignedTo: 'Stephanie Schneider',
+                    intervals: '250 H\n1 Y',
+                    remaining: '14 H\n301 D',
+                    nextDue: '700 Hours\nAug 31, 2024',
+                    status: 'Completed'
+                }
+            ]
+        };
+    },
+    computed: {
+        filteredTasks() {
+            let result = [...this.tasks];
+            if (this.activeFilter === 'all') {
+                result = result.filter(task => task.status === 'Overdue' || task.status === 'Soon' || task.status === 'Completed');
+            }
+            else if (this.activeFilter === 'due') {
+                result = result.filter(task => task.status === 'Overdue' || task.status === 'Soon');
+            } else if (this.activeFilter === 'completed') {
+                result = result.filter(task => task.status === 'Completed');
+            }
+
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                result = result.filter(task =>
+                    task.equipment.toLowerCase().includes(query) ||
+                    task.taskName.toLowerCase().includes(query) ||
+                    task.assignedTo.toLowerCase().includes(query)
+                );
+            }
+
+            return result;
+        }
+    },
+    methods: {
+        setFilter(filter) {
+            this.activeFilter = filter;
+        },
+        showMaintenance() {
+            // swal to add maintenance
+        }
+    }
 };
 </script>
 
@@ -822,4 +928,142 @@ textarea {
 
 .checkbox-item input {
     width: auto;
-}</style>
+}
+
+.status-badge {
+  padding: 0.3em 0.6em;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.status-action {
+  padding: 0.3em 0.6em;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.85rem;
+  background-color: var(--maitprimary);
+}
+
+.status-badge.overdue {
+  background-color: red;
+}
+
+.status-badge.soon{
+  background-color: orange;
+}
+
+/* Wrapper layout */
+.task-table-wrapper {
+  font-family: 'Inter', sans-serif;
+  padding: 1rem;
+}
+
+/* Controls section */
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filters button,
+.filters input {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.filters button.active {
+  background-color: #002f6c;
+  color: white;
+}
+
+.filters input {
+  border: 1px solid #bbb;
+}
+
+.filter-badge {
+  background-color: #eee;
+  color: #333;
+}
+
+/* Print and Add buttons */
+.table-controls > div:last-child button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--maitprimary);
+  border-radius: 6px;
+  background-color: white;
+  color: var(--maitprimary);;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.table-controls > div:last-child button:last-child {
+  background-color: var(--maitprimary);;
+  color: white;
+}
+
+/* Table */
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 0 1px #ccc;
+}
+
+.task-table thead {
+  background-color: var(--maitprimary);;
+  color: white;
+}
+
+.task-table th,
+.task-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  white-space: pre-line; /* so \n works */
+}
+
+.task-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 0.3em 0.6em;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: white;
+  display: inline-block;
+  text-align: center;
+  min-width: 90px;
+}
+
+.status-badge.complete {
+  background-color: #4dffd0;
+}
+
+.status-badge.soon {
+  background-color: #ffa500;
+}
+
+.status-badge.completed {
+  background-color: #4caf50;
+}
+
+</style>
