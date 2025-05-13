@@ -21,7 +21,7 @@
                 <a href="#"><i class="bi bi-ship"></i> Fleet Management</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-tools"></i> Maintenance</a>
+                <a ><i class="bi bi-tools"></i> Maintenance</a>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition Processing</a>
@@ -152,7 +152,7 @@
             <!-- Vessel Cards -->
             <div class="row">
                 <div class="col-lg-6" v-for="vessel in this.company.vessels">
-                    <div class="vessel-card">
+                    <div class="vessel-card" @click="getMaintenance(vessel.registrationNumber)">
                         <div class="card-body d-flex align-items-center">
                             <div class="vessel-icon left">
                                 <i class="bi bi-plugin"></i>
@@ -230,6 +230,9 @@ export default {
         this.company.vessels.push(...vessels);
     },
     methods: {
+        getMaintenance(id) {
+            this.$router.push({ path: `/app/maintenance/${id}` })
+        },
         newVessel() {
             Swal.fire({
                 title: 'Add New Vessel',

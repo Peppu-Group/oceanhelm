@@ -34,7 +34,7 @@
           <p>Plan, track, and optimize maintenance workflows with our intuitive system. Get alerts, schedule tasks, and
             keep detailed maintenance histories for all equipment.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" @click="navigateMaintenance()">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24">
               <path
@@ -45,7 +45,7 @@
           <p>Simplify procurement with digital requisition forms, approval workflows, and order tracking. Eliminate
             paperwork and streamline your supply chain.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" @click="navigateMaintenance()">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24">
               <path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z" />
@@ -55,7 +55,7 @@
           <p>Track parts, supplies, and equipment with real-time inventory control. Set minimum stock levels, receive
             automatic alerts, and generate detailed reports.</p>
         </div>
-        <div class="feature-card">
+        <div class="feature-card" @click="navigateMaintenance()">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24">
               <path
@@ -213,7 +213,7 @@ export default {
 
   methods: {
     navigateMaintenance() {
-      this.$router.push({ path: '/app/maintenance' })
+      this.$router.push({ path: '/app/dashboard' })
     },
     contactDemo() {
       Swal.fire({

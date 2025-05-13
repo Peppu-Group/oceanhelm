@@ -19,11 +19,11 @@
                     <div class="input-group">
                         <div class="form-group">
                             <label for="vessel-name">Vessel Name</label>
-                            <input type="text" id="vessel-name" required>
+                            <input type="text" :value="name" readonly>
                         </div>
                         <div class="form-group">
                             <label for="imo-number">IMO Number</label>
-                            <input type="text" id="imo-number" required>
+                            <input type="text" :value="no" readonly>
                         </div>
                     </div>
 
@@ -401,6 +401,8 @@
 export default {
     data() {
         return {
+            name: null,
+            no: null,
             activeSection: 'inventory',
             sections: [
                 { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
@@ -477,6 +479,19 @@ export default {
             }
 
             return result;
+        }
+    },
+    mounted() {
+        let id = this.$route.params.id;
+        let vessels = JSON.parse(localStorage.getItem('vessel')) || [];
+
+        let vesselInfo = vessels.find(v => v.registrationNumber === id);
+
+        if (vesselInfo) {
+            this.no = vesselInfo.registrationNumber;
+            this.name = vesselInfo.name;
+        } else {
+            this.$router.push({ path: `/app/dashboard` })
         }
     },
     methods: {
