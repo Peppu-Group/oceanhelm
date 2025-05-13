@@ -1,212 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marine Maintenance Dashboard</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #1e88e5;
-            --accent-color: #00acc1;
-            --sidebar-width: 280px;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f7ff;
-            overflow-x: hidden;
-        }
-        
-        /* Sidebar */
-        #sidebar {
-            position: fixed;
-            width: var(--sidebar-width);
-            height: 100%;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            transition: all 0.3s;
-            z-index: 1000;
-            left: -280px;
-        }
-        
-        #sidebar.active {
-            left: 0;
-        }
-        
-        #sidebar .logo {
-            padding: 20px;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        #sidebar ul li a {
-            padding: 15px 20px;
-            display: block;
-            color: #fff;
-            text-decoration: none;
-            transition: all 0.3s;
-            border-left: 3px solid transparent;
-        }
-        
-        #sidebar ul li a:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-left: 3px solid #00acc1;
-        }
-        
-        #sidebar ul li a i {
-            margin-right: 10px;
-        }
-        
-        #content {
-            width: 100%;
-            min-height: 100vh;
-            transition: all 0.3s;
-            position: absolute;
-            padding: 20px;
-            padding-left: 40px;
-        }
-        
-        #content.active {
-            margin-left: var(--sidebar-width);
-            width: calc(100% - var(--sidebar-width));
-        }
-        
-        /* Header */
-        .page-header {
-            margin-bottom: 30px;
-            border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 15px;
-        }
-        
-        /* Company Card */
-        .company-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .company-logo {
-            width: 80px;
-            height: 80px;
-            background-color: #e6f2ff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            color: var(--primary-color);
-        }
-        
-        /* Vessel Cards */
-        .vessel-card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 105, 192, 0.15);
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border-left: 4px solid var(--accent-color);
-        }
-        
-        .vessel-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(0, 105, 192, 0.2);
-        }
-        
-        .vessel-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            background-color: #e3f2fd;
-            border-radius: 10px;
-            color: var(--accent-color);
-            font-size: 24px;
-            margin-right: 15px;
-        }
-        
-        .vessel-status {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .status-active {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .status-maintenance {
-            background-color: #fff8e1;
-            color: #f57f17;
-        }
-        
-        .status-inactive {
-            background-color: #f5f5f5;
-            color: #757575;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            #content.active {
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            #sidebar {
-                width: 100%;
-                max-width: 280px;
-            }
-        }
-        
-        .toggle-btn {
-            position: fixed;
-            left: 15px;
-            top: 15px;
-            z-index: 1100;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--primary-color);
-            color: white;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .toggle-btn:hover {
-            background-color: var(--secondary-color);
-        }
-        
-        /* Wave effect for marine theme */
-        .wave-bg {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 200px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230d6efd" fill-opacity="0.1" d="M0,160L48,165.3C96,171,192,181,288,176C384,171,480,149,576,154.7C672,160,768,192,864,181.3C960,171,1056,117,1152,101.3C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x;
-            background-size: cover;
-            z-index: -1;
-        }
-    </style>
-</head>
-<body>
+<template>
     <!-- Wave background -->
     <div class="wave-bg"></div>
 
@@ -217,9 +9,9 @@
 
     <!-- Sidebar -->
     <nav id="sidebar">
-        <div class="logo d-flex align-items-center">
+        <div class="logo d-flex align-items-center left">
             <i class="bi bi-water me-2"></i>
-            <span>MarineOps Solutions</span>
+            <span>MarineTech Solutions</span>
         </div>
         <ul class="list-unstyled components mt-4">
             <li class="active">
@@ -336,14 +128,14 @@
             </div>
 
             <h4 class="mb-4"><i class="bi bi-ship me-2"></i>Registered Vessels</h4>
-            
+
             <!-- Vessel Cards -->
             <div class="row">
                 <!-- Vessel 1 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -365,12 +157,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 2 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -392,12 +184,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 3 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -419,12 +211,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 4 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -446,12 +238,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 5 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -473,12 +265,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 6 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -500,12 +292,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 7 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -527,12 +319,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Vessel 8 -->
                 <div class="col-lg-6">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon">
+                            <div class="vessel-icon left">
                                 <i class="bi bi-ship"></i>
                             </div>
                             <div class="flex-grow-1">
@@ -557,32 +349,220 @@
             </div>
         </div>
     </div>
+</template>
 
-    <!-- Bootstrap JS and Popper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar toggle
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('content');
-            
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-                content.classList.toggle('active');
-            });
-            
-            // Handle clicks outside sidebar to close it on mobile
-            document.addEventListener('click', function(event) {
-                const isClickInsideSidebar = sidebar.contains(event.target);
-                const isClickOnToggleBtn = sidebarToggle.contains(event.target);
-                
-                if (!isClickInsideSidebar && !isClickOnToggleBtn && window.innerWidth < 768 && sidebar.classList.contains('active')) {
-                    sidebar.classList.remove('active');
-                    content.classList.remove('active');
-                }
-            });
+<script>
+export default {
+    name: 'DashboardView',
+    mounted() {
+        // Sidebar toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+
+        sidebarToggle.addEventListener('click', function () {
+            sidebar.classList.toggle('active');
+            content.classList.toggle('active');
         });
-    </script>
-</body>
-</html>
+
+        // Handle clicks outside sidebar to close it on mobile
+        document.addEventListener('click', function (event) {
+            const isClickInsideSidebar = sidebar.contains(event.target);
+            const isClickOnToggleBtn = sidebarToggle.contains(event.target);
+
+            if (!isClickInsideSidebar && !isClickOnToggleBtn && window.innerWidth < 768 && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                content.classList.remove('active');
+            }
+        });
+    }
+}
+</script>
+
+<style scoped>
+/* Sidebar */
+#sidebar {
+    position: fixed;
+    width: var(--sidebar-width);
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    transition: all 0.3s;
+    z-index: 1000;
+    left: -280px;
+}
+
+#sidebar.active {
+    left: 0;
+}
+
+#sidebar .logo {
+    padding: 20px;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#sidebar ul li a {
+    padding: 15px 20px;
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+
+#sidebar ul li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid #00acc1;
+}
+
+#sidebar ul li a i {
+    margin-right: 10px;
+}
+
+#content {
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    padding: 20px;
+    padding-left: 40px;
+}
+
+#content.active {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* Header */
+.page-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
+}
+
+/* Company Card */
+.company-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.company-logo {
+    width: 80px;
+    height: 80px;
+    background-color: #e6f2ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    color: var(--dashprimary-color);
+}
+
+/* Vessel Cards */
+.left {
+    margin-left: 20px;
+}
+.vessel-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 105, 192, 0.15);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border-left: 4px solid var(--accent-color);
+}
+
+.vessel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 105, 192, 0.2);
+}
+
+.vessel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: #e3f2fd;
+    border-radius: 10px;
+    color: var(--accent-color);
+    font-size: 24px;
+    margin-right: 15px;
+}
+
+.vessel-status {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-maintenance {
+    background-color: #fff8e1;
+    color: #f57f17;
+}
+
+.status-inactive {
+    background-color: #f5f5f5;
+    color: #757575;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #content.active {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    #sidebar {
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
+.toggle-btn {
+    position: fixed;
+    left: 15px;
+    top: 15px;
+    z-index: 1100;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--dashprimary-color);
+    color: white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.toggle-btn:hover {
+    background-color: var(--dashsecondary-color);
+}
+
+/* Wave effect for marine theme */
+.wave-bg {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230d6efd" fill-opacity="0.1" d="M0,160L48,165.3C96,171,192,181,288,176C384,171,480,149,576,154.7C672,160,768,192,864,181.3C960,171,1056,117,1152,101.3C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x;
+    background-size: cover;
+    z-index: -1;
+}
+</style>

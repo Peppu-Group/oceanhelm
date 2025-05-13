@@ -23,7 +23,7 @@
         <h2>Comprehensive Maritime Management</h2>
       </div>
       <div class="features-grid">
-        <div class="feature-card">
+        <div class="feature-card" @click="navigateMaintenance()">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24">
               <path
@@ -212,6 +212,9 @@ export default {
   components: { NavBar, FooterView },
 
   methods: {
+    navigateMaintenance() {
+      this.$router.push({ path: '/app/maintenance' })
+    },
     contactDemo() {
       Swal.fire({
         title: 'Contact Us',
@@ -320,90 +323,6 @@ button {
 
 button:hover {
   background-color: #0f5e04;
-}
-
-/* SweetAlert custom styling */
-.custom-swal-container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.custom-swal-popup {
-  padding: 2rem;
-  border-radius: 15px;
-}
-
-.custom-swal-title {
-  color: #349940;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.custom-swal-content {
-  margin-top: 1.5rem;
-}
-
-.custom-input-label {
-  text-align: left;
-  display: block;
-  margin-bottom: 5px;
-  color: #1d3244;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.custom-input {
-  width: 100%;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  border: 1px solid #d1d9e6;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
-
-.custom-input:focus {
-  border-color: #349940;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(98, 181, 229, 0.2);
-}
-
-.custom-textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.swal2-confirm {
-  background-color: #0f5e04 !important;
-  border-radius: 8px !important;
-  padding: 12px 30px !important;
-  font-weight: 600 !important;
-  transition: background-color 0.3s !important;
-}
-
-.swal2-confirm:hover {
-  background-color: #062e01 !important;
-}
-
-.swal2-cancel {
-  background-color: #f5f5f5 !important;
-  color: #333 !important;
-  border-radius: 8px !important;
-  padding: 12px 30px !important;
-  font-weight: 600 !important;
-  transition: background-color 0.3s !important;
-}
-
-.swal2-cancel:hover {
-  background-color: #e5e5e5 !important;
-}
-
-.error-message {
-  color: #e74c3c;
-  font-size: 0.8rem;
-  margin-top: -10px;
-  margin-bottom: 10px;
-  text-align: left;
-  display: none;
 }
 
 /* These Bootstrap overrides are optional but help match your color scheme */
