@@ -11,7 +11,7 @@
     <nav id="sidebar">
         <div class="logo d-flex align-items-center left">
             <i class="bi bi-water me-2"></i>
-            <span>MarineTech Solutions</span>
+            <span>MarineTech</span>
         </div>
         <ul class="list-unstyled components mt-4">
             <li class="active">
@@ -24,22 +24,22 @@
                 <a href="#"><i class="bi bi-tools"></i> Maintenance</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-calendar-check"></i> Scheduling</a>
+                <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition Processing</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-clipboard-data"></i> Reports</a>
+                <a @click="comingSoon()"><i class="bi bi-clipboard-data"></i> Inventory Management</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-people"></i> Crew Management</a>
+                <a @click="comingSoon()"><i class="bi bi-people"></i> Crew Management</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-geo-alt"></i> Tracking</a>
+                <a @click="comingSoon()"><i class="bi bi-geo-alt"></i> Cross-Vessel Data Sharing</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-gear"></i> Settings</a>
+                <a @click="editInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-question-circle"></i> Help & Support</a>
+                <a @click="comingSoon()"><i class="bi bi-question-circle"></i> Help & Support</a>
             </li>
         </ul>
     </nav>
@@ -50,7 +50,7 @@
             <div class="page-header d-flex justify-content-between align-items-center">
                 <h2 style="margin-left: 20px;">Fleet Dashboard</h2>
                 <div class="d-flex">
-                    <button class="btn btn-outline-primary">
+                    <button class="btn btn-outline-primary" @click="loggedIn()">
                         <i class="bi bi-person-circle"></i>
                     </button>
                 </div>
@@ -65,19 +65,19 @@
                         </div>
                     </div>
                     <div class="col-md-10">
-                        <h3>MarineOps Solutions Inc.</h3>
+                        <h3>{{ company.name }}</h3>
                         <div class="row mt-3">
                             <div class="col-md-4">
-                                <p><strong>Location:</strong> Port Harbor, CA 92614</p>
-                                <p><strong>Established:</strong> 2005</p>
+                                <p><strong>Location:</strong> {{ company.location }}</p>
+                                <p><strong>Established:</strong> {{ company.estYear }}</p>
                             </div>
                             <div class="col-md-4">
-                                <p><strong>Contact:</strong> (555) 123-4567</p>
-                                <p><strong>Email:</strong> info@marineops.com</p>
+                                <p><strong>Contact:</strong> {{ company.phoneNumber }}</p>
+                                <p><strong>Email:</strong> {{ company.email }}</p>
                             </div>
                             <div class="col-md-4">
-                                <p><strong>Fleet Size:</strong> 8 Vessels</p>
-                                <p><strong>License:</strong> MCL-273845</p>
+                                <p><strong>Fleet Size:</strong> {{ getVesselCount() }}</p>
+                                <p><strong>License:</strong> {{ company.license }}</p>
                             </div>
                         </div>
                     </div>
@@ -85,8 +85,8 @@
             </div>
 
             <!-- Fleet Summary -->
-            <div class="row mb-4">
-                <div class="col-md-4">
+            <div class="row mb-3">
+                <div class="col-md-3">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
@@ -94,12 +94,12 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Active Vessels</h6>
-                                <h3 class="mt-2 mb-0">5</h3>
+                                <h3 class="mt-2 mb-0"> {{ getActiveVesselCount() }}</h3>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
@@ -107,12 +107,12 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Under Maintenance</h6>
-                                <h3 class="mt-2 mb-0">2</h3>
+                                <h3 class="mt-2 mb-0"> {{ getMaintenanceVesselCount() }}</h3>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body d-flex align-items-center">
                             <div class="rounded-circle bg-secondary bg-opacity-10 p-3 me-3">
@@ -120,7 +120,20 @@
                             </div>
                             <div>
                                 <h6 class="mb-0">Inactive</h6>
-                                <h3 class="mt-2 mb-0">1</h3>
+                                <h3 class="mt-2 mb-0">{{ getInactiveVesselCount() }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Register New Fleet -->
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm" @click="newVessel()">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                <i class="bi bi-patch-plus-fill text-success fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Add New Vessel</h6>
                             </div>
                         </div>
                     </div>
@@ -128,221 +141,44 @@
             </div>
 
             <h4 class="mb-4"><i class="bi bi-ship me-2"></i>Registered Vessels</h4>
-
+            <div v-if="!company.vessels.length">
+                <div class="alert alert-primary" role="alert">
+                    <h4 class="alert-heading">Empty Fleet!</h4>
+                    <p>You have an empty fleet, you have not added any vessel yet.</p>
+                    <hr>
+                    <p class="mb-0">Click on the add vessel button above, to start adding vessels to your fleet</p>
+                    </div>            
+                </div>
             <!-- Vessel Cards -->
             <div class="row">
-                <!-- Vessel 1 -->
-                <div class="col-lg-6">
+                <div class="col-lg-6" v-for="vessel in this.company.vessels">
                     <div class="vessel-card">
                         <div class="card-body d-flex align-items-center">
                             <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
+                                <i class="bi bi-plugin"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Ocean Pioneer</h5>
-                                    <span class="vessel-status status-active">Active</span>
+                                    <h5 class="card-title mb-0">{{ vessel.name }}</h5>
+                                    <span :class="['vessel-status', statusClass(vessel.status)]">{{ vessel.status }}</span>
                                 </div>
                                 <div class="row">
                                     <div class="col-6">
                                         <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-23456</p>
+                                        <p class="mb-0">{{ vessel.registrationNumber }}</p>
                                     </div>
                                     <div class="col-6">
                                         <small class="text-muted">Next Maintenance:</small>
-                                        <p class="mb-0">Jul 15, 2025</p>
+                                        <p class="mb-0">{{ vessel.nextMaintenance }}</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 2 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Atlantic Voyager</h5>
-                                    <span class="vessel-status status-active">Active</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-34567</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Next Maintenance:</small>
-                                        <p class="mb-0">Jun 22, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="action-icon left edit">
+                            <i class="bi bi-pencil"></i>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 3 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Pacific Explorer</h5>
-                                    <span class="vessel-status status-maintenance">Maintenance</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-45678</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Est. Completion:</small>
-                                        <p class="mb-0">May 25, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 4 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Northern Star</h5>
-                                    <span class="vessel-status status-active">Active</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-56789</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Next Maintenance:</small>
-                                        <p class="mb-0">Aug 10, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 5 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Southern Cross</h5>
-                                    <span class="vessel-status status-active">Active</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-67890</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Next Maintenance:</small>
-                                        <p class="mb-0">Sep 05, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 6 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Eastern Wind</h5>
-                                    <span class="vessel-status status-inactive">Inactive</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-78901</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Status Since:</small>
-                                        <p class="mb-0">Mar 12, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 7 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Western Horizon</h5>
-                                    <span class="vessel-status status-maintenance">Maintenance</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-89012</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Est. Completion:</small>
-                                        <p class="mb-0">May 30, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vessel 8 -->
-                <div class="col-lg-6">
-                    <div class="vessel-card">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="bi bi-ship"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">Coastal Guardian</h5>
-                                    <span class="vessel-status status-active">Active</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">MV-90123</p>
-                                    </div>
-                                    <div class="col-6">
-                                        <small class="text-muted">Next Maintenance:</small>
-                                        <p class="mb-0">Jul 28, 2025</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="action-icon left delete">
+                            <i class="bi bi-trash"></i>
                         </div>
                     </div>
                 </div>
@@ -354,6 +190,19 @@
 <script>
 export default {
     name: 'DashboardView',
+    data() {
+        return {
+            company: {
+                name: "MarineOps Solutions Inc.",
+                location: "Port Harbor, CA 92614",
+                estYear: 2005,
+                phoneNumber: "(555) 123-4567",
+                email: "info@marineops.com",
+                license: "MCL-273845",
+                vessels: []
+            }
+        };
+    },
     mounted() {
         // Sidebar toggle
         const sidebarToggle = document.getElementById('sidebarToggle');
@@ -375,6 +224,139 @@ export default {
                 content.classList.remove('active');
             }
         });
+
+        // get all vessels
+        let vessels = JSON.parse(localStorage.getItem('vessel') ?? '[]');
+        this.company.vessels.push(...vessels);
+    },
+    methods: {
+        newVessel() {
+            Swal.fire({
+                title: 'Add New Vessel',
+                html: `
+                  <p>(Add new vessel to your fleet)</p>
+                    <div class="custom-swal-content">
+                        <label class="custom-input-label" for="vesselname">Vessel Name *</label>
+                        <input id="vesselname" class="custom-input" placeholder="Enter your vessel's name">
+                        <div id="vesselname-error" class="error-message">Please enter your vessel's name</div>
+                        
+                        <label class="custom-input-label" for="regno">Registration Number *</label>
+                        <input id="regno" class="custom-input" placeholder="Enter your registration number">
+                        <div id="regno-error" class="error-message">Please enter a valid registration number</div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                cancelButtonText: 'Cancel',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                customClass: {
+                    container: 'custom-swal-container',
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title'
+                },
+                preConfirm: () => {
+                    // Validate inputs
+                    let isValid = true;
+                    const vesselname = document.getElementById('vesselname').value.trim();
+                    const regno = document.getElementById('regno').value.trim();
+
+                    // Reset error messages
+                    document.getElementById('vesselname-error').style.display = 'none';
+                    document.getElementById('regno-error').style.display = 'none';
+
+                    // Validate vessel name
+                    if (!vesselname) {
+                        document.getElementById('vesselname-error').style.display = 'block';
+                        isValid = false;
+                    }
+
+                    // Validate regno 
+                    if (!regno) {
+                        document.getElementById('regno-error').style.display = 'block';
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
+                        return false; // Prevent the modal from closing
+                    }
+
+                    // Return the form data if valid
+                    return { vesselname, regno };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Process the form data
+                    const { vesselname, regno } = result.value;
+
+                    // Here you would typically send this data to your server
+                    let status = 'Active'
+                    let newVessel = { name: vesselname, registrationNumber:regno, status };
+                    const existing = localStorage.getItem('vessel');
+
+                    if (!existing) {
+                    // If no vessel data in localStorage, create a new array with the vessel
+                    localStorage.setItem('vessel', JSON.stringify([newVessel]));
+                    } else {
+                    // If vessel data exists, parse it, push the new vessel, then save it back
+                    const vessels = JSON.parse(existing);
+                    vessels.push(newVessel);
+                    localStorage.setItem('vessel', JSON.stringify(vessels));
+                    }
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Fleet!',
+                        text: 'Your vessel has been added successfully. It should be in your dashboard now.',
+                        confirmButtonText: 'Close',
+                        customClass: {
+                            confirmButton: 'swal2-confirm'
+                        }
+                    });
+                }
+            });
+        },
+        comingSoon() {
+            Swal.fire({
+                title: "Coming soon!",
+                text: "This feature is coming soon",
+                icon: "info"
+            });
+        },
+        editInfo() {
+            Swal.fire({
+                title: "Company info",
+                text: "You will be able to edit company info here",
+                icon: "info"
+            });
+        },
+        loggedIn() {
+            Swal.fire({
+                title: "Logged in",
+                text: "You're logged as Emeka, with an employee access. You have limited access, everyone with owner access can see the changes you make.",
+                icon: "info"
+            });
+        },
+        getFormattedJSON() {
+            return JSON.stringify(this.company, null, 2);
+        },
+        getVesselCount() {
+            return this.company.vessels.length;
+        },
+        getActiveVesselCount() {
+            return this.company.vessels.filter(vessel => vessel.status === "Active").length;
+        },
+        getMaintenanceVesselCount() {
+            return this.company.vessels.filter(vessel => vessel.status === "Maintenance").length;
+        },
+        getInactiveVesselCount() {
+            return this.company.vessels.filter(vessel => vessel.status === "Inactive").length;
+        },
+        statusClass(status) {
+            const normalized = status.toLowerCase();
+            return `status-${normalized}`;
+        }
     }
 }
 </script>
@@ -467,6 +449,7 @@ export default {
 .left {
     margin-left: 20px;
 }
+
 .vessel-card {
     background: white;
     border-radius: 10px;
@@ -493,6 +476,28 @@ export default {
     color: var(--accent-color);
     font-size: 24px;
     margin-right: 15px;
+}
+
+.action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 20px;
+    color: var(--accent-color);
+    font-size: 16px;
+    margin-right: 15px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.delete {
+    background-color: var(--danger);
+}
+
+.edit {
+    background-color: var(--success);
 }
 
 .vessel-status {
