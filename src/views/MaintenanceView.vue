@@ -341,214 +341,6 @@
                 </form>
             </section>
 
-            <!-- Personnel Form -->
-            <section :class="['form-section', { active: activeSection === 'personnel' }]"
-                v-show="activeSection === 'personnel'">
-                <h2>🧑‍🔧 Personnel & Technician Info</h2>
-                <form>
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="personnel-name">Full Name</label>
-                            <input type="text" id="personnel-name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="personnel-id">Personnel ID</label>
-                            <input type="text" id="personnel-id" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="role">Role</label>
-                            <select id="role" required>
-                                <option value="">-- Select Role --</option>
-                                <option value="chief-engineer">Chief Engineer</option>
-                                <option value="engineer">Engineer</option>
-                                <option value="technician">Technician</option>
-                                <option value="electrician">Electrician</option>
-                                <option value="mechanic">Mechanic</option>
-                                <option value="supervisor">Supervisor</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="department">Department</label>
-                            <select id="department">
-                                <option value="">-- Select Department --</option>
-                                <option value="engine">Engine</option>
-                                <option value="deck">Deck</option>
-                                <option value="electrical">Electrical</option>
-                                <option value="safety">Safety</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="phone">Phone</label>
-                            <input type="tel" id="phone">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="certifications">Certifications</label>
-                        <textarea id="certifications" placeholder="List all relevant certifications"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Specializations</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="spec1">
-                                <label for="spec1">Engine Maintenance</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="spec2">
-                                <label for="spec2">Electrical Systems</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="spec3">
-                                <label for="spec3">Hull Inspection</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="spec4">
-                                <label for="spec4">Safety Equipment</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="spec5">
-                                <label for="spec5">Electronics</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="personnel-notes">Notes</label>
-                        <textarea id="personnel-notes"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Upload Documents</label>
-                        <div class="attachment-area">
-                            <p>Upload certificates, licenses, etc.</p>
-                            <input type="file" id="personnel-files" class="file-input" multiple>
-                            <label for="personnel-files" class="file-label">Browse Files</label>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button type="button" class="btn btn-primary">Save Personnel Info</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Inspection Form -->
-            <section :class="['form-section', { active: activeSection === 'inspection' }]"
-                v-show="activeSection === 'inspection'">
-                <h2>📷 Inspection & Audit Logs</h2>
-                <form>
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="inspection-type">Inspection Type</label>
-                            <select id="inspection-type" required>
-                                <option value="">-- Select Type --</option>
-                                <option value="internal">Internal</option>
-                                <option value="class">Classification Society</option>
-                                <option value="flag">Flag State</option>
-                                <option value="port">Port State Control</option>
-                                <option value="third-party">Third-Party</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="inspection-date">Inspection Date</label>
-                            <input type="date" id="inspection-date" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="inspector">Inspector Name</label>
-                        <input type="text" id="inspector" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="inspection-area">Inspection Area</label>
-                        <select id="inspection-area" required>
-                            <option value="">-- Select Area --</option>
-                            <option value="engine-room">Engine Room</option>
-                            <option value="hull">Hull</option>
-                            <option value="deck">Deck</option>
-                            <option value="navigation">Navigation Equipment</option>
-                            <option value="safety">Safety Systems</option>
-                            <option value="living">Living Quarters</option>
-                            <option value="cargo">Cargo Spaces</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="findings">Findings/Observations</label>
-                        <textarea id="findings" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="required-actions">Required Actions</label>
-                        <textarea id="required-actions"></textarea>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="action-deadline">Action Deadline</label>
-                            <input type="date" id="action-deadline">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="next-inspection">Next Inspection Date</label>
-                            <input type="date" id="next-inspection">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Compliance Status</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="radio" name="compliance" id="compliant" value="compliant">
-                                <label for="compliant">Compliant</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="radio" name="compliance" id="minor" value="minor">
-                                <label for="minor">Minor Non-Compliance</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="radio" name="compliance" id="major" value="major">
-                                <label for="major">Major Non-Compliance</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Attachments & Evidence</label>
-                        <div class="attachment-area">
-                            <p>Upload photos, documents, certificates</p>
-                            <input type="file" id="inspection-files" class="file-input" multiple>
-                            <label for="inspection-files" class="file-label">Browse Files</label>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button type="button" class="btn btn-primary">Save Inspection Log</button>
-                    </div>
-                </form>
-            </section>
-
             <!-- Inventory Form -->
             <section :class="['form-section', { active: activeSection === 'inventory' }]"
                 v-show="activeSection === 'inventory'">
@@ -593,8 +385,8 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <button @click="showMaintenance()" v-if="task.status === 'Completed'" class="status-action">Print</button>
-                                    <button v-else class="status-action">Start</button>
+                                    <button v-if="task.status === 'Completed'" class="status-action">Print</button>
+                                    <button @click="showMaintenance()" v-else class="status-action">Start</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -609,13 +401,10 @@
 export default {
     data() {
         return {
-            activeSection: 'vessel',
+            activeSection: 'inventory',
             sections: [
                 { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
-                { id: 'maintenance', name: 'Maintenance', icon: '🛠️' },
                 { id: 'schedule', name: 'Schedule', icon: '📅' },
-                { id: 'personnel', name: 'Personnel', icon: '🧑‍🔧' },
-                { id: 'inspection', name: 'Inspection', icon: '📷' },
                 { id: 'inventory', name: 'All Maintenance', icon: '♻️' },
             ],
             activeFilter: 'all',
@@ -695,7 +484,7 @@ export default {
             this.activeFilter = filter;
         },
         showMaintenance() {
-            // swal to add maintenance
+            this.activeSection = 'maintenance';
         }
     }
 };
