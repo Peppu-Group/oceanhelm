@@ -297,7 +297,8 @@ export default {
                     let status = 'Active'
                     let newVessel = { name: vesselname, registrationNumber:regno, status };
                     const existing = localStorage.getItem('vessel');
-
+                    this.company.vessels.push(newVessel);
+                    
                     if (!existing) {
                     // If no vessel data in localStorage, create a new array with the vessel
                     localStorage.setItem('vessel', JSON.stringify([newVessel]));
@@ -306,7 +307,6 @@ export default {
                     const vessels = JSON.parse(existing);
                     vessels.push(newVessel);
                     localStorage.setItem('vessel', JSON.stringify(vessels));
-                    this.company.vessels.push(newVessel);
                     }
                     // Show success message
                     Swal.fire({

@@ -107,7 +107,7 @@
                 <h2>🛠️ Maintenance Tasks</h2>
                 <form>
                     <div class="container">
-                        <h1>MarineOps Maintenance Checklist</h1>
+                        <h1>{{ getName }} Maintenance Checklist</h1>
 
                         <div class="progress-container">
                             <div class="progress-info">
@@ -133,7 +133,7 @@
                             All tasks completed! ✅
                         </div>
 
-                        <button class="reset-button" @click="resetTasks">Save Checklist</button>
+                        <button class="reset-button" @click.prevent="resetTasks">Save Checklist</button>
                     </div>
                 </form>
             </section>
@@ -339,7 +339,8 @@
                                 </td>
                                 <td>
                                     <button v-if="task.status === 'Completed'" class="status-action">Print</button>
-                                    <button @click="showMaintenance()" v-else class="status-action">Start</button>
+                                    <button @click="showMaintenance(task.component)" v-else
+                                        class="status-action">Start</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -446,6 +447,9 @@ export default {
 
             return result;
         },
+        getName() {
+            return localStorage.getItem('currentTask')
+        },
         completedCount() {
             return this.checklists.filter(item => item.completed);
         },
@@ -462,6 +466,10 @@ export default {
         if (vesselInfo) {
             this.no = vesselInfo.registrationNumber;
             this.name = vesselInfo.name;
+
+            // get all vessels
+            let tasks = JSON.parse(localStorage.getItem('tasks') ?? '[]');
+            this.tasks.push(...tasks);
         } else {
             this.$router.push({ path: `/app/dashboard` })
         }
@@ -470,7 +478,8 @@ export default {
         setFilter(filter) {
             this.activeFilter = filter;
         },
-        showMaintenance() {
+        showMaintenance(component) {
+            localStorage.setItem('currentTask', component)
             this.activeSection = 'maintenance';
         },
         switchSchedule() {
@@ -568,7 +577,17 @@ export default {
             // push the form info into task
             this.tasks.push(this.form);
             // save current task in localstorage.
-            localStorage.setItem('currentTask', this.form.component)
+            const existing = localStorage.getItem('tasks');
+
+            if (!existing) {
+                // If no vessel data in localStorage, create a new array with the vessel
+                localStorage.setItem('tasks', JSON.stringify([this.form]));
+            } else {
+                // If vessel data exists, parse it, push the new vessel, then save it back
+                const tasks = JSON.parse(existing);
+                tasks.push(this.form);
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
             // push to the all maintenance page, with the required info.
             this.activeSection = 'inventory';
         },
@@ -578,15 +597,35 @@ export default {
         },
 
         toggleTask(task) {
-          task.completed = !task.completed;
+            task.completed = !task.completed;
         },
 
         resetTasks() {
             // get current task id from localstorage.
-            // create a method to save the task page with info, if not complete.
-            // mark the task as complete if all tasks are complete.
+            let currentTask = localStorage.getItem('currentTask');
+            let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
+
+            if (taskIndex !== -1) {
+                const allCompleted = this.checklists.every(item => item.completed);
+                console.log(allCompleted);
+                if (allCompleted) {
+                    this.tasks[taskIndex].status = 'Complete';
+
+                    // Save updated tasks array back to localStorage
+                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+                    this.activeSection = 'inventory';
+                }
+
+            } else {
+                // store progress
+                // send to maintenance page
+                this.activeSection = 'inventory';
+            }
         }
+        // create a method to save the task page with info, if not complete.
+        // mark the task as complete if all tasks are complete.
     }
+
 };
 </script>
 
@@ -610,76 +649,83 @@ body {
     padding: 20px;
 }
 
-    h1 {
-      color: #005792;
-      margin-bottom: 20px;
-    }
-    .progress-container {
-      margin-bottom: 20px;
-    }
-    .progress-bar {
-      background-color: #e9ecef;
-      border-radius: 4px;
-      height: 10px;
-      margin-top: 8px;
-    }
-    .progress-fill {
-      background-color: #00a8e8;
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.3s ease;
-    }
-    .checklist {
-      list-style-type: none;
-      padding: 0;
-    }
-    .checklist-item {
-      display: flex;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-    }
-    .checkbox {
-      margin-right: 15px;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #00a8e8;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .checkbox.checked {
-      background-color: #00a8e8;
-      color: white;
-    }
-    .task-text {
-      flex-grow: 1;
-    }
-    .task-text.completed {
-      text-decoration: line-through;
-      color: #6c757d;
-    }
-    .status {
-      margin-top: 20px;
-      font-weight: bold;
-      text-align: center;
-    }
-    .reset-button {
-      background-color: #005792;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 20px;
-      font-weight: bold;
-    }
-    .reset-button:hover {
-      background-color: #003d5b;
-    }
+.progress-container {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    background-color: #e9ecef;
+    border-radius: 4px;
+    height: 10px;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    background-color: #00a8e8;
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.checklist {
+    list-style-type: none;
+    padding: 0;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.checkbox {
+    margin-right: 15px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #00a8e8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.checkbox.checked {
+    background-color: #00a8e8;
+    color: white;
+}
+
+.task-text {
+    flex-grow: 1;
+}
+
+.task-text.completed {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.status {
+    margin-top: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.reset-button {
+    background-color: #005792;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+.reset-button:hover {
+    background-color: #003d5b;
+}
 
 header {
     background-color: var(--maitprimary);
