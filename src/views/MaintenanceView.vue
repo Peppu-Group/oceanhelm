@@ -106,7 +106,35 @@
                 v-show="activeSection === 'maintenance'">
                 <h2>🛠️ Maintenance Tasks</h2>
                 <form>
+                    <div class="container">
+                        <h1>MarineOps Maintenance Checklist</h1>
 
+                        <div class="progress-container">
+                            <div class="progress-info">
+                                Progress: {{ progress }}% ({{ completedCount.length }}/{{ checklists.length }})
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+                            </div>
+                        </div>
+
+                        <ul class="checklist">
+                            <li v-for="checklist in checklists" :key="checklist.id" class="checklist-item"
+                                @click="toggleTask(checklist)">
+                                <div class="checkbox" :class="{ 'checked': checklist.completed }">
+                                    <span v-if="checklist.completed">✓</span>
+                                </div>
+                                <span class="task-text" :class="{ 'completed': checklist.completed }">{{ checklist.text
+                                }}</span>
+                            </li>
+                        </ul>
+
+                        <div class="status" v-if="completedCount === checklists.length">
+                            All tasks completed! ✅
+                        </div>
+
+                        <button class="reset-button" @click="resetTasks">Save Checklist</button>
+                    </div>
                 </form>
             </section>
 
@@ -350,6 +378,20 @@ export default {
             searchQuery: '',
             activeFilters: [1, 2], // example filter count
             tasks: [],
+            checklists: [
+                { id: 1, text: "Inspect hull for damage or fouling", completed: false },
+                { id: 2, text: "Check propeller and shaft for damage", completed: false },
+                { id: 3, text: "Examine through-hull fittings", completed: false },
+                { id: 4, text: "Test bilge pumps and alarms", completed: false },
+                { id: 5, text: "Inspect and test navigation lights", completed: false },
+                { id: 6, text: "Check fuel system for leaks", completed: false },
+                { id: 7, text: "Inspect battery connections", completed: false },
+                { id: 8, text: "Test all electronics and radios", completed: false },
+                { id: 9, text: "Verify safety equipment inventory", completed: false },
+                { id: 10, text: "Check engine oil and coolant levels", completed: false },
+                { id: 11, text: "Inspect belts and hoses", completed: false },
+                { id: 12, text: "Test emergency steering system", completed: false }
+            ],
             form: {
                 taskName: '',
                 description: '',
@@ -403,6 +445,12 @@ export default {
             }
 
             return result;
+        },
+        completedCount() {
+            return this.checklists.filter(item => item.completed);
+        },
+        progress() {
+            return Math.round((this.completedCount.length / this.checklists.length) * 100);
         }
     },
     mounted() {
@@ -519,9 +567,25 @@ export default {
 
             // push the form info into task
             this.tasks.push(this.form);
+            // save current task in localstorage.
+            localStorage.setItem('currentTask', this.form.component)
             // push to the all maintenance page, with the required info.
             this.activeSection = 'inventory';
         },
+
+        resetChecklist() {
+            this.checklists.value.forEach(item => item.completed = false);
+        },
+
+        toggleTask(task) {
+          task.completed = !task.completed;
+        },
+
+        resetTasks() {
+            // get current task id from localstorage.
+            // create a method to save the task page with info, if not complete.
+            // mark the task as complete if all tasks are complete.
+        }
     }
 };
 </script>
@@ -545,6 +609,77 @@ body {
     margin: 0 auto;
     padding: 20px;
 }
+
+    h1 {
+      color: #005792;
+      margin-bottom: 20px;
+    }
+    .progress-container {
+      margin-bottom: 20px;
+    }
+    .progress-bar {
+      background-color: #e9ecef;
+      border-radius: 4px;
+      height: 10px;
+      margin-top: 8px;
+    }
+    .progress-fill {
+      background-color: #00a8e8;
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .checklist {
+      list-style-type: none;
+      padding: 0;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .checkbox {
+      margin-right: 15px;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #00a8e8;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .checkbox.checked {
+      background-color: #00a8e8;
+      color: white;
+    }
+    .task-text {
+      flex-grow: 1;
+    }
+    .task-text.completed {
+      text-decoration: line-through;
+      color: #6c757d;
+    }
+    .status {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .reset-button {
+      background-color: #005792;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .reset-button:hover {
+      background-color: #003d5b;
+    }
 
 header {
     background-color: var(--maitprimary);
