@@ -106,20 +106,29 @@
                 v-show="activeSection === 'maintenance'">
                 <h2>🛠️ Maintenance Tasks</h2>
                 <form>
+
+                </form>
+            </section>
+
+            <!-- Maintenance Schedule Form -->
+            <section :class="['form-section', { active: activeSection === 'schedule' }]"
+                v-show="activeSection === 'schedule'">
+                <h2>📅 Maintenance Schedule</h2>
+                <form>
                     <div class="form-group">
                         <label for="task-name">Task Name</label>
-                        <input type="text" id="task-name" required>
+                        <input type="text" id="task-name" v-model="form.taskName" required>
                     </div>
 
                     <div class="form-group">
                         <label for="task-description">Description</label>
-                        <textarea id="task-description" required></textarea>
+                        <textarea id="task-description" v-model="form.description" required></textarea>
                     </div>
 
                     <div class="input-group">
                         <div class="form-group">
                             <label for="maintenance-type">Maintenance Type</label>
-                            <select id="maintenance-type" required>
+                            <select id="maintenance-type" v-model="form.maintenanceType" required>
                                 <option value="">-- Select Type --</option>
                                 <option value="preventive">Preventive</option>
                                 <option value="corrective">Corrective</option>
@@ -130,7 +139,7 @@
 
                         <div class="form-group">
                             <label for="component">Component/System</label>
-                            <select id="component" required>
+                            <select id="component" v-model="form.component" required>
                                 <option value="">-- Select Component --</option>
                                 <option value="engine">Engine</option>
                                 <option value="hull">Hull</option>
@@ -148,107 +157,40 @@
                     <div class="input-group">
                         <div class="form-group">
                             <label for="priority">Priority</label>
-                            <select id="priority" required>
+                            <select id="priority" v-model="form.priority" required>
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
                                 <option value="high">High</option>
                                 <option value="critical">Critical</option>
                             </select>
                         </div>
-
                         <div class="form-group">
                             <label for="status">Status</label>
-                            <select id="status" required>
-                                <option value="pending">Pending</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                                <option value="deferred">Deferred</option>
-                            </select>
+                            <input type="text" id="status" v-model="form.status" readonly>
                         </div>
                     </div>
 
                     <div class="input-group">
                         <div class="form-group">
-                            <label for="due-date">Due Date</label>
-                            <input type="date" id="due-date" required>
-                        </div>
-
-                        <div class="form-group">
                             <label for="estimated-hours">Estimated Hours</label>
-                            <input type="number" id="estimated-hours" min="0" step="0.5">
+                            <input type="number" id="estimated-hours" v-model="form.estimatedHours" min="0" step="0.5">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label for="assigned-to">Assigned To</label>
-                        <select id="assigned-to">
+                        <select id="assigned-to" v-model="form.assignedTo">
                             <option value="">-- Select Personnel --</option>
-                            <option value="1">John Smith - Engineer</option>
-                            <option value="2">Maria Garcia - Chief Engineer</option>
-                            <option value="3">David Chen - Technician</option>
+                            <option value="John Smith - Engineer">John Smith - Engineer</option>
+                            <option value="Maria Garcia - Chief Engineer">Maria Garcia - Chief Engineer</option>
+                            <option value="David Chen - Technician">David Chen - Technician</option>
                         </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Required Parts</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="part1">
-                                <label for="part1">Fuel Filter</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="part2">
-                                <label for="part2">Oil Filter</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="part3">
-                                <label for="part3">Air Filter</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="part4">
-                                <label for="part4">Impeller</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="part5">
-                                <label for="part5">Belts</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="notes">Additional Notes</label>
-                        <textarea id="notes"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Attachments</label>
-                        <div class="attachment-area">
-                            <p>Drag and drop files here or</p>
-                            <input type="file" id="maintenance-files" class="file-input" multiple>
-                            <label for="maintenance-files" class="file-label">Browse Files</label>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button type="button" class="btn btn-primary">Save Task</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Maintenance Schedule Form -->
-            <section :class="['form-section', { active: activeSection === 'schedule' }]"
-                v-show="activeSection === 'schedule'">
-                <h2>📅 Maintenance Schedule</h2>
-                <form>
-                    <div class="form-group">
-                        <label for="schedule-task">Task Name</label>
-                        <input type="text" id="schedule-task" required>
                     </div>
 
                     <div class="input-group">
                         <div class="form-group">
                             <label for="recurrence-type">Recurrence</label>
-                            <select id="recurrence-type" required>
+                            <select id="recurrence-type" v-model="form.recurrence" required>
                                 <option value="once">One-time</option>
                                 <option value="daily">Daily</option>
                                 <option value="weekly">Weekly</option>
@@ -259,54 +201,33 @@
                                 <option value="custom">Custom Interval</option>
                             </select>
                         </div>
-
-                        <div class="form-group">
-                            <label for="custom-interval">Custom Interval (Days)</label>
-                            <input type="number" id="custom-interval" min="1" disabled>
-                        </div>
                     </div>
 
                     <div class="input-group">
                         <div class="form-group">
                             <label for="last-performed">Last Performed Date</label>
-                            <input type="date" id="last-performed">
+                            <input type="date" id="last-performed" v-model="form.lastPerformed">
                         </div>
 
                         <div class="form-group">
-                            <label for="next-due">Next Due Date</label>
-                            <input type="date" id="next-due" required>
+                            <label for="next-due">Due Date</label>
+                            <input type="date" id="next-due" v-model="form.nextDue" required>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="schedule-component">Component/System</label>
-                        <select id="schedule-component" required>
-                            <option value="">-- Select Component --</option>
-                            <option value="engine">Engine</option>
-                            <option value="hull">Hull</option>
-                            <option value="electronics">Electronics</option>
-                            <option value="deck">Deck Machinery</option>
-                            <option value="plumbing">Plumbing</option>
-                            <option value="electrical">Electrical</option>
-                            <option value="hvac">HVAC</option>
-                            <option value="safety">Safety Systems</option>
-                            <option value="other">Other</option>
-                        </select>
                     </div>
 
                     <div class="form-group">
                         <label>Notifications</label>
                         <div class="checkbox-group">
                             <div class="checkbox-item">
-                                <input type="checkbox" id="notify-email" checked>
+                                <input type="checkbox" id="notify-email" v-model="form.notifyEmail">
                                 <label for="notify-email">Email Notification</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="notify-sms">
+                                <input type="checkbox" id="notify-sms" v-model="form.notifySms">
                                 <label for="notify-sms">SMS Notification</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" id="notify-app" checked>
+                                <input type="checkbox" id="notify-app" v-model="form.notifyApp">
                                 <label for="notify-app">In-App Notification</label>
                             </div>
                         </div>
@@ -315,7 +236,7 @@
                     <div class="input-group">
                         <div class="form-group">
                             <label for="reminder-days">Reminder (Days Before)</label>
-                            <select id="reminder-days">
+                            <select id="reminder-days" v-model="form.reminderDays">
                                 <option value="1">1 day</option>
                                 <option value="3">3 days</option>
                                 <option value="7">1 week</option>
@@ -323,20 +244,24 @@
                                 <option value="30">1 month</option>
                             </select>
                         </div>
-
-                        <div class="form-group">
-                            <label for="estimated-duration">Estimated Duration (Hours)</label>
-                            <input type="number" id="estimated-duration" min="0" step="0.5">
-                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="schedule-notes">Notes</label>
-                        <textarea id="schedule-notes"></textarea>
+                        <textarea id="schedule-notes" v-model="form.notes"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Attachments</label>
+                        <div class="attachment-area">
+                            <p>Drag and drop files here or</p>
+                            <input type="file" id="maintenance-files" class="file-input" @change="handleFiles" multiple>
+                            <label for="maintenance-files" class="file-label">Browse Files</label>
+                        </div>
                     </div>
 
                     <div class="action-buttons">
-                        <button type="button" class="btn btn-primary">Save Schedule</button>
+                        <button type="button" class="btn btn-primary" @click="saveSchedule">Save Schedule</button>
                     </div>
                 </form>
             </section>
@@ -373,11 +298,11 @@
                         </thead>
                         <tbody>
                             <tr v-for="task in filteredTasks" :key="task.id">
-                                <td>{{ task.equipment }}</td>
+                                <td>{{ task.component }}</td>
                                 <td>{{ task.taskName }}</td>
                                 <td>{{ task.assignedTo }}</td>
-                                <td>{{ task.intervals }}</td>
-                                <td>{{ task.remaining }}</td>
+                                <td>{{ task.recurrence }}</td>
+                                <td>{{ task.remainingDays }}</td>
                                 <td>{{ task.nextDue }}</td>
                                 <td>
                                     <span :class="['status-badge', task.status.toLowerCase().replace(' ', '-')]">
@@ -391,6 +316,18 @@
                             </tr>
                         </tbody>
                     </table>
+
+                    <!-- Empty schedule -->
+                    <div v-if="!tasks.length">
+                        <div class="alert alert-primary" role="alert">
+                            <h4 class="alert-heading">Such Empty!!!</h4>
+                            <p>You have no maintenance, because you have not scheduled any for this ship.</p>
+                            <hr>
+                            <p class="mb-0">Navigate to the schedule tab, to start scheduling. Or click on this button to
+                                <button type="button" class="btn btn-primary" @click="switchSchedule()">Schedule</button>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -412,50 +349,37 @@ export default {
             activeFilter: 'all',
             searchQuery: '',
             activeFilters: [1, 2], // example filter count
-
-            tasks: [
-                {
-                    id: 1,
-                    equipment: 'Transmission - Port',
-                    taskName: 'Every 25 Service Hours',
-                    assignedTo: 'Tyler Vaughn',
-                    intervals: '25 H\n1 M',
-                    remaining: '24 H\n-8 D',
-                    nextDue: '710 Hours\nOct 27, 2023',
-                    status: 'Soon'
-                },
-                {
-                    id: 2,
-                    equipment: 'Transmission - Stbd',
-                    taskName: 'Every 25 Service Hours',
-                    assignedTo: 'Melissa Arciere',
-                    intervals: '25 H\n1 M',
-                    remaining: '25 H\n-8 D',
-                    nextDue: '710 Hours\nOct 27, 2023',
-                    status: 'Overdue'
-                },
-                {
-                    id: 3,
-                    equipment: 'Alternator - Stbd',
-                    taskName: '150 Service Hours',
-                    assignedTo: 'Unassigned',
-                    intervals: '150 H\n1 Y',
-                    remaining: '150 H\n-2 D',
-                    nextDue: '150 Hours\nNov 2, 2023',
-                    status: 'Overdue'
-                },
-                {
-                    id: 4,
-                    equipment: 'Transmission - Port',
-                    taskName: 'Every 250 Service Hours',
-                    assignedTo: 'Stephanie Schneider',
-                    intervals: '250 H\n1 Y',
-                    remaining: '14 H\n301 D',
-                    nextDue: '700 Hours\nAug 31, 2024',
-                    status: 'Completed'
-                }
-            ]
+            tasks: [],
+            form: {
+                taskName: '',
+                description: '',
+                maintenanceType: '',
+                component: '',
+                priority: '',
+                dueDate: '',
+                estimatedHours: null,
+                assignedTo: '',
+                recurrence: '',
+                lastPerformed: '',
+                nextDue: '',
+                notifyEmail: true,
+                notifySms: false,
+                notifyApp: true,
+                reminderDays: '1',
+                estimatedDuration: null,
+                notes: '',
+                status: 'Soon',
+                remainingDays: null,
+                attachments: []
+            }
         };
+    },
+    watch: {
+        'form.lastPerformed': 'calculateNextDue',
+        'form.recurrence': 'calculateNextDue',
+        'form.nextDue': function (newDate) {
+            this.calculateRemainingDays();
+        }
     },
     computed: {
         filteredTasks() {
@@ -500,7 +424,104 @@ export default {
         },
         showMaintenance() {
             this.activeSection = 'maintenance';
-        }
+        },
+        switchSchedule() {
+            this.activeSection = 'schedule';
+        },
+        handleFiles(event) {
+            this.form.attachments = Array.from(event.target.files);
+        },
+        validateForm() {
+            const requiredFields = [
+                'taskName',
+                'description',
+                'maintenanceType',
+                'component',
+                'priority',
+                'lastPerformed',
+                'nextDue',
+                'recurrence'
+            ];
+
+            for (const field of requiredFields) {
+                if (!this.form[field]) {
+                    Swal.fire({
+                        title: "Missing info",
+                        text: `Please fill in the required field: ${field}`,
+                        icon: "error"
+                    });
+                    return false;
+                }
+            }
+
+            return true;
+        },
+
+        calculateNextDue() {
+            const date = this.form.lastPerformed ? new Date(this.form.lastPerformed) : null;
+            const recurrence = this.form.recurrence;
+
+            if (!date || !recurrence) return;
+
+            let nextDate = new Date(date);
+
+            switch (recurrence) {
+                case 'daily':
+                    nextDate.setDate(nextDate.getDate() + 1);
+                    break;
+                case 'weekly':
+                    nextDate.setDate(nextDate.getDate() + 7);
+                    break;
+                case 'monthly':
+                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    break;
+                case 'quarterly':
+                    nextDate.setMonth(nextDate.getMonth() + 3);
+                    break;
+                case 'semi-annual':
+                    nextDate.setMonth(nextDate.getMonth() + 6);
+                    break;
+                case 'annual':
+                    nextDate.setFullYear(nextDate.getFullYear() + 1);
+                    break;
+                case 'once':
+                case 'custom':
+                    // Don't auto-calculate for these
+                    return;
+            }
+
+            this.form.nextDue = nextDate.toISOString().split('T')[0]; // Format as yyyy-mm-dd
+        },
+
+        calculateRemainingDays() {
+            if (!this.form.nextDue) {
+                this.form.remainingDays = null;
+                return;
+            }
+
+            const today = new Date();
+            const nextDueDate = new Date(this.form.nextDue);
+
+            // Set time to 00:00 to ensure date-only comparison
+            today.setHours(0, 0, 0, 0);
+            nextDueDate.setHours(0, 0, 0, 0);
+
+            const diffTime = nextDueDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            this.form.remainingDays = `${diffDays} Days`;
+        },
+
+        saveSchedule() {
+            if (!this.validateForm()) {
+                return; // Stop if validation fails
+            }
+
+            // push the form info into task
+            this.tasks.push(this.form);
+            // push to the all maintenance page, with the required info.
+            this.activeSection = 'inventory';
+        },
     }
 };
 </script>
@@ -735,139 +756,142 @@ textarea {
 }
 
 .status-badge {
-  padding: 0.3em 0.6em;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  font-size: 0.85rem;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
 }
 
 .status-action {
-  padding: 0.3em 0.6em;
-  border-radius: 4px;
-  color: white;
-  font-weight: bold;
-  font-size: 0.85rem;
-  background-color: var(--maitprimary);
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background-color: var(--maitprimary);
 }
 
 .status-badge.overdue {
-  background-color: red;
+    background-color: red;
 }
 
-.status-badge.soon{
-  background-color: orange;
+.status-badge.soon {
+    background-color: orange;
 }
 
 /* Wrapper layout */
 .task-table-wrapper {
-  font-family: 'Inter', sans-serif;
-  padding: 1rem;
+    font-family: 'Inter', sans-serif;
+    padding: 1rem;
 }
 
 /* Controls section */
 .table-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .filters {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .filters button,
 .filters input {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
-  font-weight: 500;
-  cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 .filters button.active {
-  background-color: #002f6c;
-  color: white;
+    background-color: #002f6c;
+    color: white;
 }
 
 .filters input {
-  border: 1px solid #bbb;
+    border: 1px solid #bbb;
 }
 
 .filter-badge {
-  background-color: #eee;
-  color: #333;
+    background-color: #eee;
+    color: #333;
 }
 
 /* Print and Add buttons */
-.table-controls > div:last-child button {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--maitprimary);
-  border-radius: 6px;
-  background-color: white;
-  color: var(--maitprimary);;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+.table-controls>div:last-child button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--maitprimary);
+    border-radius: 6px;
+    background-color: white;
+    color: var(--maitprimary);
+    ;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-.table-controls > div:last-child button:last-child {
-  background-color: var(--maitprimary);;
-  color: white;
+.table-controls>div:last-child button:last-child {
+    background-color: var(--maitprimary);
+    ;
+    color: white;
 }
 
 /* Table */
 .task-table {
-  width: 100%;
-  border-collapse: collapse;
-  box-shadow: 0 0 0 1px #ccc;
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 0 0 1px #ccc;
 }
 
 .task-table thead {
-  background-color: var(--maitprimary);;
-  color: white;
+    background-color: var(--maitprimary);
+    ;
+    color: white;
 }
 
 .task-table th,
 .task-table td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #eee;
-  white-space: pre-line; /* so \n works */
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    white-space: pre-line;
+    /* so \n works */
 }
 
 .task-table tbody tr:hover {
-  background-color: #f9f9f9;
+    background-color: #f9f9f9;
 }
 
 /* Status badges */
 .status-badge {
-  padding: 0.3em 0.6em;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 0.85rem;
-  color: white;
-  display: inline-block;
-  text-align: center;
-  min-width: 90px;
+    padding: 0.3em 0.6em;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: white;
+    display: inline-block;
+    text-align: center;
+    min-width: 90px;
 }
 
 .status-badge.complete {
-  background-color: #4dffd0;
+    background-color: #4dffd0;
 }
 
 .status-badge.soon {
-  background-color: #ffa500;
+    background-color: #ffa500;
 }
 
 .status-badge.completed {
-  background-color: #4caf50;
+    background-color: #4caf50;
 }
-
 </style>

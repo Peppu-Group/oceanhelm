@@ -306,6 +306,7 @@ export default {
                     const vessels = JSON.parse(existing);
                     vessels.push(newVessel);
                     localStorage.setItem('vessel', JSON.stringify(vessels));
+                    this.company.vessels.push(newVessel);
                     }
                     // Show success message
                     Swal.fire({
