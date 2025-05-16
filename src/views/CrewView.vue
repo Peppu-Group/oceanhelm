@@ -1,10 +1,10 @@
 <template>
     <div class="container">
-        <h1>MarineOps Crew Management</h1>
+        <h1>MarineTech Crew Management</h1>
 
         <div class="crew-section">
             <div class="section-header">
-                <h2>Current Crew</h2>
+                <h2>Current Crew {{  }}</h2>
                 <button class="btn btn-primary" @click="showAddForm = !showAddForm">
                     {{ showAddForm ? 'Cancel' : '+ Add Crew Member' }}
                 </button>
@@ -37,7 +37,12 @@
                         <strong>Next Shift:</strong> {{ member.nextShift || 'Not Scheduled' }}
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-secondary">View Details</button>
+                        <div v-if="member.vessel" class="status-available crew-availability vcard">
+                            Vessel: {{ member.vessel }}
+                        </div>
+                        <div v-if="!member.vessel" class="status-unavailable crew-availability vcard">
+                            Vessel: Unassigned
+                        </div>
                         <button class="btn btn-primary" @click="showAssignForm(member.id)">Assign Shift</button>
                     </div>
                 </div>
@@ -120,7 +125,8 @@ export default {
                     role: "Captain",
                     status: "onduty",
                     certifications: ["Navigation", "Safety", "Command"],
-                    nextShift: "Current - May 16, 08:00-20:00"
+                    nextShift: "Current - May 16, 08:00-20:00",
+                    vessel: 'MV Melody'
                 },
                 {
                     id: 2,
@@ -152,7 +158,8 @@ export default {
                     role: "Mechanic",
                     status: "available",
                     certifications: ["Mechanical", "Welding"],
-                    nextShift: "May 18, 08:00-20:00"
+                    nextShift: "May 18, 08:00-20:00",
+                    vessel: 'MV Melody'
                 },
                 {
                     id: 6,
@@ -499,5 +506,10 @@ h1 {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+}
+
+.vcard {
+    border-radius: 6px;
+    padding: 5px;
 }
 </style>

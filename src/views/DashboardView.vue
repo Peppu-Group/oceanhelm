@@ -15,22 +15,35 @@
         </div>
         <ul class="list-unstyled components mt-4">
             <li class="active">
-                <a href="#"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a><i class="bi bi-speedometer2"></i> Dashboard</a>
             </li>
             <li>
-                <a href="#"><i class="bi bi-ship"></i> Fleet Management</a>
+                <a> Services</a>
+            </li>
+            <li class="dropdown">
+                <a class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i
+                        class="bi bi-tools"></i> Maintenance</a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a class="dropdown-item black" @click="getMaintenance(vessel.registrationNumber)"
+                        v-for="vessel in company.vessels">{{ vessel.name }}</a>
+                </div>
             </li>
             <li>
-                <a><i class="bi bi-tools"></i> Maintenance</a>
-            </li>
-            <li>
-                <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition Processing</a>
+                <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition
+                    Processing</a>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-clipboard-data"></i> Inventory Management</a>
             </li>
             <li>
-                <a @click="crewManage()"><i class="bi bi-people"></i> Crew Management</a>
+                <a class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i
+                        class="bi bi-people"></i> Crew Management</a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a class="dropdown-item black" @click="crewManage()">All Crew</a>
+                    <div class="dropdown-divider black"></div>
+                    <a class="dropdown-item black" @click="crewManage(vessel.registrationNumber)"
+                        v-for="vessel in company.vessels">{{ vessel.name }}</a>
+                </div>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-geo-alt"></i> Cross-Vessel Data Sharing</a>
@@ -152,7 +165,7 @@
             <!-- Vessel Cards -->
             <div class="row">
                 <div class="col-lg-6" v-for="vessel in this.company.vessels">
-                    <div class="vessel-card" @click="getMaintenance(vessel.registrationNumber)">
+                    <div class="vessel-card" @click="">
                         <div class="card-body d-flex align-items-center">
                             <div class="vessel-icon left">
                                 <i class="bi bi-plugin"></i>
@@ -178,7 +191,7 @@
                             <i class="bi bi-trash" @click.stop="confirmDelete(vessel.registrationNumber)"></i>
                         </div>
                         <button class="btn btn-primary" @click.stop="markInactive(vessel.registrationNumber)">
-                            Mark Inactive
+                            {{ vessel.status === 'Active' ? 'Mark Inactive' : 'Mark Active' }}
                         </button>
                     </div>
                 </div>
@@ -209,6 +222,11 @@ export default {
         const sidebar = document.getElementById('sidebar');
         const content = document.getElementById('content');
 
+        if (window.innerWidth >= 768) {
+            sidebar.classList.toggle('active');
+            content.classList.toggle('active');
+        }
+
         sidebarToggle.addEventListener('click', function () {
             sidebar.classList.toggle('active');
             content.classList.toggle('active');
@@ -237,7 +255,7 @@ export default {
 
             const soonTask = tasks.find(task => task.status === 'Soon');
 
-            if (soonTask) {
+            if (soonTask && vessel.status != 'Inactive') {
                 vessel.status = 'Maintenance';
             }
 
@@ -373,7 +391,7 @@ export default {
                 if (vessels[index].status !== 'Inactive') {
                     vessels[index].status = 'Inactive';
                 } else {
-                    vessels[index].status = 'Active'; 
+                    vessels[index].status = 'Active';
                     Swal.fire({
                         title: "Vessel Active!",
                         text: "Your vessel is now active, if it is under maintenance, the status will change soon",
@@ -546,6 +564,10 @@ export default {
     color: var(--accent-color);
     font-size: 24px;
     margin-right: 15px;
+}
+
+.black {
+    color: black !important;
 }
 
 .action-icon {
