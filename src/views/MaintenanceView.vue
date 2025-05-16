@@ -289,7 +289,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button type="button" class="btn btn-primary" @click="saveSchedule">Save Schedule</button>
+                        <button type="button" class="btn btn-primary" @click.prevent="saveSchedule">Save Schedule</button>
                     </div>
                 </form>
             </section>
@@ -369,6 +369,7 @@ export default {
         return {
             name: null,
             no: null,
+            currentTask: '',
             activeSection: 'inventory',
             sections: [
                 { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
@@ -448,7 +449,7 @@ export default {
             return result;
         },
         getName() {
-            return localStorage.getItem('currentTask')
+            return this.currentTask;
         },
         completedCount() {
             return this.checklists.filter(item => item.completed);
@@ -470,6 +471,7 @@ export default {
             // get all vessels
             let tasks = JSON.parse(localStorage.getItem('tasks') ?? '[]');
             this.tasks.push(...tasks);
+            this.currentTask = localStorage.getItem('currentTask');
         } else {
             this.$router.push({ path: `/app/dashboard` })
         }
@@ -478,8 +480,24 @@ export default {
         setFilter(filter) {
             this.activeFilter = filter;
         },
-        showMaintenance(component) {
-            localStorage.setItem('currentTask', component)
+        showMaintenance(taskComponent) {
+            const tasks = this.tasks;
+            const task = tasks.find(t => t.component === taskComponent);
+            console.log(this.checklists)
+
+            if (task && task.checklistProgress) {
+                this.checklists = [...task.checklistProgress];
+            } else {
+                // Reset all checklist items to not completed
+                this.checklists = this.checklists.map(item => ({
+                    ...item,
+                    completed: false
+                }));
+            }
+
+            // Also update current task in localStorage (optional)
+            localStorage.setItem('currentTask', taskComponent);
+            this.currentTask = taskComponent;
             this.activeSection = 'maintenance';
         },
         switchSchedule() {
@@ -588,8 +606,36 @@ export default {
                 tasks.push(this.form);
                 localStorage.setItem('tasks', JSON.stringify(tasks));
             }
+            // Then reset
+            this.resetForm();
             // push to the all maintenance page, with the required info.
             this.activeSection = 'inventory';
+        },
+
+        // Then reset
+        resetForm() {
+            this.form = {
+                taskName: '',
+                description: '',
+                maintenanceType: '',
+                component: '',
+                priority: '',
+                dueDate: '',
+                estimatedHours: null,
+                assignedTo: '',
+                recurrence: '',
+                lastPerformed: '',
+                nextDue: '',
+                notifyEmail: true,
+                notifySms: false,
+                notifyApp: true,
+                reminderDays: '1',
+                estimatedDuration: null,
+                notes: '',
+                status: 'Soon',
+                remainingDays: null,
+                attachments: []
+            }
         },
 
         resetChecklist() {
@@ -609,15 +655,13 @@ export default {
                 const allCompleted = this.checklists.every(item => item.completed);
                 console.log(allCompleted);
                 if (allCompleted) {
-                    this.tasks[taskIndex].status = 'Complete';
-
-                    // Save updated tasks array back to localStorage
-                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
-                    this.activeSection = 'inventory';
+                    this.tasks[taskIndex].status = 'Completed';
+                } else {
+                    // clone checklist and store progress in the task tab
+                    this.tasks[taskIndex].checklistProgress = [...this.checklists];
                 }
-
-            } else {
-                // store progress
+                // Save and updated tasks array back to localStorage
+                localStorage.setItem('tasks', JSON.stringify(this.tasks));
                 // send to maintenance page
                 this.activeSection = 'inventory';
             }
