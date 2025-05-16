@@ -30,7 +30,7 @@
                 <a @click="comingSoon()"><i class="bi bi-clipboard-data"></i> Inventory Management</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="bi bi-people"></i> Crew Management</a>
+                <a @click="crewManage()"><i class="bi bi-people"></i> Crew Management</a>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-geo-alt"></i> Cross-Vessel Data Sharing</a>
@@ -390,6 +390,9 @@ export default {
                 text: "This feature is coming soon",
                 icon: "info"
             });
+        },
+        crewManage() {
+            this.$router.push({ name: 'crew' });
         },
         editInfo() {
             Swal.fire({
