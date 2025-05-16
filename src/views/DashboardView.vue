@@ -41,8 +41,8 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                     <a class="dropdown-item black" @click="crewManage()">All Crew</a>
                     <div class="dropdown-divider black"></div>
-                    <a class="dropdown-item black" @click="crewManage(vessel.registrationNumber)"
-                        v-for="vessel in company.vessels">{{ vessel.name }}</a>
+                    <a class="dropdown-item black" @click="crewManage(vessel.name)" v-for="vessel in company.vessels">{{
+                        vessel.name }}</a>
                 </div>
             </li>
             <li>
@@ -409,8 +409,12 @@ export default {
                 icon: "info"
             });
         },
-        crewManage() {
-            this.$router.push({ name: 'crew' });
+        crewManage(id = null) {
+            if (id) {
+                this.$router.push({ name: 'crewsingle', params: { id } });
+            } else {
+                this.$router.push({ name: 'crew' });
+            }
         },
         editInfo() {
             Swal.fire({

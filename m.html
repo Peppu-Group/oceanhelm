@@ -75,6 +75,14 @@
       margin-bottom: 5px;
       font-size: 0.85em;
     }
+    .certification-tag.expiring {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .certification-tag.expired {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
     .status-badge {
       position: absolute;
       top: 15px;
@@ -218,7 +226,7 @@
           <div class="crew-name">{{ member.name }}</div>
           <div class="crew-role">{{ member.role }}</div>
           <div class="crew-certifications">
-            <div v-for="cert in member.certifications" :key="cert" class="certification-tag">{{ cert }}</div>
+            <div v-for="cert in member.certifications" :key="cert" class="certification-tag">{{ cert.name }}:{{cert.expiryDate}}</div>
           </div>
           <div class="crew-availability">
             <strong>Next Shift:</strong> {{ member.nextShift || 'Not Scheduled' }}
@@ -256,6 +264,19 @@
         
         <div class="form-row">
           <div class="form-group">
+            <label for="crew-photo">Profile Photo</label>
+            <div class="file-upload">
+              <label class="file-upload-label">
+                <input type="file" id="crew-photo" accept="image/*" @change="handleFileUpload">
+                Choose File
+              </label>
+              <span class="file-name">{{ newCrew.photoName || 'No file chosen' }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
             <label for="crew-status">Status</label>
             <select id="crew-status" v-model="newCrew.status">
               <option value="available">Available</option>
@@ -269,10 +290,23 @@
           </div>
         </div>
         
-        <div class="form-row">
-          <div class="form-group">
-            <label for="crew-certifications">Certifications (comma separated)</label>
-            <input type="text" id="crew-certifications" v-model="newCrew.certificationsInput" placeholder="e.g., CPR, Safety, Navigation">
+        <div class="certification-section">
+          <h3>Certifications</h3>
+          <div class="certification-grid">
+            <div v-for="cert in availableCertifications" :key="cert.id" class="certification-item">
+              <input type="checkbox" :id="'cert-' + cert.id" :value="cert.id" v-model="newCrew.selectedCertifications">
+              <label :for="'cert-' + cert.id">{{ cert.name }}</label>
+            </div>
+          </div>
+          
+          <div v-if="newCrew.selectedCertifications.length > 0">
+            <h4>Expiry Dates</h4>
+            <div class="form-row" v-for="certId in newCrew.selectedCertifications" :key="certId">
+              <div class="form-group">
+                <label>{{ getCertificationName(certId) }} Expiry Date</label>
+                <input type="date" v-model="newCrew.certificationExpiry[certId]">
+              </div>
+            </div>
           </div>
         </div>
         
@@ -302,15 +336,23 @@
             name: "John Smith",
             role: "Captain",
             status: "onduty",
-            certifications: ["Navigation", "Safety", "Command"],
-            nextShift: "Current - May 16, 08:00-20:00"
+            certifications: [
+              { name: "Navigation", expiryDate: "2025-12-15" },
+              { name: "Safety", expiryDate: "2026-05-22" },
+              { name: "Command", expiryDate: "2026-02-10" }
+            ],
+            nextShift: "Current - May 16, 08:00-20:00",
+            photo: "/api/placeholder/50/50"
           },
           {
             id: 2,
             name: "Emily Rodriguez",
             role: "First Officer",
             status: "onduty",
-            certifications: ["Navigation", "Communications"],
+            certifications: [
+              { name: "Navigation", expiryDate: "2025-10-05" },
+              { name: "Communications", expiryDate: "2025-08-30" },
+            ],
             nextShift: "Current - May 16, 08:00-20:00"
           },
           {
@@ -318,15 +360,22 @@
             name: "David Chen",
             role: "Engineer",
             status: "available",
-            certifications: ["Mechanical", "Electrical"],
-            nextShift: "May 17, 20:00-08:00"
+            certifications: [
+              { name: "Mechanical", expiryDate: "2025-03-22" },
+              { name: "Electrical", expiryDate: "2025-11-15" }
+            ],
+            nextShift: "May 17, 20:00-08:00",
+            photo: "/api/placeholder/50/50"
           },
           {
             id: 4,
             name: "Sarah Johnson",
             role: "Deckhand",
             status: "unavailable",
-            certifications: ["First Aid", "Safety"],
+            certifications: [
+              { name: "First Aid", expiryDate: "2025-05-30" },
+              { name: "Safety", expiryDate: "2024-12-10" }
+            ],
             nextShift: "May 20, 08:00-20:00"
           },
           {
@@ -334,7 +383,10 @@
             name: "Michael Lee",
             role: "Mechanic",
             status: "available",
-            certifications: ["Mechanical", "Welding"],
+            certifications: [
+              { name: "Mechanical", expiryDate: "2025-07-12" },
+              { name: "Welding", expiryDate: "2024-06-01" }
+            ],
             nextShift: "May 18, 08:00-20:00"
           },
           {
@@ -342,8 +394,12 @@
             name: "Olivia Williams",
             role: "Cook",
             status: "onduty",
-            certifications: ["Food Safety", "First Aid"],
-            nextShift: "Current - May 16, 04:00-16:00"
+            certifications: [
+              { name: "Food Safety", expiryDate: "2025-09-15" },
+              { name: "First Aid", expiryDate: "2025-04-30" }
+            ],
+            nextShift: "Current - May 16, 04:00-16:00",
+            photo: "/api/placeholder/50/50"
           }
         ]);
         
@@ -355,9 +411,68 @@
           role: 'Deckhand',
           status: 'available',
           nextShift: '',
-          certificationsInput: '',
-          notes: ''
+          notes: '',
+          photo: null,
+          photoName: '',
+          selectedCertifications: [],
+          certificationExpiry: {}
         });
+        
+        const availableCertifications = ref([
+          { id: 1, name: "Navigation" },
+          { id: 2, name: "Safety" },
+          { id: 3, name: "Command" },
+          { id: 4, name: "First Aid" },
+          { id: 5, name: "CPR" },
+          { id: 6, name: "Mechanical" },
+          { id: 7, name: "Electrical" },
+          { id: 8, name: "Welding" },
+          { id: 9, name: "Communications" },
+          { id: 10, name: "Fire Fighting" },
+          { id: 11, name: "Survival at Sea" },
+          { id: 12, name: "Food Safety" },
+          { id: 13, name: "Hazardous Materials" }
+        ]);
+        
+        const getCertificationName = (id) => {
+          const cert = availableCertifications.value.find(c => c.id === id);
+          return cert ? cert.name : '';
+        };
+        
+        const isExpiringSoon = (dateStr) => {
+          const expiryDate = new Date(dateStr);
+          const today = new Date();
+          const threeMonthsFromNow = new Date();
+          threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+          
+          return expiryDate > today && expiryDate <= threeMonthsFromNow;
+        };
+        
+        const isExpired = (dateStr) => {
+          const expiryDate = new Date(dateStr);
+          const today = new Date();
+          
+          return expiryDate <= today;
+        };
+        
+        const formatDate = (dateStr) => {
+          const date = new Date(dateStr);
+          return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          });
+        };
+        
+        const handleFileUpload = (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            newCrew.value.photoName = file.name;
+            // In a real implementation, you would upload the file
+            // For this example, we'll just set a placeholder
+            newCrew.value.photo = "/api/placeholder/50/50";
+          }
+        };
         
         const filteredCrew = computed(() => {
           return crewMembers.value.filter(member => {
@@ -378,25 +493,31 @@
             role: 'Deckhand',
             status: 'available',
             nextShift: '',
-            certificationsInput: '',
-            notes: ''
+            notes: '',
+            photo: null,
+            photoName: '',
+            selectedCertifications: [],
+            certificationExpiry: {}
           };
         };
         
         const addCrewMember = () => {
-          const certArray = newCrew.value.certificationsInput
-            .split(',')
-            .map(cert => cert.trim())
-            .filter(cert => cert.length > 0);
+          const certifications = newCrew.value.selectedCertifications.map(certId => {
+            return {
+              name: getCertificationName(certId),
+              expiryDate: newCrew.value.certificationExpiry[certId] || null
+            };
+          });
           
           const newMember = {
             id: crewMembers.value.length + 1,
             name: newCrew.value.name,
             role: newCrew.value.role,
             status: newCrew.value.status,
-            certifications: certArray,
+            certifications: certifications,
             nextShift: newCrew.value.nextShift,
-            notes: newCrew.value.notes
+            notes: newCrew.value.notes,
+            photo: newCrew.value.photo
           };
           
           crewMembers.value.push(newMember);
@@ -412,7 +533,13 @@
           showAddForm,
           newCrew,
           resetForm,
-          addCrewMember
+          addCrewMember,
+          handleFileUpload,
+          availableCertifications,
+          getCertificationName,
+          isExpiringSoon,
+          isExpired,
+          formatDate
         };
       }
     }).mount('#app');

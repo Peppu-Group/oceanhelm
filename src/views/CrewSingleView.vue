@@ -4,14 +4,14 @@
 
         <div class="crew-section">
             <div class="section-header">
-                <h2>All Fleet Crew</h2>
+                <h2>Current Crew for {{ this.$route.params.id }}</h2>
                 <button class="btn btn-primary" @click="showAddForm = !showAddForm">
                     {{ showAddForm ? 'Cancel' : '+ Add Crew Member' }}
                 </button>
             </div>
 
             <div class="search-filter">
-                <input type="text" placeholder="Search crew by name, vessel, or role..." v-model="searchQuery">
+                <input type="text" placeholder="Search crew by name or role..." v-model="searchQuery">
                 <select v-model="filterStatus">
                     <option value="all">All Statuses</option>
                     <option value="available">Available</option>
@@ -48,8 +48,7 @@
                             Vessel: Unassigned
                         </div>
                         <button class="btn btn-primary"
-                            @click="showAssignForm(member.id, member.nextShift, member.vessel, member.status)">Assign
-                            Shift</button>
+                            @click="showAssignForm(member.id, member.nextShift, member.status)">Assign Shift</button>
                     </div>
                 </div>
             </div>
@@ -133,7 +132,7 @@
    
 <script>
 export default {
-    name: 'CrewView',
+    name: 'CrewSingleView',
 
     data() {
         return {
@@ -258,15 +257,22 @@ export default {
             });
         }
     },
+    mounted() {
+        let vesselName = decodeURIComponent(this.$route.params.id).trim();
+
+        this.crewMembers = this.crewMembers.filter(
+            member => member.vessel?.trim() === vesselName
+        );
+    },
     methods: {
         resetForm() {
             this.newCrew = {
                 name: '',
                 role: 'Deckhand',
                 status: 'available',
+                nextShift: '',
                 selectedCertifications: [],
                 certificationExpiry: {},
-                nextShift: '',
                 certificationsInput: '',
                 notes: ''
             };
@@ -294,7 +300,8 @@ export default {
                 status: this.newCrew.status,
                 certifications: certifications,
                 nextShift: this.newCrew.nextShift,
-                notes: this.newCrew.notes
+                notes: this.newCrew.notes,
+                vessel: this.$route.params.id,
             };
 
             this.crewMembers.push(newMember);
@@ -304,12 +311,9 @@ export default {
         cancelForm() {
             this.showAddForm = false;
         },
-        showAssignForm(id, prevshift, prevvessel, prevstatus) {
+        showAssignForm(id, prevshift, prevstatus) {
             const vessels = JSON.parse(localStorage.getItem('vessel') ?? '[]');
 
-            const vesselOptionsHtml = vessels.map(v =>
-                `<option value="${v.name}">${v.name}</option>`
-            ).join('');
             Swal.fire({
                 title: 'Assign Crew Shift',
                 html:
@@ -318,12 +322,6 @@ export default {
                     <div class="custom-swal-content">
                         <label class="custom-input-label" for="swal-shift">Scheduled Shift *</label>
                         <input id="swal-shift" class="custom-input" placeholder="e.g., May 18, 08:00-16:00">
-                        
-                        <label class="custom-input-label">Vessel Name *</label>
-                        <select id="swal-vessel" class="custom-input">
-                        <option value="">Select vessel ...</option>
-                        ${vesselOptionsHtml}
-                        </select>
                         
                         <label class="custom-input-label">Status</label>
                         <select id="swal-status" class="custom-input">
@@ -342,22 +340,15 @@ export default {
                 preConfirm: () => {
                     const shift = document.getElementById('swal-shift').value || prevshift;
                     const status = document.getElementById('swal-status').value || prevstatus;
-                    const vessel = document.getElementById('swal-vessel').value || prevvessel;
 
-                    if (vessel === '') {
-                        Swal.showValidationMessage('Please select a valid vessel');
-                        return false;
-                    }
-
-                    return { shift, vessel, status };
+                    return { shift, status };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const { shift, vessel, status } = result.value;
+                    const { shift, status } = result.value;
                     const member = this.crewMembers.find(m => m.id === id);
                     if (member) {
                         member.nextShift = shift;
-                        member.vessel = vessel;
                         member.status = status;
 
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
@@ -366,7 +357,6 @@ export default {
                     }
                 }
             })
-
         }
     }
 
@@ -374,6 +364,14 @@ export default {
 </script>
 
 <style scoped>
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f7fa;
+}
+
 .container {
     max-width: 800px;
     margin: 0 auto;
