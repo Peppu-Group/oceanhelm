@@ -21,7 +21,7 @@
                 <a href="#"><i class="bi bi-ship"></i> Fleet Management</a>
             </li>
             <li>
-                <a ><i class="bi bi-tools"></i> Maintenance</a>
+                <a><i class="bi bi-tools"></i> Maintenance</a>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition Processing</a>
@@ -147,8 +147,8 @@
                     <p>You have an empty fleet, you have not added any vessel yet.</p>
                     <hr>
                     <p class="mb-0">Click on the add vessel button above, to start adding vessels to your fleet</p>
-                    </div>            
                 </div>
+            </div>
             <!-- Vessel Cards -->
             <div class="row">
                 <div class="col-lg-6" v-for="vessel in this.company.vessels">
@@ -174,12 +174,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="action-icon left edit">
-                            <i class="bi bi-pencil"></i>
-                        </div>
                         <div class="action-icon left delete">
-                            <i class="bi bi-trash"></i>
+                            <i class="bi bi-trash" @click.stop="confirmDelete(vessel.registrationNumber)"></i>
                         </div>
+                        <button class="btn btn-primary" @click.stop="markInactive(vessel.registrationNumber)">
+                            Mark Inactive
+                        </button>
                     </div>
                 </div>
             </div>
@@ -228,6 +228,25 @@ export default {
         // get all vessels
         let vessels = JSON.parse(localStorage.getItem('vessel') ?? '[]');
         this.company.vessels.push(...vessels);
+
+        // get all tasks and determine if vessel is undermaintenance.
+
+        vessels = vessels.map(vessel => {
+            const registrationNumber = vessel.registrationNumber;
+            const tasks = JSON.parse(localStorage.getItem(`tasks-${registrationNumber}`) ?? '[]');
+
+            const soonTask = tasks.find(task => task.status === 'Soon');
+
+            if (soonTask) {
+                vessel.status = 'Maintenance';
+            }
+
+            return vessel;
+        });
+
+        // Save updated vessels back to localStorage
+        localStorage.setItem('vessel', JSON.stringify(vessels));
+        this.company.vessels = vessels;
     },
     methods: {
         getMaintenance(id) {
@@ -295,18 +314,18 @@ export default {
 
                     // Here you would typically send this data to your server
                     let status = 'Active'
-                    let newVessel = { name: vesselname, registrationNumber:regno, status };
+                    let newVessel = { name: vesselname, registrationNumber: regno, status };
                     const existing = localStorage.getItem('vessel');
                     this.company.vessels.push(newVessel);
-                    
+
                     if (!existing) {
-                    // If no vessel data in localStorage, create a new array with the vessel
-                    localStorage.setItem('vessel', JSON.stringify([newVessel]));
+                        // If no vessel data in localStorage, create a new array with the vessel
+                        localStorage.setItem('vessel', JSON.stringify([newVessel]));
                     } else {
-                    // If vessel data exists, parse it, push the new vessel, then save it back
-                    const vessels = JSON.parse(existing);
-                    vessels.push(newVessel);
-                    localStorage.setItem('vessel', JSON.stringify(vessels));
+                        // If vessel data exists, parse it, push the new vessel, then save it back
+                        const vessels = JSON.parse(existing);
+                        vessels.push(newVessel);
+                        localStorage.setItem('vessel', JSON.stringify(vessels));
                     }
                     // Show success message
                     Swal.fire({
@@ -320,6 +339,50 @@ export default {
                     });
                 }
             });
+        },
+        confirmDelete(task) {
+            const result = Swal.fire({
+                title: 'Are you sure?',
+                text: "You're trying to delete a vessel, this action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+            });
+
+            if (result.isConfirmed) {
+                this.deleteVessel(task);
+                Swal.fire('Deleted!', 'The task has been deleted.', 'success');
+            }
+        },
+        deleteVessel(registrationNumber) {
+            let vessels = JSON.parse(localStorage.getItem('vessel') ?? '[]');
+            vessels = vessels.filter(vessel => vessel.registrationNumber !== registrationNumber);
+            localStorage.setItem('vessel', JSON.stringify(vessels));
+            this.company.vessels = vessels;
+            localStorage.removeItem(`tasks-${registrationNumber}`);
+        },
+        markInactive(registrationNumber) {
+            // Get vessels from localStorage
+            let vessels = JSON.parse(localStorage.getItem('vessel') ?? '[]');
+
+            // Find and update the vessel
+            const index = vessels.findIndex(v => v.registrationNumber === registrationNumber);
+            if (index !== -1) {
+                if (vessels[index].status !== 'Inactive') {
+                    vessels[index].status = 'Inactive';
+                } else {
+                    vessels[index].status = 'Active'; 
+                    Swal.fire({
+                        title: "Vessel Active!",
+                        text: "Your vessel is now active, if it is under maintenance, the status will change soon",
+                        icon: "success"
+                    });
+                }
+                localStorage.setItem('vessel', JSON.stringify(vessels));
+                this.company.vessels = vessels;
+            }
         },
         comingSoon() {
             Swal.fire({

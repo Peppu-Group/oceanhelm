@@ -468,8 +468,8 @@ export default {
             this.no = vesselInfo.registrationNumber;
             this.name = vesselInfo.name;
 
-            // get all vessels
-            let tasks = JSON.parse(localStorage.getItem('tasks') ?? '[]');
+            // get all tasks
+            let tasks = JSON.parse(localStorage.getItem(`tasks-${id}`) ?? '[]');
             this.tasks.push(...tasks);
             this.currentTask = localStorage.getItem('currentTask');
         } else {
@@ -588,6 +588,7 @@ export default {
         },
 
         saveSchedule() {
+            const id = this.$route.params.id;
             if (!this.validateForm()) {
                 return; // Stop if validation fails
             }
@@ -595,16 +596,16 @@ export default {
             // push the form info into task
             this.tasks.push(this.form);
             // save current task in localstorage.
-            const existing = localStorage.getItem('tasks');
+            const existing = localStorage.getItem(`tasks-${id}`);
 
             if (!existing) {
                 // If no vessel data in localStorage, create a new array with the vessel
-                localStorage.setItem('tasks', JSON.stringify([this.form]));
+                localStorage.setItem(`tasks-${id}`, JSON.stringify([this.form]));
             } else {
                 // If vessel data exists, parse it, push the new vessel, then save it back
                 const tasks = JSON.parse(existing);
                 tasks.push(this.form);
-                localStorage.setItem('tasks', JSON.stringify(tasks));
+                localStorage.setItem(`tasks-${id}`, JSON.stringify(tasks));
             }
             // Then reset
             this.resetForm();
@@ -661,7 +662,7 @@ export default {
                     this.tasks[taskIndex].checklistProgress = [...this.checklists];
                 }
                 // Save and updated tasks array back to localStorage
-                localStorage.setItem('tasks', JSON.stringify(this.tasks));
+                localStorage.setItem(`tasks-${id}`, JSON.stringify(this.tasks));
                 // send to maintenance page
                 this.activeSection = 'inventory';
             }
