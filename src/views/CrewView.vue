@@ -31,14 +31,19 @@
                     <div class="crew-name">{{ member.name }}</div>
                     <div class="crew-role">{{ member.role }}</div>
                     <div class="crew-certifications">
-                        <div v-for="cert in member.certifications" :key="cert" class="certification-tag">{{ cert.name }}
+                        <div v-for="cert in member.certifications" :key="cert" class="certification-tag" :class="{
+                            'text-danger': getExpiryStatus(cert.expiryDate) === 'expired',
+                            'text-warning': getExpiryStatus(cert.expiryDate) === 'expiringSoon',
+                            'text-success': getExpiryStatus(cert.expiryDate) === 'valid'
+                        }" @click="viewCertification()">{{ cert.name }}
                         </div>
+                        <i class="bi bi-patch-plus-fill icon" @click="addCertification()"></i>
                     </div>
                     <div class="crew-availability">
                         <strong>Embarkation Date:</strong> {{ member.nextShift || 'Not Scheduled' }}
                     </div>
                     <div class="crew-availability">
-                        <strong>Expected Days Onboard:</strong> {{ member.nextShift || 'Not Scheduled' }}
+                        <strong>Expected Days Onboard (in days):</strong> {{ member.onBoard || 'Not Scheduled' }}
                     </div>
                     <div class="action-buttons">
                         <div v-if="member.vessel" class="status-available crew-availability vcard">
@@ -51,6 +56,7 @@
                             @click="showAssignForm(member.id, member.nextShift, member.vessel, member.status)">Assign
                             Shift</button>
                     </div>
+                    <i class="bi bi-trash icon" @click="deleteCrew()"></i>
                 </div>
             </div>
 
@@ -88,9 +94,15 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="crew-next-shift">Next Scheduled Shift</label>
-                        <input type="text" id="crew-next-shift" v-model="newCrew.nextShift"
-                            placeholder="e.g., May 18, 08:00-16:00">
+                        <label for="crew-next-shift">Embarkation Date:</label>
+                        <input type="date" id="crew-next-shift" v-model="newCrew.nextShift">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="crew-days-shift">Expected Days Onboard (in days)</label>
+                        <input type="number" id="crew-days-shift" v-model="newCrew.onBoard">
                     </div>
                 </div>
 
@@ -137,86 +149,7 @@ export default {
 
     data() {
         return {
-            crewMembers: [
-                {
-                    id: 1,
-                    name: "John Smith",
-                    role: "Captain",
-                    status: "onduty",
-                    certifications: [
-                        { name: "Navigation", expiryDate: "2025-12-15" },
-                        { name: "Safety", expiryDate: "2026-05-22" },
-                        { name: "Command", expiryDate: "2026-02-10" }
-                    ],
-                    nextShift: "Current - May 16, 08:00-20:00",
-                    vessel: 'MV Melody'
-                },
-                {
-                    id: 2,
-                    name: "Emily Rodriguez",
-                    role: "First Officer",
-                    status: "onduty",
-                    certifications: [
-                        { name: "Navigation", expiryDate: "2025-12-15" },
-                        { name: "Safety", expiryDate: "2026-05-22" },
-                        { name: "Command", expiryDate: "2026-02-10" }
-                    ],
-                    nextShift: "Current - May 16, 08:00-20:00",
-                    vessel: ''
-                },
-                {
-                    id: 3,
-                    name: "David Chen",
-                    role: "Engineer",
-                    status: "available",
-                    certifications: [
-                        { name: "Navigation", expiryDate: "2025-12-15" },
-                        { name: "Safety", expiryDate: "2026-05-22" },
-                        { name: "Command", expiryDate: "2026-02-10" }
-                    ],
-                    nextShift: "May 17, 20:00-08:00",
-                    vessel: ''
-                },
-                {
-                    id: 4,
-                    name: "Sarah Johnson",
-                    role: "Deckhand",
-                    status: "unavailable",
-                    certifications: [
-                        { name: "Navigation", expiryDate: "2025-12-15" },
-                        { name: "Safety", expiryDate: "2026-05-22" },
-                        { name: "Command", expiryDate: "2026-02-10" }
-                    ],
-                    nextShift: "May 20, 08:00-20:00",
-                    vessel: ''
-                },
-                {
-                    id: 5,
-                    name: "Michael Lee",
-                    role: "Mechanic",
-                    status: "available",
-                    certifications: [
-                        { name: "Navigation", expiryDate: "2025-12-15" },
-                        { name: "Safety", expiryDate: "2026-05-22" },
-                        { name: "Command", expiryDate: "2026-02-10" }
-                    ],
-                    nextShift: "May 18, 08:00-20:00",
-                    vessel: 'MV Melody'
-                },
-                {
-                    id: 6,
-                    name: "Olivia Williams",
-                    role: "Cook",
-                    status: "onduty",
-                    certifications: [
-                        { name: "Navigation", expiryDate: "2025-12-15" },
-                        { name: "Safety", expiryDate: "2026-05-22" },
-                        { name: "Command", expiryDate: "2026-02-10" }
-                    ],
-                    nextShift: "Current - May 16, 04:00-16:00",
-                    vessel: ''
-                }
-            ],
+            crewMembers: [],
             availableCertifications: [
                 { id: 1, name: "Navigation" },
                 { id: 2, name: "Safety" },
@@ -244,9 +177,15 @@ export default {
                 certificationExpiry: {},
                 certificationsInput: '',
                 notes: '',
-                vessel: ''
+                vessel: '',
+                onBoard: ''
             }
         };
+    },
+    mounted() {
+        // get all crew
+        let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
+        this.crewMembers.push(...crew);
     },
     computed: {
         filteredCrew() {
@@ -268,8 +207,21 @@ export default {
                 certificationExpiry: {},
                 nextShift: '',
                 certificationsInput: '',
-                notes: ''
+                notes: '',
+                onBoard: ''
             };
+        },
+        getExpiryStatus(dateStr) {
+            if (!dateStr) return 'none'; // No expiry date provided
+
+            const expiry = new Date(dateStr);
+            const today = new Date();
+            const threeMonthsFromNow = new Date();
+            threeMonthsFromNow.setMonth(today.getMonth() + 3);
+
+            if (expiry <= today) return 'expired'; 
+            if (expiry <= threeMonthsFromNow) return 'expiringSoon'; 
+            return 'valid';
         },
         getCertificationName(id) {
             const cert = this.availableCertifications.find(c => c.id === id);
@@ -294,10 +246,14 @@ export default {
                 status: this.newCrew.status,
                 certifications: certifications,
                 nextShift: this.newCrew.nextShift,
-                notes: this.newCrew.notes
+                notes: this.newCrew.notes,
+                onBoard: this.newCrew.onBoard,
             };
 
+            console.log(newMember)
+
             this.crewMembers.push(newMember);
+            localStorage.setItem('crew', this.crewMembers)
             this.resetForm();
             this.showAddForm = false;
         },
@@ -359,7 +315,7 @@ export default {
                         member.nextShift = shift;
                         member.vessel = vessel;
                         member.status = status;
-
+                        localStorage.setItem('crew', this.crewMembers)
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
                     } else {
                         Swal.fire('Error', 'Crew member not found', 'error');
@@ -574,6 +530,25 @@ h1 {
     text-align: center;
     padding: 20px;
     color: #6c757d;
+}
+
+.text-danger {
+    color: red;
+    font-weight: bolder;
+}
+
+.text-warning {
+    color: orange;
+    font-weight: bolder;
+}
+
+.text-success {
+    color: green;
+    font-weight: bolder;
+}
+
+.icon {
+    font-size: 20px;
 }
 
 .section-header {
