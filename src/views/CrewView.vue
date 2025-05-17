@@ -37,7 +37,7 @@
                             'text-success': getExpiryStatus(cert.expiryDate) === 'valid'
                         }" @click="viewCertification(cert.name, cert.expiryDate)">{{ cert.name }}
                         </div>
-                        <i class="bi bi-patch-plus-fill icon" @click="addCertification()"></i>
+                        <i class="bi bi-patch-plus-fill icon" @click="addCertification(member.id)"></i>
                     </div>
                     <div class="crew-availability">
                         <strong>Embarkation Date:</strong> {{ member.nextShift || 'Not Scheduled' }}
@@ -371,7 +371,76 @@ export default {
                 }
             })
 
-        }
+        },
+        async addCertification(crewId) {
+            const crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
+            const member = crew.find(m => m.id === crewId);
+
+            if (!member) {
+                Swal.fire('Error', 'Crew member not found', 'error');
+                return;
+            }
+
+            // Create HTML for certifications form
+            const certCheckboxes = this.availableCertifications.map(cert => `
+                <div>
+                    <input type="checkbox" id="cert-${cert.id}" value="${cert.id}">
+                    <label for="cert-${cert.id}">${cert.name}</label>
+                    <input type="date" id="cert-date-${cert.id}" disabled style="margin-left: 10px;" />
+                </div>
+            `).join('');
+
+            await Swal.fire({
+                title: 'Add Certifications',
+                html: `<div>${certCheckboxes}</div>`,
+                focusConfirm: false,
+                preConfirm: () => {
+                    const selected = [];
+                    const certs = [];
+
+                    this.availableCertifications.forEach(cert => {
+                        const checkbox = document.getElementById(`cert-${cert.id}`);
+                        const dateInput = document.getElementById(`cert-date-${cert.id}`);
+
+                        if (checkbox.checked) {
+                            selected.push(cert.id);
+
+                            const expiryDate = dateInput.value;
+                            if (!expiryDate) {
+                                Swal.showValidationMessage(`Please select expiry date for ${cert.name}`);
+                                return false;
+                            }
+
+                            certs.push({
+                                name: cert.name,
+                                expiryDate: expiryDate
+                            });
+                        }
+                    });
+
+                    return certs;
+                },
+                didOpen: () => {
+                    // Enable date inputs when checkbox is selected
+                    this.availableCertifications.forEach(cert => {
+                        const checkbox = document.getElementById(`cert-${cert.id}`);
+                        const dateInput = document.getElementById(`cert-date-${cert.id}`);
+                        checkbox.addEventListener('change', () => {
+                            dateInput.disabled = !checkbox.checked;
+                        });
+                    });
+                }
+            }).then(result => {
+                if (result.isConfirmed && result.value) {
+                    member.certifications = [...(member.certifications || []), ...result.value];
+
+                    // Save back to localStorage
+                    localStorage.setItem('crew', JSON.stringify(crew));
+
+                    Swal.fire('Success', 'Certifications added successfully', 'success');
+                }
+            });
+        },
     }
 
 }
