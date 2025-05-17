@@ -209,9 +209,7 @@
                         <label for="assigned-to">Assigned To</label>
                         <select id="assigned-to" v-model="form.assignedTo">
                             <option value="">-- Select Personnel --</option>
-                            <option value="John Smith - Engineer">John Smith - Engineer</option>
-                            <option value="Maria Garcia - Chief Engineer">Maria Garcia - Chief Engineer</option>
-                            <option value="David Chen - Technician">David Chen - Technician</option>
+                            {{ getVesselCrew }}
                         </select>
                     </div>
 
@@ -450,6 +448,22 @@ export default {
         },
         getName() {
             return this.currentTask;
+        },
+        getVesselCrew() {
+            // get the route id and match to get vessel name.
+            let id = this.$route.params.id;
+            let vesselInfo = vessels.find(v => v.registrationNumber === id);
+            let vesselName = vesselInfo.name;
+            // use that name to filter the crew.
+            let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
+            let allcrew = crew.filter(
+                member => member.vessel?.trim() === vesselName
+            );
+            const crewOptionsHtml = allcrew.map(v =>
+                `<option value="${v.name} - ${v.role}">${v.name} - ${v.role}</option>`
+            ).join('');
+            // now, return the vessel name
+            return crewOptionsHtml
         },
         completedCount() {
             return this.checklists.filter(item => item.completed);
