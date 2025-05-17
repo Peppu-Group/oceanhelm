@@ -209,7 +209,10 @@
                         <label for="assigned-to">Assigned To</label>
                         <select id="assigned-to" v-model="form.assignedTo">
                             <option value="">-- Select Personnel --</option>
-                            {{ getVesselCrew }}
+                            <option v-for="member in getVesselCrew" :key="member.id"
+                                :value="`${member.name} - ${member.role}`">
+                                {{ member.name }} - {{ member.role }}
+                            </option>
                         </select>
                     </div>
 
@@ -378,6 +381,7 @@ export default {
             searchQuery: '',
             activeFilters: [1, 2], // example filter count
             tasks: [],
+            vesselInfo: [],
             checklists: [
                 { id: 1, text: "Inspect hull for damage or fouling", completed: false },
                 { id: 2, text: "Check propeller and shaft for damage", completed: false },
@@ -450,20 +454,9 @@ export default {
             return this.currentTask;
         },
         getVesselCrew() {
-            // get the route id and match to get vessel name.
-            let id = this.$route.params.id;
-            let vesselInfo = vessels.find(v => v.registrationNumber === id);
-            let vesselName = vesselInfo.name;
-            // use that name to filter the crew.
+            let vesselName = this.vesselInfo.name;
             let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
-            let allcrew = crew.filter(
-                member => member.vessel?.trim() === vesselName
-            );
-            const crewOptionsHtml = allcrew.map(v =>
-                `<option value="${v.name} - ${v.role}">${v.name} - ${v.role}</option>`
-            ).join('');
-            // now, return the vessel name
-            return crewOptionsHtml
+            return crew.filter(member => member.vessel?.trim() === vesselName);
         },
         completedCount() {
             return this.checklists.filter(item => item.completed);
@@ -477,6 +470,7 @@ export default {
         let vessels = JSON.parse(localStorage.getItem('vessel')) || [];
 
         let vesselInfo = vessels.find(v => v.registrationNumber === id);
+        this.vesselInfo = vesselInfo;
 
         if (vesselInfo) {
             this.no = vesselInfo.registrationNumber;

@@ -35,7 +35,7 @@
                             'text-danger': getExpiryStatus(cert.expiryDate) === 'expired',
                             'text-warning': getExpiryStatus(cert.expiryDate) === 'expiringSoon',
                             'text-success': getExpiryStatus(cert.expiryDate) === 'valid'
-                        }" @click="viewCertification()">{{ cert.name }} 
+                        }" @click="viewCertification(cert.name, cert.expiryDate)">{{ cert.name }}
                         </div>
                         <i class="bi bi-patch-plus-fill icon" @click="addCertification()"></i>
                     </div>
@@ -43,7 +43,7 @@
                         <strong>Embarkation Date:</strong> {{ member.nextShift || 'Not Scheduled' }}
                     </div>
                     <div class="crew-availability">
-                        <strong>Expected Days Onboard (in days):</strong> {{ member.onBoard || 'Not Scheduled' }} 
+                        <strong>Expected Days Onboard (in days):</strong> {{ member.onBoard || 'Not Scheduled' }}
                     </div>
                     <div class="action-buttons">
                         <div v-if="member.vessel" class="status-available crew-availability vcard">
@@ -55,7 +55,7 @@
                         <button class="btn btn-primary"
                             @click="showAssignForm(member.id, member.nextShift, member.status)">Assign Shift</button>
                     </div>
-                    <i class="bi bi-trash icon" @click="deleteCrew()"></i>
+                    <i class="bi bi-trash icon" @click="deleteCrew(member.id)"></i>
                 </div>
             </div>
 
@@ -216,16 +216,51 @@ export default {
                 onBoard: ''
             };
         },
+        viewCertification(certificateName, certificateDate) {
+            Swal.fire({
+                html: `
+                    <div class="certificate-header">
+                        <svg class="certificate-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15C15.866 15 19 11.866 19 8C19 4.13401 15.866 1 12 1C8.13401 1 5 4.13401 5 8C5 11.866 8.13401 15 12 15Z" fill="white"/>
+                            <path d="M12 15V23L8 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 15V23L16 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 12C13.6569 12 15 10.6569 15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12Z" stroke="white" stroke-width="2"/>
+                        </svg>
+                        <h2 class="certificate-title">${certificateName} Certification</h2>
+                    </div>
+                    <div class="certificate-body">
+                        <div class="certificate-name">Certification Name: ${certificateName}</div>
+                        <div class="certificate-border"></div>
+                        <div class="certificate-date">Expiration Date: ${certificateDate}</div>
+                        <div class="certificate-footer">We don't validate certifications, download to ensure everything is in order.</div>
+                    </div>
+                `,
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Download',
+            });
+        },
+        deleteCrew(crewId) {
+            let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
+            crew = crew.filter(member => member.id !== crewId);
+            localStorage.setItem('crew', JSON.stringify(crew));
+            this.crewMembers = crew;
+            Swal.fire({
+                icon: 'success',
+                title: 'Deleted',
+                text: 'Crew member has been removed.'
+            });
+        },
         getExpiryStatus(dateStr) {
             if (!dateStr) return 'none'; // No expiry date provided
 
             const expiry = new Date(dateStr);
             const today = new Date();
-            const threeMonthsFromNow = new Date();
-            threeMonthsFromNow.setMonth(today.getMonth() + 3);
+            const oneMonthFromNow = new Date();
+            oneMonthFromNow.setMonth(today.getMonth() + 1);
 
-            if (expiry <= today) return 'expired'; 
-            if (expiry <= threeMonthsFromNow) return 'expiringSoon'; 
+            if (expiry <= today) return 'expired';
+            if (expiry <= oneMonthFromNow) return 'expiringSoon';
             return 'valid';
         },
         getCertificationName(id) {
@@ -257,7 +292,12 @@ export default {
             };
 
             this.crewMembers.push(newMember);
-            localStorage.setItem('crew', this.crewMembers)
+            // get crew
+            let crew = localStorage.getItem('crew') || '[]';
+            let parsedCrew = JSON.parse(crew);
+
+            parsedCrew.push(newMember)
+            localStorage.setItem('crew', JSON.stringify(parsedCrew))
             this.resetForm();
             this.showAddForm = false;
         },

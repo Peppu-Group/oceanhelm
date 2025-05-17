@@ -102,3 +102,43 @@ Swal section
   text-align: left;
   display: none;
 }
+
+/**************************/
+/**********SWAL CERTIFICATION***************/
+
+.certificate-header {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.certificate-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
+}
+
+.certificate-body {
+  padding: 30px;
+  text-align: center;
+}
+
+.certificate-title {
+  color: white;
+  font-size: 24px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.certificate-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.certificate-date {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
