@@ -53,7 +53,7 @@
                             Vessel: Unassigned
                         </div>
                         <button class="btn btn-primary"
-                            @click="showAssignForm(member.id, member.nextShift, member.vessel, member.status)">Assign
+                            @click="showAssignForm(member.id, member.nextShift, member.vessel, member.status, member.onBoard)">Assign
                             Shift</button>
                     </div>
                     <i class="bi bi-trash icon" @click="deleteCrew(member.id)"></i>
@@ -230,8 +230,8 @@ export default {
             const oneMonthFromNow = new Date();
             oneMonthFromNow.setMonth(today.getMonth() + 1);
 
-            if (expiry <= today) return 'expired'; 
-            if (expiry <= oneMonthFromNow) return 'expiringSoon'; 
+            if (expiry <= today) return 'expired';
+            if (expiry <= oneMonthFromNow) return 'expiringSoon';
             return 'valid';
         },
         getCertificationName(id) {
@@ -298,7 +298,7 @@ export default {
         cancelForm() {
             this.showAddForm = false;
         },
-        showAssignForm(id, prevshift, prevvessel, prevstatus) {
+        showAssignForm(id, prevshift, prevvessel, prevstatus, prevtimeline) {
             const vessels = JSON.parse(localStorage.getItem('vessel') ?? '[]');
 
             const vesselOptionsHtml = vessels.map(v =>
@@ -310,8 +310,11 @@ export default {
                     `
                     <p>(Assign crew to vessel and shift)</p>
                     <div class="custom-swal-content">
-                        <label class="custom-input-label" for="swal-shift">Scheduled Shift *</label>
-                        <input id="swal-shift" class="custom-input" placeholder="e.g., May 18, 08:00-16:00">
+                        <label class="custom-input-label" for="swal-shift">Embarkation Date:</label>
+                        <input id="swal-shift" class="custom-input" type="date">
+
+                        <label class="custom-input-label" for="swal-timeline">Expected Days On Board (in days):</label>
+                        <input id="swal-timeline" class="custom-input" type="number">
                         
                         <label class="custom-input-label">Vessel Name *</label>
                         <select id="swal-vessel" class="custom-input">
@@ -337,23 +340,30 @@ export default {
                     const shift = document.getElementById('swal-shift').value || prevshift;
                     const status = document.getElementById('swal-status').value || prevstatus;
                     const vessel = document.getElementById('swal-vessel').value || prevvessel;
+                    const onBoard = document.getElementById('swal-timeline').value || prevtimeline;
 
                     if (vessel === '') {
                         Swal.showValidationMessage('Please select a valid vessel');
                         return false;
                     }
 
-                    return { shift, vessel, status };
+                    return { shift, vessel, status, onBoard };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const { shift, vessel, status } = result.value;
-                    const member = this.crewMembers.find(m => m.id === id);
-                    if (member) {
-                        member.nextShift = shift;
-                        member.vessel = vessel;
-                        member.status = status;
-                        localStorage.setItem('crew', this.crewMembers)
+                    const { shift, vessel, status, onBoard } = result.value;
+                    let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
+
+                    const index = crew.findIndex(member => member.id === id);
+
+                    if (index !== -1) {
+                        crew[index].nextShift = shift;
+                        crew[index].vessel = vessel;
+                        crew[index].status = status;
+                        crew[index].onBoard = onBoard;
+
+                        localStorage.setItem('crew', JSON.stringify(crew));
+                        this.crewMembers = crew; // only if you're displaying the full list
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
                     } else {
                         Swal.fire('Error', 'Crew member not found', 'error');

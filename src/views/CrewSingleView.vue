@@ -53,7 +53,8 @@
                             Vessel: Unassigned
                         </div>
                         <button class="btn btn-primary"
-                            @click="showAssignForm(member.id, member.nextShift, member.status)">Assign Shift</button>
+                            @click="showAssignForm(member.id, member.nextShift, member.status, member.onBoard)">Assign
+                            Shift</button>
                     </div>
                     <i class="bi bi-trash icon" @click="deleteCrew(member.id)"></i>
                 </div>
@@ -312,9 +313,12 @@ export default {
                     `
                     <p>(Assign crew to vessel and shift)</p>
                     <div class="custom-swal-content">
-                        <label class="custom-input-label" for="swal-shift">Scheduled Shift *</label>
-                        <input id="swal-shift" class="custom-input" placeholder="e.g., May 18, 08:00-16:00">
-                        
+                        <label class="custom-input-label" for="swal-shift">Embarkation Date:</label>
+                        <input id="swal-shift" class="custom-input" type="date">
+
+                        <label class="custom-input-label" for="swal-timeline">Expected Days On Board (in days):</label>
+                        <input id="swal-timeline" class="custom-input" type="number">
+
                         <label class="custom-input-label">Status</label>
                         <select id="swal-status" class="custom-input">
                         <option value="">Select status ...</option>
@@ -332,22 +336,44 @@ export default {
                 preConfirm: () => {
                     const shift = document.getElementById('swal-shift').value || prevshift;
                     const status = document.getElementById('swal-status').value || prevstatus;
+                    const onBoard = document.getElementById('swal-timeline').value || prevtimeline;
 
-                    return { shift, status };
+                    return { shift, status, onBoard };
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    const { shift, status } = result.value;
-                    const member = this.crewMembers.find(m => m.id === id);
-                    if (member) {
-                        member.nextShift = shift;
-                        member.status = status;
-                        localStorage.setItem('crew', this.crewMembers)
+                    const { shift, status, onBoard } = result.value;
+
+                    let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
+
+                    const index = crew.findIndex(member => member.id === id);
+
+                    if (index !== -1) {
+                        crew[index] = {
+                            ...crew[index],
+                            nextShift: shift,
+                            status: status,
+                            onBoard: onBoard
+                        };
+
+                        localStorage.setItem('crew', JSON.stringify(crew));
+
+                        const visibleIndex = this.crewMembers.findIndex(m => m.id === id);
+                        if (visibleIndex !== -1) {
+                            this.crewMembers[visibleIndex] = {
+                                ...this.crewMembers[visibleIndex],
+                                nextShift: shift,
+                                status: status,
+                                onBoard: onBoard
+                            };
+                        }
+
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
                     } else {
                         Swal.fire('Error', 'Crew member not found', 'error');
                     }
                 }
+
             })
         }
     }
