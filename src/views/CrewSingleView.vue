@@ -1,5 +1,15 @@
 <template>
-    <div class="container">
+    <!-- Wave background -->
+    <div class="wave-bg"></div>
+
+    <!-- Sidebar Toggle Button -->
+    <button class="toggle-btn" id="sidebarToggle">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <Sidebar/>
+    <div  id="content" class="container">
         <h1>MarineTech Crew Management</h1>
 
         <div class="crew-section">
@@ -144,9 +154,11 @@
 </template>
    
 <script>
+import Sidebar from '../components/Sidebar.vue';
+
 export default {
     name: 'CrewSingleView',
-
+    components: { Sidebar },
     data() {
         return {
             crewMembers: [],
@@ -460,7 +472,6 @@ body {
 }
 
 .container {
-    max-width: 800px;
     margin: 0 auto;
     background-color: white;
     padding: 20px;
@@ -690,5 +701,10 @@ h1 {
 .vcard {
     border-radius: 6px;
     padding: 5px;
+}
+
+#content.active {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
 }
 </style>

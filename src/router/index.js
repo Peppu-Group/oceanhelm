@@ -4,6 +4,8 @@ import MaintenanceView from '../views/MaintenanceView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import CrewView from '../views/CrewView.vue'
 import CrewSingleView from '../views/CrewSingleView.vue'
+import MaintenanceRoute from '../views/MaintenanceRoute.vue'
+import CrewRoute from '../views/CrewRoute.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,6 +24,16 @@ const router = createRouter({
       path: '/app/dashboard',
       name: 'dashboard',
       component: DashboardView
+    },
+    {
+      path: '/app/dashboard/maintenance',
+      name: 'maintenanceroute',
+      component: MaintenanceRoute
+    },
+    {
+      path: '/app/dashboard/crew',
+      name: 'crewroute',
+      component: CrewRoute
     },
     {
       path: '/app/crew',

@@ -6,12 +6,12 @@
 
         <nav>
             <button v-for="section in sections" :key="section.id" class="nav-btn"
-                :class="{ active: activeSection === section.id }" @click="activeSection = section.id">
+                :class="{ active: activeSection === section.id }" @click="handleSectionClick(section)">
                 {{ section.icon }} {{ section.name }}
             </button>
         </nav>
-
         <div class="content">
+            <!-- Dashboard Direct -->
             <!-- Vessel Information Form -->
             <section :class="['form-section', { active: activeSection === 'vessel' }]" v-show="activeSection === 'vessel'">
                 <h2>⚓ Vessel Information</h2>
@@ -376,6 +376,11 @@ export default {
                 { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
                 { id: 'schedule', name: 'Schedule', icon: '📅' },
                 { id: 'inventory', name: 'All Maintenance', icon: '♻️' },
+                {
+                    id: 'dashboard', name: 'Dashboard', icon: '☰', onClick: () => {
+                        this.$router.push({ path: `/app/dashboard` })
+                    }
+                }
             ],
             activeFilter: 'all',
             searchQuery: '',
@@ -538,6 +543,13 @@ export default {
             }
 
             return true;
+        },
+
+        handleSectionClick(section) {
+            this.activeSection = section.id;
+            if (typeof section.onClick === 'function') {
+                section.onClick();
+            }
         },
 
         calculateNextDue() {
