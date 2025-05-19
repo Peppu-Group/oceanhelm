@@ -24,11 +24,11 @@
                 </div>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition
-                    Processing</a>
+                <a href="/app/inventory"><i class="bi bi-clipboard-data"></i> Inventory Management</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="bi bi-clipboard-data"></i> Inventory Management</a>
+                <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition
+                    Processing</a>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-geo-alt"></i> Cross-Vessel Data Sharing</a>
