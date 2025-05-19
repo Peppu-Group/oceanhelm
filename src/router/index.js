@@ -6,6 +6,7 @@ import CrewView from '../views/CrewView.vue'
 import CrewSingleView from '../views/CrewSingleView.vue'
 import MaintenanceRoute from '../views/MaintenanceRoute.vue'
 import CrewRoute from '../views/CrewRoute.vue'
+import InventoryView from '../views/InventoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +40,11 @@ const router = createRouter({
       path: '/app/crew',
       name: 'crew',
       component: CrewView
+    },
+    {
+      path: '/app/inventory',
+      name: 'inventory',
+      component: InventoryView
     },
     {
       path: '/app/crew/:id',

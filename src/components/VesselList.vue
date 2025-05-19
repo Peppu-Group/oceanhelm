@@ -70,7 +70,7 @@
                     <div class="vessel-card" @click="handleNavigation(vessel.registrationNumber, vessel.name)">
                         <div class="card-body d-flex align-items-center">
                             <div class="vessel-icon left">
-                                <i class="bi bi-plugin"></i>
+                                <i class="fas fa-ship"></i>
                             </div>
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
