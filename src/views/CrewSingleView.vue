@@ -8,8 +8,8 @@
     </button>
 
     <!-- Sidebar -->
-    <Sidebar/>
-    <div  id="content" class="container">
+    <Sidebar />
+    <div id="content" class="container">
         <h1>MarineTech Crew Management</h1>
 
         <div class="crew-section">
@@ -161,7 +161,6 @@ export default {
     components: { Sidebar },
     data() {
         return {
-            crewMembers: [],
             availableCertifications: [
                 { id: 1, name: "Navigation" },
                 { id: 2, name: "Safety" },
@@ -195,6 +194,14 @@ export default {
         };
     },
     computed: {
+        crew() {
+            let regno = this.$route.params.id;
+            return this.$store.getters['crew/getCrewByVessel'](regno)
+        },
+        crewMembers() {
+            return this.crew
+
+        },
         filteredCrew() {
             return this.crewMembers.filter(member => {
                 const matchesSearch = member.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -202,19 +209,9 @@ export default {
                 const matchesStatus = this.filterStatus === 'all' || member.status === this.filterStatus;
                 return matchesSearch && matchesStatus;
             });
-        }
+        },
     },
-    mounted() {
-        let vesselName = decodeURIComponent(this.$route.params.id).trim();
 
-        // get all crew
-        let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
-        this.crewMembers.push(...crew);
-
-        this.crewMembers = this.crewMembers.filter(
-            member => member.vessel?.trim() === vesselName
-        );
-    },
     methods: {
         resetForm() {
             this.newCrew = {
@@ -254,15 +251,20 @@ export default {
             });
         },
         deleteCrew(crewId) {
-            let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
-            crew = crew.filter(member => member.id !== crewId);
-            localStorage.setItem('crew', JSON.stringify(crew));
-            this.crewMembers = crew;
             Swal.fire({
-                icon: 'success',
-                title: 'Deleted',
-                text: 'Crew member has been removed.'
-            });
+                title: 'Are you sure?',
+                text: "You're trying to delete a crew, this action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.$store.dispatch('crew/deleteCrew', crewId);
+                    Swal.fire('Deleted!', 'The task has been deleted.', 'success');
+                }
+            })
         },
         getExpiryStatus(dateStr) {
             if (!dateStr) return 'none'; // No expiry date provided
@@ -281,8 +283,7 @@ export default {
             return cert ? cert.name : '';
         },
         async addCertification(crewId) {
-            const crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
-            const member = crew.find(m => m.id === crewId);
+                const member = this.crew.find(m => m.id === crewId);
 
             if (!member) {
                 Swal.fire('Error', 'Crew member not found', 'error');
@@ -343,7 +344,7 @@ export default {
                     member.certifications = [...(member.certifications || []), ...result.value];
 
                     // Save back to localStorage
-                    localStorage.setItem('crew', JSON.stringify(crew));
+                    localStorage.setItem('crew', JSON.stringify(this.crew));
 
                     Swal.fire('Success', 'Certifications added successfully', 'success');
                 }
@@ -373,20 +374,14 @@ export default {
                 onBoard: this.newCrew.onBoard
             };
 
-            this.crewMembers.push(newMember);
-            // get crew
-            let crew = localStorage.getItem('crew') || '[]';
-            let parsedCrew = JSON.parse(crew);
-
-            parsedCrew.push(newMember)
-            localStorage.setItem('crew', JSON.stringify(parsedCrew))
+            this.$store.dispatch('crew/addCrew', newMember);
             this.resetForm();
             this.showAddForm = false;
         },
         cancelForm() {
             this.showAddForm = false;
         },
-        showAssignForm(id, prevshift, prevstatus) {
+        showAssignForm(id, prevshift, prevstatus, prevtimeline) {
 
             Swal.fire({
                 title: 'Assign Crew Shift',
@@ -425,36 +420,18 @@ export default {
                 if (result.isConfirmed) {
                     const { shift, status, onBoard } = result.value;
 
-                    let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
-
-                    const index = crew.findIndex(member => member.id === id);
-
-                    if (index !== -1) {
-                        crew[index] = {
-                            ...crew[index],
-                            nextShift: shift,
-                            status: status,
-                            onBoard: onBoard
-                        };
-
-                        localStorage.setItem('crew', JSON.stringify(crew));
-
-                        const visibleIndex = this.crewMembers.findIndex(m => m.id === id);
-                        if (visibleIndex !== -1) {
-                            this.crewMembers[visibleIndex] = {
-                                ...this.crewMembers[visibleIndex],
-                                nextShift: shift,
-                                status: status,
-                                onBoard: onBoard
-                            };
-                        }
-
+                    // Dispatch to Vuex to update the crew member
+                    this.$store.dispatch('crew/updateCrewMember', {
+                        id,
+                        nextShift: shift,
+                        status: status,
+                        onBoard: onBoard
+                    }).then(() => {
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
-                    } else {
+                    }).catch(() => {
                         Swal.fire('Error', 'Crew member not found', 'error');
-                    }
+                    });
                 }
-
             })
         }
     }
@@ -704,7 +681,7 @@ h1 {
 }
 
 #content.active {
-  margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
 }
 </style>

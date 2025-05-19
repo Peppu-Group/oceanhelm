@@ -62,9 +62,8 @@
                 d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm-2 20h-4v-1h4v1zm3.25-3H6.75V4h10.5v14z" />
             </svg>
           </div>
-          <h3>Cross-Vessel Data Sharing</h3>
-          <p>Seamlessly share information between vessels and shore offices. Synchronize data automatically when
-            connectivity is available.</p>
+          <h3>Crew Management</h3>
+          <p>Easily manage crew records and assignments across fleets. Automatically sync updates between vessels and shore when connectivity is restored.</p>
         </div>
       </div>
     </div>

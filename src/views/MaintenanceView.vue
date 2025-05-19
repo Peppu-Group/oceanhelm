@@ -496,7 +496,6 @@ export default {
         showMaintenance(taskComponent) {
             const tasks = this.tasks;
             const task = tasks.find(t => t.component === taskComponent);
-            console.log(this.checklists)
 
             if (task && task.checklistProgress) {
                 this.checklists = [...task.checklistProgress];
@@ -668,13 +667,13 @@ export default {
         },
 
         resetTasks() {
+            let id = this.$route.params.id;
             // get current task id from localstorage.
             let currentTask = localStorage.getItem('currentTask');
             let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
 
             if (taskIndex !== -1) {
                 const allCompleted = this.checklists.every(item => item.completed);
-                console.log(allCompleted);
                 if (allCompleted) {
                     this.tasks[taskIndex].status = 'Completed';
                 } else {

@@ -20,8 +20,9 @@ export default {
         }
       },
       DELETE_VESSEL(state, id) {
-        state.vessels = state.vessels.filter(v => v.id !== id);
+        state.vessels = state.vessels.filter(v => v.registrationNumber !== id);
         localStorage.setItem('vessel', JSON.stringify(state.vessels));
+        console.log('abc')
       }
     },
     actions: {
@@ -36,6 +37,25 @@ export default {
       },
       deleteVessel({ commit }, id) {
         commit('DELETE_VESSEL', id);
+      },
+      markInactive({ state, commit }, registrationNumber) {
+        const vessels = [...state.vessels];
+        const index = vessels.findIndex(v => v.registrationNumber === registrationNumber);
+    
+        if (index !== -1) {
+          if (vessels[index].status !== 'Inactive') {
+            vessels[index].status = 'Inactive';
+          } else {
+            vessels[index].status = 'Active';
+            Swal.fire({
+              title: "Vessel Active!",
+              text: "Your vessel is now active, if it is under maintenance, the status will change soon",
+              icon: "success"
+            });
+          }
+    
+          commit('SET_VESSELS', vessels);
+        }
       }
     },
     getters: {

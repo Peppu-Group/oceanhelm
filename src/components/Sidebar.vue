@@ -31,9 +31,6 @@
                     Processing</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="bi bi-geo-alt"></i> Cross-Vessel Data Sharing</a>
-            </li>
-            <li>
                 <a @click="editInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>
@@ -100,8 +97,8 @@ export default {
             return vessel;
         });
         // Save updated vessels back to localStorage
-        localStorage.setItem('vessel', JSON.stringify(vessels));
-        this.company.vessels = vessels;
+        // localStorage.setItem('vessel', JSON.stringify(vessels));
+        // this.company.vessels = vessels;
     },
     methods: {
         getMaintenance() {
