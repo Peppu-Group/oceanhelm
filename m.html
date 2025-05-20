@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marine Operations - Requisition Processing</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <title>MarineOps - Login</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,852 +13,357 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f8fafc;
-            color: #334155;
-        }
-
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .tabs {
-            display: flex;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 1rem 1.5rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            padding: 20px;
         }
 
-        .tab:hover {
-            background-color: #f1f5f9;
-        }
-
-        .tab.active {
-            background-color: #3b82f6;
-            color: white;
-        }
-
-        .content-panel {
+        .auth-container {
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .panel-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: between;
-            align-items: center;
-        }
-
-        .panel-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .panel-content {
-            padding: 1.5rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid;
-            transition: transform 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stat-card.pending { border-left-color: #f59e0b; }
-        .stat-card.approved { border-left-color: #10b981; }
-        .stat-card.urgent { border-left-color: #ef4444; }
-        .stat-card.total { border-left-color: #3b82f6; }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: #64748b;
-            font-size: 0.875rem;
-        }
-
-        .controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 300px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
             position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .search-icon {
+        .auth-container::before {
+            content: '';
             position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 1rem;
-            height: 1rem;
-            color: #9ca3af;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0c4a6e, #0369a1, #0284c7);
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
         }
 
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0c4a6e;
+            margin-bottom: 8px;
         }
 
-        .btn-primary:hover {
-            background-color: #2563eb;
+        .tagline {
+            color: #64748b;
+            font-size: 14px;
         }
 
-        .btn-secondary {
-            background-color: #f1f5f9;
-            color: #475569;
-            border: 1px solid #d1d5db;
+        .form-header {
+            text-align: center;
+            margin-bottom: 32px;
         }
 
-        .btn-secondary:hover {
-            background-color: #e2e8f0;
-        }
-
-        .requisitions-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .requisitions-table th,
-        .requisitions-table td {
-            text-align: left;
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .requisitions-table th {
-            background-color: #f8fafc;
+        .form-title {
+            font-size: 24px;
             font-weight: 600;
-            color: #475569;
+            color: #1e293b;
+            margin-bottom: 8px;
         }
 
-        .requisitions-table tr:hover {
-            background-color: #f8fafc;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-approved {
-            background-color: #d1fae5;
-            color: #059669;
-        }
-
-        .status-rejected {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-reviewing {
-            background-color: #dbeafe;
-            color: #2563eb;
-        }
-
-        .priority-badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .priority-high {
-            background-color: #fee2e2;
-            color: #dc2626;
-        }
-
-        .priority-medium {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .priority-low {
-            background-color: #d1fae5;
-            color: #059669;
+        .form-subtitle {
+            color: #64748b;
+            font-size: 14px;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .items-table th,
-        .items-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .items-table th {
-            background-color: #f8fafc;
+            margin-bottom: 8px;
             font-weight: 600;
+            color: #334155;
+            font-size: 14px;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
         }
 
-        .action-btn {
-            padding: 0.5rem;
-            border: none;
-            border-radius: 6px;
+        .form-input:focus {
+            outline: none;
+            border-color: #0369a1;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.1);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 24px;
+        }
+
+        .forgot-password a {
+            color: #0369a1;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .action-btn:hover {
-            transform: scale(1.05);
+        .forgot-password a:hover {
+            text-decoration: underline;
         }
 
-        .action-btn.approve {
-            background-color: #10b981;
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0c4a6e, #0369a1);
             color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
         }
 
-        .action-btn.reject {
-            background-color: #ef4444;
-            color: white;
+        .auth-btn:hover {
+            background: linear-gradient(135deg, #164e63, #075985);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(3, 105, 161, 0.3);
         }
 
-        .action-btn.edit {
-            background-color: #3b82f6;
-            color: white;
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .modal-overlay {
-            position: fixed;
-            top: 0;
+        .divider {
+            text-align: center;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
             left: 0;
             right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider-text {
+            background: white;
+            padding: 0 16px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 12px;
-            max-width: 800px;
-            width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .modal-content {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-
-        .detail-section {
-            margin-bottom: 2rem;
-        }
-
-        .detail-section h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: #374151;
-        }
-
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .detail-label {
-            font-size: 0.75rem;
+            gap: 8px;
             font-weight: 500;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.25rem;
+            font-size: 14px;
         }
 
-        .detail-value {
-            font-weight: 500;
-            color: #111827;
+        .social-btn:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .empty-state {
+        .google-btn:hover {
+            background: #fef7f0;
+            border-color: #ea580c;
+        }
+
+        .microsoft-btn:hover {
+            background: #f0f9ff;
+            border-color: #0284c7;
+        }
+
+        .google-icon, .microsoft-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .toggle-link {
             text-align: center;
-            padding: 3rem;
-            color: #6b7280;
+            margin-top: 32px;
+            color: #64748b;
+            font-size: 14px;
         }
 
-        .empty-state-icon {
-            width: 4rem;
-            height: 4rem;
-            margin: 0 auto 1rem;
-            color: #d1d5db;
-        }
-
-        .vessel-info {
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-
-        .vessel-info h4 {
+        .toggle-link a {
+            color: #0369a1;
+            text-decoration: none;
             font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .controls {
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .success-message {
+            color: #16a34a;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .form-enter-active, .form-leave-active {
+            transition: all 0.3s ease;
+        }
+
+        .form-enter-from, .form-leave-to {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 24px;
+            }
+            
+            .social-login {
                 flex-direction: column;
             }
-
-            .search-box {
-                min-width: auto;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .requisitions-table,
-            .items-table {
-                font-size: 0.875rem;
-            }
-
-            .requisitions-table th,
-            .requisitions-table td,
-            .items-table th,
-            .items-table td {
-                padding: 0.5rem;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
+            
+            .logo {
+                font-size: 28px;
             }
         }
     </style>
 </head>
 <body>
-    <div id="app" class="app-container">
-        <header class="header">
-            <h1>Marine Operations - Requisition Processing</h1>
-            <p>Manage vessel supply requests, approvals, and procurement tracking</p>
-        </header>
-
-        <nav class="tabs">
-            <button 
-                class="tab" 
-                :class="{ active: activeTab === 'dashboard' }"
-                @click="activeTab = 'dashboard'"
-            >
-                <i data-lucide="bar-chart-3"></i>
-                Dashboard
-            </button>
-            <button 
-                class="tab" 
-                :class="{ active: activeTab === 'requisitions' }"
-                @click="activeTab = 'requisitions'"
-            >
-                <i data-lucide="file-text"></i>
-                All Requisitions
-            </button>
-            <button 
-                class="tab" 
-                :class="{ active: activeTab === 'create' }"
-                @click="activeTab = 'create'"
-            >
-                <i data-lucide="plus"></i>
-                Create New
-            </button>
-            <button 
-                class="tab" 
-                :class="{ active: activeTab === 'approvals' }"
-                @click="activeTab = 'approvals'"
-            >
-                <i data-lucide="check-circle"></i>
-                Pending Approvals
-            </button>
-        </nav>
-
-        <!-- Dashboard Tab -->
-        <div v-if="activeTab === 'dashboard'" class="content-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">
-                    <i data-lucide="bar-chart-3"></i>
-                    Dashboard Overview
-                </h2>
+    <div id="app">
+        <div class="auth-container">
+            <div class="logo-section">
+                <div class="logo">MarineOps</div>
+                <div class="tagline">Maritime Operations Management</div>
             </div>
-            
-            <div class="panel-content">
-                <div class="stats-grid">
-                    <div class="stat-card pending">
-                        <div class="stat-value">{{ stats.pending }}</div>
-                        <div class="stat-label">Pending Requisitions</div>
-                    </div>
-                    <div class="stat-card approved">
-                        <div class="stat-value">{{ stats.approved }}</div>
-                        <div class="stat-label">Approved This Month</div>
-                    </div>
-                    <div class="stat-card urgent">
-                        <div class="stat-value">{{ stats.urgent }}</div>
-                        <div class="stat-label">Urgent Priority</div>
-                    </div>
-                    <div class="stat-card total">
-                        <div class="stat-value">${{ formatCurrency(stats.totalValue) }}</div>
-                        <div class="stat-label">Total Requisition Value</div>
-                    </div>
-                </div>
 
-                <div class="detail-section">
-                    <h3>Recent Activity</h3>
-                    <div class="items-table">
-                        <table style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Requisition ID</th>
-                                    <th>Vessel</th>
-                                    <th>Requested By</th>
-                                    <th>Priority</th>
-                                    <th>Status</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="req in recentActivity" :key="req.id">
-                                    <td>{{ req.id }}</td>
-                                    <td>{{ req.vesselName }}</td>
-                                    <td>{{ req.department }}</td>
-                                    <td>{{ req.requestedBy }}</td>
-                                    <td>
-                                        <span :class="`priority-badge priority-${req.priority.toLowerCase()}`">
-                                            {{ req.priority }}
-                                        </span>
-                                    </td>
-                                    <td>${{ formatCurrency(req.totalAmount) }}</td>
-                                    <td>{{ getDaysPending(req.dateRequested) }} days</td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button 
-                                                class="action-btn approve" 
-                                                @click="approveRequisition(req)"
-                                                title="Approve"
-                                            >
-                                                <i data-lucide="check"></i>
-                                            </button>
-                                            <button 
-                                                class="action-btn reject" 
-                                                @click="rejectRequisition(req)"
-                                                title="Reject"
-                                            >
-                                                <i data-lucide="x"></i>
-                                            </button>
-                                            <button 
-                                                class="action-btn edit" 
-                                                @click="viewRequisition(req)"
-                                                title="View Details"
-                                            >
-                                                <i data-lucide="eye"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div v-else class="empty-state">
-                    <i data-lucide="check-circle" class="empty-state-icon"></i>
-                    <h3>No pending approvals</h3>
-                    <p>All requisitions have been processed</p>
+            <div class="form-header">
+                <div class="form-title">{{ isSignUp ? 'Create Account' : 'Welcome Back' }}</div>
+                <div class="form-subtitle">
+                    {{ isSignUp ? 'Join MarineOps to get started' : 'Sign in to your account' }}
                 </div>
             </div>
-        </div>
 
-        <!-- Requisition Detail Modal -->
-        <div v-if="showDetailModal" class="modal-overlay" @click="closeDetailModal">
-            <div class="modal" @click.stop>
-                <div class="modal-header">
-                    <h3 class="modal-title">Requisition Details - {{ selectedRequisition.id }}</h3>
-                    <button 
-                        class="action-btn" 
-                        @click="closeDetailModal"
-                        style="background: #f3f4f6; color: #6b7280;"
-                    >
-                        <i data-lucide="x"></i>
-                    </button>
-                </div>
-                
-                <div class="modal-content">
-                    <div class="detail-section">
-                        <h3>General Information</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Requisition ID</span>
-                                <span class="detail-value">{{ selectedRequisition.id }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Status</span>
-                                <span :class="`status-badge status-${selectedRequisition.status?.toLowerCase().replace(' ', '-')}`">
-                                    {{ selectedRequisition.status }}
-                                </span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Priority</span>
-                                <span :class="`priority-badge priority-${selectedRequisition.priority?.toLowerCase()}`">
-                                    {{ selectedRequisition.priority }}
-                                </span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Date Requested</span>
-                                <span class="detail-value">{{ formatDate(selectedRequisition.dateRequested) }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detail-section">
-                        <h3>Vessel & Requesting Details</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label">Vessel Name</span>
-                                <span class="detail-value">{{ selectedRequisition.vesselName }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Vessel ID</span>
-                                <span class="detail-value">{{ selectedRequisition.vesselId }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Department</span>
-                                <span class="detail-value">{{ selectedRequisition.department }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Requested By</span>
-                                <span class="detail-value">{{ selectedRequisition.requestedBy }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Current Port</span>
-                                <span class="detail-value">{{ selectedRequisition.currentPort || 'Not specified' }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label">Required Delivery Date</span>
-                                <span class="detail-value">{{ formatDate(selectedRequisition.requiredDate) }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detail-section" v-if="selectedRequisition.justification">
-                        <h3>Justification</h3>
-                        <p>{{ selectedRequisition.justification }}</p>
-                    </div>
-
-                    <div class="detail-section">
-                        <h3>Requisition Items</h3>
-                        <div class="items-table">
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Description</th>
-                                        <th>Part Number</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Total Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="item in selectedRequisition.items" :key="item.id">
-                                        <td>{{ item.description }}</td>
-                                        <td>{{ item.partNumber || '-' }}</td>
-                                        <td>{{ item.quantity }}</td>
-                                        <td>${{ formatCurrency(item.unitPrice) }}</td>
-                                        <td>${{ formatCurrency(item.quantity * item.unitPrice) }}</td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4" style="text-align: right; font-weight: 600;">Total:</td>
-                                        <td style="font-weight: 600;">${{ formatCurrency(selectedRequisition.totalAmount) }}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="detail-section" v-if="selectedRequisition.approvalHistory">
-                        <h3>Approval History</h3>
-                        <div class="items-table">
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Action</th>
-                                        <th>By</th>
-                                        <th>Date</th>
-                                        <th>Comments</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="approval in selectedRequisition.approvalHistory" :key="approval.id">
-                                        <td>
-                                            <span :class="`status-badge status-${approval.action.toLowerCase()}`">
-                                                {{ approval.action }}
-                                            </span>
-                                        </td>
-                                        <td>{{ approval.by }}</td>
-                                        <td>{{ formatDate(approval.date) }}</td>
-                                        <td>{{ approval.comments || '-' }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @click="closeDetailModal">
-                        <i data-lucide="x"></i>
-                        Close
-                    </button>
-                    <button 
-                        v-if="selectedRequisition.status === 'Pending Approval'" 
-                        class="btn btn-primary"
-                        style="background-color: #ef4444;"
-                        @click="rejectRequisition(selectedRequisition)"
-                    >
-                        <i data-lucide="x"></i>
-                        Reject
-                    </button>
-                    <button 
-                        v-if="selectedRequisition.status === 'Pending Approval'" 
-                        class="btn btn-primary"
-                        style="background-color: #10b981;"
-                        @click="approveRequisition(selectedRequisition)"
-                    >
-                        <i data-lucide="check"></i>
-                        Approve
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rejection Modal -->
-        <div v-if="showRejectionModal" class="modal-overlay" @click="closeRejectionModal">
-            <div class="modal" @click.stop>
-                <div class="modal-header">
-                    <h3 class="modal-title">Reject Requisition</h3>
-                    <button 
-                        class="action-btn" 
-                        @click="closeRejectionModal"
-                        style="background: #f3f4f6; color: #6b7280;"
-                    >
-                        <i data-lucide="x"></i>
-                    </button>
-                </div>
-                
-                <div class="modal-content">
-                    <p>You are about to reject requisition <strong>{{ rejectionRequisition?.id }}</strong></p>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Reason for Rejection</label>
-                        <textarea 
-                            class="form-textarea" 
-                            v-model="rejectionReason"
-                            placeholder="Please provide a reason for rejecting this requisition..."
+            <form @submit.prevent="handleSubmit" class="auth-form">
+                <transition name="form">
+                    <div v-if="isSignUp" class="form-group">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input 
+                            type="text" 
+                            id="fullName" 
+                            v-model="form.fullName"
+                            class="form-input" 
+                            placeholder="Enter your full name" 
                             required
-                        ></textarea>
+                        >
                     </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @click="closeRejectionModal">
-                        <i data-lucide="x"></i>
-                        Cancel
-                    </button>
-                    <button 
-                        class="btn btn-primary"
-                        style="background-color: #ef4444;"
-                        @click="confirmReject"
-                        :disabled="!rejectionReason.trim()"
+                </transition>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        v-model="form.email"
+                        class="form-input" 
+                        placeholder="Enter your email" 
+                        required
                     >
-                        <i data-lucide="x"></i>
-                        Confirm Rejection
-                    </button>
                 </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        v-model="form.password"
+                        class="form-input" 
+                        placeholder="Enter your password" 
+                        required
+                    >
+                </div>
+
+                <div v-if="!isSignUp" class="forgot-password">
+                    <a @click="handleForgotPassword">Forgot your password?</a>
+                </div>
+
+                <button type="submit" class="auth-btn" :disabled="isLoading">
+                    <span v-if="isLoading">Processing...</span>
+                    <span v-else>{{ isSignUp ? 'Create Account' : 'Sign In' }}</span>
+                </button>
+
+                <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+                <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
+            </form>
+
+            <div class="divider">
+                <span class="divider-text">or continue with</span>
+            </div>
+
+            <div class="social-login">
+                <button class="social-btn google-btn" @click="handleGoogleAuth">
+                    <svg class="google-icon" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Google
+                </button>
+                <button class="social-btn microsoft-btn" @click="handleMicrosoftAuth">
+                    <svg class="microsoft-icon" viewBox="0 0 24 24">
+                        <path fill="#F25022" d="M1 1h10v10H1z"/>
+                        <path fill="#00A4EF" d="M13 1h10v10H13z"/>
+                        <path fill="#7FBA00" d="M1 13h10v10H1z"/>
+                        <path fill="#FFB900" d="M13 13h10v10H13z"/>
+                    </svg>
+                    Microsoft
+                </button>
+            </div>
+
+            <div class="toggle-link">
+                <span v-if="!isSignUp">Don't have an account? </span>
+                <span v-else>Already have an account? </span>
+                <a @click="toggleForm">{{ isSignUp ? 'Sign in' : 'Sign up' }}</a>
             </div>
         </div>
     </div>
@@ -871,657 +374,84 @@
         createApp({
             data() {
                 return {
-                    activeTab: 'dashboard',
-                    searchTerm: '',
-                    showDetailModal: false,
-                    showRejectionModal: false,
-                    selectedRequisition: {},
-                    rejectionRequisition: null,
-                    rejectionReason: '',
-                    vessels: [
-                        { id: 'VP-001', name: 'MV Ocean Pioneer' },
-                        { id: 'VP-002', name: 'MV Atlantic Star' },
-                        { id: 'VP-003', name: 'MV Pacific Horizon' },
-                        { id: 'VP-004', name: 'MV Mediterranean' },
-                        { id: 'VP-005', name: 'MV Northern Light' }
-                    ],
-                    newRequisition: {
-                        vesselId: '',
-                        currentPort: '',
-                        department: '',
-                        priority: '',
-                        requiredDate: '',
-                        justification: '',
-                        items: []
-                    },
-                    requisitions: [
-                        {
-                            id: 'REQ-2024-001',
-                            vesselName: 'MV Ocean Pioneer',
-                            vesselId: 'VP-001',
-                            requestedBy: 'Captain Johnson',
-                            department: 'Engineering',
-                            dateRequested: '2024-05-15',
-                            priority: 'High',
-                            status: 'Pending Approval',
-                            totalAmount: 15750.00,
-                            currentPort: 'Rotterdam, Netherlands',
-                            requiredDate: '2024-05-28',
-                            justification: 'Critical engine maintenance required before next voyage. Filters are at end of service life.',
-                            items: [
-                                { id: 1, description: 'Main Engine Oil Filter', partNumber: 'EF-ME-001', quantity: 6, unitPrice: 125.00 },
-                                { id: 2, description: 'Fuel Injection Valve', partNumber: 'FIV-200X', quantity: 2, unitPrice: 875.00 },
-                                { id: 3, description: 'Turbocharger Seal Kit', partNumber: 'TC-SK-45', quantity: 1, unitPrice: 1200.00 },
-                                { id: 4, description: 'Hydraulic Fluid (20L)', partNumber: 'HF-ISO46', quantity: 10, unitPrice: 45.00 }
-                            ],
-                            approvalHistory: [
-                                { id: 1, action: 'Submitted', by: 'Captain Johnson', date: '2024-05-15', comments: 'Urgent maintenance required' }
-                            ]
-                        },
-                        {
-                            id: 'REQ-2024-002',
-                            vesselName: 'MV Atlantic Star',
-                            vesselId: 'VP-002',
-                            requestedBy: 'Chief Officer Smith',
-                            department: 'Deck',
-                            dateRequested: '2024-05-14',
-                            priority: 'Medium',
-                            status: 'Approved',
-                            totalAmount: 3250.00,
-                            currentPort: 'Hamburg, Germany',
-                            requiredDate: '2024-05-30',
-                            justification: 'Safety equipment replacement as per inspection requirements.',
-                            items: [
-                                { id: 1, description: 'Life Jackets (Adult)', partNumber: 'LJ-AD-50', quantity: 25, unitPrice: 65.00 },
-                                { id: 2, description: 'Emergency Flares', partNumber: 'EF-RED-24', quantity: 50, unitPrice: 12.00 },
-                                { id: 3, description: 'Fire Extinguisher (5kg)', partNumber: 'FE-5KG-CO2', quantity: 8, unitPrice: 125.00 }
-                            ],
-                            approvalHistory: [
-                                { id: 1, action: 'Submitted', by: 'Chief Officer Smith', date: '2024-05-14', comments: 'Safety inspection requirement' },
-                                { id: 2, action: 'Approved', by: 'Safety Manager Brown', date: '2024-05-16', comments: 'Approved for safety compliance' }
-                            ]
-                        },
-                        {
-                            id: 'REQ-2024-003',
-                            vesselName: 'MV Pacific Horizon',
-                            vesselId: 'VP-003',
-                            requestedBy: 'Chief Cook Wilson',
-                            department: 'Galley',
-                            dateRequested: '2024-05-13',
-                            priority: 'Low',
-                            status: 'In Review',
-                            totalAmount: 1850.00,
-                            currentPort: 'Singapore',
-                            requiredDate: '2024-06-05',
-                            justification: 'Galley equipment maintenance and crew provisions for extended voyage.',
-                            items: [
-                                { id: 1, description: 'Industrial Mixer Replacement Parts', partNumber: 'IM-RP-500', quantity: 1, unitPrice: 750.00 },
-                                { id: 2, description: 'Refrigeration Unit Filter', partNumber: 'RF-FILTER-100', quantity: 4, unitPrice: 85.00 },
-                                { id: 3, description: 'Dishwasher Detergent (25kg)', partNumber: 'DD-IND-25', quantity: 12, unitPrice: 35.00 }
-                            ],
-                            approvalHistory: [
-                                { id: 1, action: 'Submitted', by: 'Chief Cook Wilson', date: '2024-05-13', comments: 'Equipment maintenance required' },
-                                { id: 2, action: 'Under Review', by: 'Procurement Officer Lee', date: '2024-05-14', comments: 'Reviewing supplier quotes' }
-                            ]
-                        },
-                        {
-                            id: 'REQ-2024-004',
-                            vesselName: 'MV Mediterranean',
-                            vesselId: 'VP-004',
-                            requestedBy: 'Radio Officer Garcia',
-                            department: 'Communications',
-                            dateRequested: '2024-05-12',
-                            priority: 'High',
-                            status: 'Pending Approval',
-                            totalAmount: 8900.00,
-                            currentPort: 'Valencia, Spain',
-                            requiredDate: '2024-05-25',
-                            justification: 'Critical communication equipment upgrade for international voyage compliance.',
-                            items: [
-                                { id: 1, description: 'Satellite Communication Unit', partNumber: 'SCU-INMARSAT-C', quantity: 1, unitPrice: 5500.00 },
-                                { id: 2, description: 'VHF Radio Antenna', partNumber: 'VHF-ANT-Marine', quantity: 2, unitPrice: 450.00 },
-                                { id: 3, description: 'GPS Navigation System', partNumber: 'GPS-NAV-Pro', quantity: 1, unitPrice: 2500.00 }
-                            ],
-                            approvalHistory: [
-                                { id: 1, action: 'Submitted', by: 'Radio Officer Garcia', date: '2024-05-12', comments: 'Compliance requirement for international waters' }
-                            ]
-                        },
-                        {
-                            id: 'REQ-2024-005',
-                            vesselName: 'MV Northern Light',
-                            vesselId: 'VP-005',
-                            requestedBy: 'Chief Engineer Martinez',
-                            department: 'Engineering',
-                            dateRequested: '2024-05-11',
-                            priority: 'Medium',
-                            status: 'Rejected',
-                            totalAmount: 12500.00,
-                            currentPort: 'Aberdeen, Scotland',
-                            requiredDate: '2024-05-22',
-                            justification: 'Preventive maintenance for auxiliary engine systems.',
-                            items: [
-                                { id: 1, description: 'Auxiliary Engine Overhaul Kit', partNumber: 'AE-OH-KIT-1000', quantity: 1, unitPrice: 8500.00 },
-                                { id: 2, description: 'Cooling System Pump', partNumber: 'CS-PUMP-300', quantity: 1, unitPrice: 2800.00 },
-                                { id: 3, description: 'Engine Monitoring Sensors', partNumber: 'EMS-TEMP-PRESS', quantity: 6, unitPrice: 200.00 }
-                            ],
-                            approvalHistory: [
-                                { id: 1, action: 'Submitted', by: 'Chief Engineer Martinez', date: '2024-05-11', comments: 'Scheduled maintenance requirement' },
-                                { id: 2, action: 'Rejected', by: 'Fleet Manager Thompson', date: '2024-05-13', comments: 'Budget constraints - defer to next quarter' }
-                            ]
-                        }
-                    ]
-                };
-            },
-            computed: {
-                stats() {
-                    return {
-                        pending: this.requisitions.filter(r => r.status === 'Pending Approval').length,
-                        approved: this.requisitions.filter(r => r.status === 'Approved').length,
-                        urgent: this.requisitions.filter(r => r.priority === 'High' || r.priority === 'Urgent').length,
-                        totalValue: this.requisitions.reduce((sum, r) => sum + r.totalAmount, 0)
-                    };
-                },
-                recentActivity() {
-                    return this.requisitions
-                        .sort((a, b) => new Date(b.dateRequested) - new Date(a.dateRequested))
-                        .slice(0, 5);
-                },
-                filteredRequisitions() {
-                    if (!this.searchTerm) return this.requisitions;
-                    return this.requisitions.filter(req => 
-                        req.id.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                        req.vesselName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                        req.requestedBy.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                        req.department.toLowerCase().includes(this.searchTerm.toLowerCase())
-                    );
-                },
-                pendingApprovals() {
-                    return this.requisitions.filter(r => r.status === 'Pending Approval');
+                    isSignUp: false,
+                    isLoading: false,
+                    errorMessage: '',
+                    successMessage: '',
+                    form: {
+                        fullName: '',
+                        email: '',
+                        password: ''
+                    }
                 }
             },
             methods: {
-                formatCurrency(amount) {
-                    return amount.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                    });
-                },
-                formatDate(dateString) {
-                    return new Date(dateString).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    });
-                },
-                getDaysPending(dateString) {
-                    const diffTime = Math.abs(new Date() - new Date(dateString));
-                    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                },
-                viewRequisition(requisition) {
-                    this.selectedRequisition = requisition;
-                    this.showDetailModal = true;
-                },
-                closeDetailModal() {
-                    this.showDetailModal = false;
-                    this.selectedRequisition = {};
-                },
-                editRequisition(requisition) {
-                    // In a real application, this would switch to an edit mode
-                    alert(`Edit functionality for ${requisition.id} would be implemented here`);
-                },
-                approveRequisition(requisition) {
-                    const index = this.requisitions.findIndex(r => r.id === requisition.id);
-                    if (index !== -1) {
-                        this.requisitions[index].status = 'Approved';
-                        this.requisitions[index].approvalHistory.push({
-                            id: this.requisitions[index].approvalHistory.length + 1,
-                            action: 'Approved',
-                            by: 'Current User',
-                            date: new Date().toISOString().split('T')[0],
-                            comments: 'Approved via system'
-                        });
-                    }
-                    this.closeDetailModal();
-                    alert(`Requisition ${requisition.id} has been approved`);
-                },
-                rejectRequisition(requisition) {
-                    this.rejectionRequisition = requisition;
-                    this.showRejectionModal = true;
-                    this.closeDetailModal();
-                },
-                closeRejectionModal() {
-                    this.showRejectionModal = false;
-                    this.rejectionRequisition = null;
-                    this.rejectionReason = '';
-                },
-                confirmReject() {
-                    const index = this.requisitions.findIndex(r => r.id === this.rejectionRequisition.id);
-                    if (index !== -1) {
-                        this.requisitions[index].status = 'Rejected';
-                        this.requisitions[index].approvalHistory.push({
-                            id: this.requisitions[index].approvalHistory.length + 1,
-                            action: 'Rejected',
-                            by: 'Current User',
-                            date: new Date().toISOString().split('T')[0],
-                            comments: this.rejectionReason
-                        });
-                    }
-                    alert(`Requisition ${this.rejectionRequisition.id} has been rejected`);
-                    this.closeRejectionModal();
-                },
-                addItem() {
-                    this.newRequisition.items.push({
-                        description: '',
-                        partNumber: '',
-                        quantity: 1,
-                        unitPrice: 0
-                    });
-                },
-                removeItem(index) {
-                    this.newRequisition.items.splice(index, 1);
-                },
-                calculateTotal() {
-                    return this.newRequisition.items.reduce((sum, item) => {
-                        return sum + (item.quantity * item.unitPrice);
-                    }, 0);
-                },
-                generateRequisitionId() {
-                    const year = new Date().getFullYear();
-                    const nextNumber = (this.requisitions.length + 1).toString().padStart(3, '0');
-                    return `REQ-${year}-${nextNumber}`;
-                },
-                submitRequisition() {
-                    const vessel = this.vessels.find(v => v.id === this.newRequisition.vesselId);
-                    
-                    const newReq = {
-                        id: this.generateRequisitionId(),
-                        vesselName: vessel.name,
-                        vesselId: vessel.id,
-                        requestedBy: 'Current User',
-                        department: this.newRequisition.department,
-                        dateRequested: new Date().toISOString().split('T')[0],
-                        priority: this.newRequisition.priority,
-                        status: 'Pending Approval',
-                        totalAmount: this.calculateTotal(),
-                        currentPort: this.newRequisition.currentPort,
-                        requiredDate: this.newRequisition.requiredDate,
-                        justification: this.newRequisition.justification,
-                        items: this.newRequisition.items.map((item, index) => ({
-                            id: index + 1,
-                            ...item
-                        })),
-                        approvalHistory: [
-                            {
-                                id: 1,
-                                action: 'Submitted',
-                                by: 'Current User',
-                                date: new Date().toISOString().split('T')[0],
-                                comments: 'New requisition submitted'
-                            }
-                        ]
-                    };
-                    
-                    this.requisitions.unshift(newReq);
+                toggleForm() {
+                    this.isSignUp = !this.isSignUp;
+                    this.clearMessages();
                     this.resetForm();
-                    this.activeTab = 'requisitions';
-                    alert(`Requisition ${newReq.id} has been submitted successfully`);
                 },
                 resetForm() {
-                    this.newRequisition = {
-                        vesselId: '',
-                        currentPort: '',
-                        department: '',
-                        priority: '',
-                        requiredDate: '',
-                        justification: '',
-                        items: []
+                    this.form = {
+                        fullName: '',
+                        email: '',
+                        password: ''
                     };
+                },
+                clearMessages() {
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                },
+                async handleSubmit() {
+                    this.clearMessages();
+                    this.isLoading = true;
+
+                    // Simulate API call
+                    setTimeout(() => {
+                        this.isLoading = false;
+                        
+                        if (this.isSignUp) {
+                            this.successMessage = `Account created successfully for ${this.form.fullName}!`;
+                            console.log('Sign up data:', this.form);
+                        } else {
+                            this.successMessage = 'Login successful!';
+                            console.log('Login data:', { 
+                                email: this.form.email, 
+                                password: this.form.password 
+                            });
+                        }
+                        
+                        // Reset form after success
+                        setTimeout(() => {
+                            this.resetForm();
+                            this.clearMessages();
+                        }, 2000);
+                    }, 1500);
+                },
+                handleForgotPassword() {
+                    alert('Forgot password functionality would redirect to password reset page');
+                },
+                handleGoogleAuth() {
+                    alert('Google authentication would be implemented here');
+                },
+                handleMicrosoftAuth() {
+                    alert('Microsoft authentication would be implemented here');
                 }
             },
-            mounted() {
-                // Initialize with one empty item for new requisition
-                this.addItem();
-                
-                // Initialize Lucide icons
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-            },
-            updated() {
-                // Re-initialize Lucide icons after DOM updates
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
+            watch: {
+                isSignUp() {
+                    // Add slight delay for smooth transition
+                    this.$nextTick(() => {
+                        const container = document.querySelector('.auth-container');
+                        if (this.isSignUp) {
+                            container.style.maxWidth = '480px';
+                        } else {
+                            container.style.maxWidth = '440px';
+                        }
+                    });
                 }
             }
         }).mount('#app');
     </script>
 </body>
 </html>
-                                    <td>{{ req.vesselName }}</td>
-                                    <td>{{ req.requestedBy }}</td>
-                                    <td>
-                                        <span :class="`priority-badge priority-${req.priority.toLowerCase()}`">
-                                            {{ req.priority }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span :class="`status-badge status-${req.status.toLowerCase().replace(' ', '-')}`">
-                                            {{ req.status }}
-                                        </span>
-                                    </td>
-                                    <td>{{ formatDate(req.dateRequested) }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- All Requisitions Tab -->
-        <div v-if="activeTab === 'requisitions'" class="content-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">
-                    <i data-lucide="file-text"></i>
-                    All Requisitions
-                </h2>
-            </div>
-            
-            <div class="panel-content">
-                <div class="controls">
-                    <div class="search-box">
-                        <i data-lucide="search" class="search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            placeholder="Search requisitions..."
-                            v-model="searchTerm"
-                        >
-                    </div>
-                    <button class="btn btn-secondary">
-                        <i data-lucide="filter"></i>
-                        Filter
-                    </button>
-                    <button class="btn btn-secondary">
-                        <i data-lucide="download"></i>
-                        Export
-                    </button>
-                </div>
-
-                <div class="requisitions-table" v-if="filteredRequisitions.length > 0">
-                    <table style="width: 100%;">
-                        <thead>
-                            <tr>
-                                <th>Requisition ID</th>
-                                <th>Vessel</th>
-                                <th>Department</th>
-                                <th>Requested By</th>
-                                <th>Priority</th>
-                                <th>Status</th>
-                                <th>Total Amount</th>
-                                <th>Date Requested</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="req in filteredRequisitions" :key="req.id">
-                                <td>{{ req.id }}</td>
-                                <td>{{ req.vesselName }}</td>
-                                <td>{{ req.department }}</td>
-                                <td>{{ req.requestedBy }}</td>
-                                <td>
-                                    <span :class="`priority-badge priority-${req.priority.toLowerCase()}`">
-                                        {{ req.priority }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span :class="`status-badge status-${req.status.toLowerCase().replace(' ', '-')}`">
-                                        {{ req.status }}
-                                    </span>
-                                </td>
-                                <td>${{ formatCurrency(req.totalAmount) }}</td>
-                                <td>{{ formatDate(req.dateRequested) }}</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button 
-                                            class="action-btn edit" 
-                                            @click="viewRequisition(req)"
-                                            title="View Details"
-                                        >
-                                            <i data-lucide="eye"></i>
-                                        </button>
-                                        <button 
-                                            class="action-btn edit" 
-                                            @click="editRequisition(req)"
-                                            title="Edit"
-                                        >
-                                            <i data-lucide="edit-3"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div v-else class="empty-state">
-                    <i data-lucide="search" class="empty-state-icon"></i>
-                    <h3>No requisitions found</h3>
-                    <p>Try adjusting your search criteria</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Create New Requisition Tab -->
-        <div v-if="activeTab === 'create'" class="content-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">
-                    <i data-lucide="plus"></i>
-                    Create New Requisition
-                </h2>
-            </div>
-            
-            <div class="panel-content">
-                <form @submit.prevent="submitRequisition">
-                    <div class="vessel-info">
-                        <h4>
-                            <i data-lucide="ship"></i>
-                            Vessel Information
-                        </h4>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Vessel Name</label>
-                                <select class="form-select" v-model="newRequisition.vesselId" required>
-                                    <option value="">Select Vessel</option>
-                                    <option v-for="vessel in vessels" :key="vessel.id" :value="vessel.id">
-                                        {{ vessel.name }} ({{ vessel.id }})
-                                    </option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Current Port</label>
-                                <input 
-                                    type="text" 
-                                    class="form-input" 
-                                    v-model="newRequisition.currentPort"
-                                    placeholder="e.g., Rotterdam, Netherlands"
-                                    required
-                                >
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Department</label>
-                            <select class="form-select" v-model="newRequisition.department" required>
-                                <option value="">Select Department</option>
-                                <option value="Engineering">Engineering</option>
-                                <option value="Deck">Deck</option>
-                                <option value="Galley">Galley</option>
-                                <option value="Safety">Safety</option>
-                                <option value="Navigation">Navigation</option>
-                                <option value="Communications">Communications</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Priority Level</label>
-                            <select class="form-select" v-model="newRequisition.priority" required>
-                                <option value="">Select Priority</option>
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Required Delivery Date</label>
-                            <input 
-                                type="date" 
-                                class="form-input" 
-                                v-model="newRequisition.requiredDate"
-                                :min="new Date().toISOString().split('T')[0]"
-                                required
-                            >
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Justification / Notes</label>
-                        <textarea 
-                            class="form-textarea" 
-                            v-model="newRequisition.justification"
-                            placeholder="Explain the business case for this requisition..."
-                            required
-                        ></textarea>
-                    </div>
-
-                    <div class="detail-section">
-                        <h3>Requisition Items</h3>
-                        <div class="items-table">
-                            <table style="width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th>Description</th>
-                                        <th>Part Number</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Total</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(item, index) in newRequisition.items" :key="index">
-                                        <td>
-                                            <input 
-                                                type="text" 
-                                                class="form-input" 
-                                                v-model="item.description"
-                                                placeholder="Item description"
-                                                required
-                                            >
-                                        </td>
-                                        <td>
-                                            <input 
-                                                type="text" 
-                                                class="form-input" 
-                                                v-model="item.partNumber"
-                                                placeholder="Part/Model #"
-                                            >
-                                        </td>
-                                        <td>
-                                            <input 
-                                                type="number" 
-                                                class="form-input" 
-                                                v-model="item.quantity"
-                                                min="1"
-                                                required
-                                            >
-                                        </td>
-                                        <td>
-                                            <input 
-                                                type="number" 
-                                                step="0.01" 
-                                                class="form-input" 
-                                                v-model="item.unitPrice"
-                                                min="0"
-                                                required
-                                            >
-                                        </td>
-                                        <td>${{ formatCurrency(item.quantity * item.unitPrice) }}</td>
-                                        <td>
-                                            <button 
-                                                type="button" 
-                                                class="action-btn reject"
-                                                @click="removeItem(index)"
-                                                title="Remove Item"
-                                            >
-                                                <i data-lucide="x"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="4" style="text-align: right; font-weight: 600;">Total:</td>
-                                        <td style="font-weight: 600;">${{ formatCurrency(calculateTotal()) }}</td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        
-                        <div style="margin-top: 1rem;">
-                            <button 
-                                type="button" 
-                                class="btn btn-secondary"
-                                @click="addItem"
-                            >
-                                <i data-lucide="plus"></i>
-                                Add Item
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="resetForm">
-                            <i data-lucide="x"></i>
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i data-lucide="check"></i>
-                            Submit Requisition
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Pending Approvals Tab -->
-        <div v-if="activeTab === 'approvals'" class="content-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">
-                    <i data-lucide="check-circle"></i>
-                    Pending Approvals
-                </h2>
-            </div>
-            
-            <div class="panel-content">
-                <div v-if="pendingApprovals.length > 0">
-                    <div class="requisitions-table">
-                        <table style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Requisition ID</th>
-                                    <th>Vessel</th>
-                                    <th>Department</th>
-                                    <th>Requested By</th>
-                                    <th>Priority</th>
-                                    <th>Total Amount</th>
-                                    <th>Days Pending</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="req in pendingApprovals" :key="req.id">
-                                    <td>{{ req.id }}</td>

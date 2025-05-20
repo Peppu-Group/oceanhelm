@@ -22,7 +22,6 @@ export default {
       DELETE_VESSEL(state, id) {
         state.vessels = state.vessels.filter(v => v.registrationNumber !== id);
         localStorage.setItem('vessel', JSON.stringify(state.vessels));
-        console.log('abc')
       }
     },
     actions: {

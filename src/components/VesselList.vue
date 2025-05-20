@@ -119,7 +119,18 @@ export default {
             };
         }
     },
-
+    mounted() {
+        this.vessels.map(vessel => {
+            const registrationNumber = vessel.registrationNumber;
+            const untasks = localStorage.getItem(`tasks-${registrationNumber}`) || '[]';
+            const tasks = JSON.parse(untasks)
+            const soonTask = tasks.find(task => task.status === 'Soon');
+            if (soonTask && vessel.status != 'Inactive') {
+                vessel.status = 'Maintenance';
+            }
+            return vessel;
+        });
+    },
     methods: {
         getActiveVesselCount() {
             return this.company.vessels.filter(vessel => vessel.status === "Active").length;
