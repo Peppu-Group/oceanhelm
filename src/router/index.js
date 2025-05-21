@@ -10,6 +10,7 @@ import MaintenanceRoute from '../views/MaintenanceRoute.vue'
 import CrewRoute from '../views/CrewRoute.vue'
 import InventoryView from '../views/InventoryView.vue'
 import LoginView from '../views/LoginView.vue'
+import RedirectView from '../views/RedirectView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -65,6 +66,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView
+    },
+    {
+      path: '/redirect',
+      name: 'redirect',
+      component: RedirectView
     }
   ]
 })

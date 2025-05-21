@@ -107,6 +107,11 @@
                 <h2>🛠️ Maintenance Tasks</h2>
                 <form>
                     <div class="container">
+                        <!-- Loading indicator -->
+                        <div class="loading-container" v-if="isLoading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading checklist...</p>
+                        </div>
                         <h1>{{ getName }} Maintenance Checklist</h1>
 
                         <div class="progress-container">
@@ -365,6 +370,8 @@
 </template>
   
 <script>
+import axios from 'axios';
+
 export default {
     data() {
         return {
@@ -387,20 +394,8 @@ export default {
             activeFilters: [1, 2], // example filter count
             tasks: [],
             vesselInfo: [],
-            checklists: [
-                { id: 1, text: "Inspect hull for damage or fouling", completed: false },
-                { id: 2, text: "Check propeller and shaft for damage", completed: false },
-                { id: 3, text: "Examine through-hull fittings", completed: false },
-                { id: 4, text: "Test bilge pumps and alarms", completed: false },
-                { id: 5, text: "Inspect and test navigation lights", completed: false },
-                { id: 6, text: "Check fuel system for leaks", completed: false },
-                { id: 7, text: "Inspect battery connections", completed: false },
-                { id: 8, text: "Test all electronics and radios", completed: false },
-                { id: 9, text: "Verify safety equipment inventory", completed: false },
-                { id: 10, text: "Check engine oil and coolant levels", completed: false },
-                { id: 11, text: "Inspect belts and hoses", completed: false },
-                { id: 12, text: "Test emergency steering system", completed: false }
-            ],
+            checklists: [],
+            isLoading: false,
             form: {
                 taskName: '',
                 description: '',
@@ -470,7 +465,7 @@ export default {
             return Math.round((this.completedCount.length / this.checklists.length) * 100);
         }
     },
-    mounted() {
+    async mounted() {
         let id = this.$route.params.id;
         let vessels = JSON.parse(localStorage.getItem('vessel')) || [];
 
@@ -493,6 +488,25 @@ export default {
         setFilter(filter) {
             this.activeFilter = filter;
         },
+        loadChecklist(taskComponent) {
+            this.isLoading = true; // Start loading
+
+            this.checklist(taskComponent)
+                .then((res) => {
+                    let checklist = JSON.parse(res);
+                    this.checklists = checklist.map(item => ({
+                        ...item,
+                        completed: false
+                    }));
+                })
+                .catch(error => {
+                    console.error("Error loading checklist:", error);
+                    // You might want to show an error message to the user
+                })
+                .finally(() => {
+                    this.isLoading = false; // End loading regardless of success or failure
+                });
+        },
         showMaintenance(taskComponent) {
             const tasks = this.tasks;
             const task = tasks.find(t => t.component === taskComponent);
@@ -501,10 +515,7 @@ export default {
                 this.checklists = [...task.checklistProgress];
             } else {
                 // Reset all checklist items to not completed
-                this.checklists = this.checklists.map(item => ({
-                    ...item,
-                    completed: false
-                }));
+                this.loadChecklist(taskComponent);
             }
 
             // Also update current task in localStorage (optional)
@@ -685,9 +696,20 @@ export default {
                 // send to maintenance page
                 this.activeSection = 'inventory';
             }
+        },
+        async checklist(mainType) {
+            try {
+                const res = await axios.post(`https://proctoredserver.peppubuild.com/`, {
+                    userReq: mainType
+                });
+                let result = res.data.result;
+                const content = result.match(/```(?:\w*\n)?([\s\S]*?)```/)[1];
+                return content;
+                // console.log(result)
+            } catch (err) {
+                console.log(err)
+            }
         }
-        // create a method to save the task page with info, if not complete.
-        // mark the task as complete if all tasks are complete.
     }
 
 };

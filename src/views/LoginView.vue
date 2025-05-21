@@ -12,6 +12,9 @@
             <label for="fullName" class="form-label">Full Name</label>
             <input type="text" id="fullName" v-model="form.fullName" class="form-input" placeholder="Enter your full name"
               required>
+            <label for="companyName" class="form-label">Company Name</label>
+            <input type="text" id="companyName" v-model="form.companyName" class="form-input"
+              placeholder="Enter your company's name" required>
           </div>
         </transition>
 
@@ -92,13 +95,12 @@ export default {
       form: {
         fullName: '',
         email: '',
-        password: ''
+        password: '',
+        companyName: ''
       }
     }
   },
-  async mounted() {
 
-  },
   methods: {
     toggleForm() {
       this.isSignUp = !this.isSignUp;
@@ -109,7 +111,8 @@ export default {
       this.form = {
         fullName: '',
         email: '',
-        password: ''
+        password: '',
+        companyName: ''
       };
     },
     clearMessages() {
@@ -126,13 +129,15 @@ export default {
 
         if (this.isSignUp) {
           try {
-            const { data, error } = await supabase.auth.signUp({
+            const { data: signUpData, error } = await supabase.auth.signUp({
               email: this.form.email,
               password: this.form.password,
               options: {
                 data: {
-                  username: this.form.fullName
-                }
+                  fullName: this.form.fullName,
+                  company_name: this.form.companyName 
+                },
+                emailRedirectTo: 'http://localhost:5173/redirect'
               }
             });
 
@@ -146,13 +151,14 @@ export default {
               return { success: false, error };
             }
 
-            if (data.user && !data.session) {
+            if (signUpData.user && !signUpData.session) {
               // Email confirmation is required
               Swal.fire({
                 title: "Check Your Email",
                 text: "We've sent you a confirmation link. Please check your email to complete registration.",
                 icon: "info"
               });
+
               this.resetForm();
             } else if (data.session) {
               // User is signed in immediately (if email confirmation is not required)
