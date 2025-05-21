@@ -23,7 +23,7 @@
         <h2>Comprehensive Maritime Management</h2>
       </div>
       <div class="features-grid">
-        <div class="feature-card" @click="navigateMaintenance()">
+        <div class="feature-card">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24">
               <path
@@ -211,9 +211,6 @@ export default {
   components: { NavBar, FooterView },
 
   methods: {
-    navigateMaintenance() {
-      this.$router.push({ path: '/app/dashboard' })
-    },
     contactDemo() {
       Swal.fire({
         title: 'Contact Us',
