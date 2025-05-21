@@ -137,7 +137,7 @@ export default {
                   fullName: this.form.fullName,
                   company_name: this.form.companyName 
                 },
-                emailRedirectTo: 'http://localhost:5173/redirect'
+                emailRedirectTo: 'https://marine.peppubuild.com/redirect'
               }
             });
 
