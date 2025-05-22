@@ -10,18 +10,40 @@
 </template>
 
 <script>
+import supabase from '../supabase'
 export default {
     name: 'DashHeader',
     props: ['name'],
 
-    methods:{
+    methods: {
         loggedIn() {
-            Swal.fire({
+            this.getUser().then((text) => {
+                Swal.fire({
                 title: "Logged in",
-                text: "You're logged as Emeka, with an employee access. You have limited access, everyone with owner access can see the changes you make.",
+                text: text,
                 icon: "info"
             });
+            })
         },
+        async getUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                const user = session.user;
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                if (profile.role == 'owner') {
+                    return `You're logged as ${profile.full_name}, with owner access. You have full access, you can see the changes everyone makes.`
+                } else if (profile.role == 'captain') {
+                    return `You're logged as ${profile.full_name}, with captain access. You have full access for your vessel's information, you can see the changes everyone makes to your vessel.`
+                } else if (profile.role == 'staff') {
+                    return `You're logged as ${profile.full_name}, with an employee access. You have limited access, everyone with owner or captain access can see the changes you make.`
+                }
+            }
+        }
     }
 }
 </script>
