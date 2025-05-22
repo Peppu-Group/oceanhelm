@@ -9,23 +9,8 @@ export default {
       localStorage.setItem('vessel', JSON.stringify(payload));
     },
     ADD_VESSEL(state, vessel) {
-      const { data, error } = await supabase
-        .from('vessels')
-        .insert([
-          {
-            name: vessel.name,
-            registration_number: vessel.registrationNumber,
-            status: vessel.status,
-            company_id: user.user_metadata.company_id  // Replace with actual ID
-          }
-        ]);
-
-      if (error) {
-        console.error("Insert error:", error);
-      } else {
-        state.vessels.push(vessel);
-        localStorage.setItem('vessel', JSON.stringify(state.vessels));
-      }
+      state.vessels.push(vessel);
+      localStorage.setItem('vessel', JSON.stringify(state.vessels));
     },
     UPDATE_VESSEL(state, updatedVessel) {
       const index = state.vessels.findIndex(v => v.id === updatedVessel.id);

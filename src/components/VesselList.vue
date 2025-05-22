@@ -67,7 +67,7 @@
     <!-- Vessel Cards -->
     <div class="row">
         <div class="col-lg-6" v-for="vessel in this.company.vessels">
-            <div class="vessel-card" @click="handleNavigation(vessel.registrationNumber, vessel.name)">
+            <div class="vessel-card" @click="handleNavigation(vessel.registrationNumber, vessel.name, vessel)">
                 <div class="card-body d-flex align-items-center">
                     <div class="vessel-icon left">
                         <i class="fas fa-ship"></i>
@@ -242,13 +242,117 @@ export default {
             return this.$store.dispatch('vessel/markInactive', registrationNumber);
 
         },
-        handleNavigation(id, vname) {
+        handleNavigation(id, vname, vessel) {
             let name = this.$route.name;
             if (name == 'maintenanceroute') {
                 this.$router.push({ path: `/app/maintenance/${id}` });
             } else if (name == 'crewroute') {
                 this.$router.push({ path: `/app/crew/${vname}` });
+            } else if (name == 'dashboard') {
+                this.showVesselInfo(vessel)
             }
+        },
+        showVesselInfo(vessel) {
+            const htmlContent = `
+        <div class="vessel-header">
+          <div class="vessel-name">${vessel.name}</div>
+          <div class="vessel-imo">${vessel.registrationNumber}</div>
+        </div>
+        
+        <div class="vessel-info-grid">
+          <div class="info-section">
+            <div class="section-title">General Information</div>
+            <div class="info-row">
+              <span class="info-label">Vessel Type:</span>
+              <span class="info-value">${vessel.type || 'NA'}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Owner/Operator:</span>
+              <span class="info-value">${vessel.owner || 'NA'}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Year Built:</span>
+              <span class="info-value">${vessel.year || 'NA'}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Flag State:</span>
+              <span class="info-value">${vessel.flag || 'NA'}</span>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-title">Vessel Specifications</div>
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-value">${vessel.length || 'NA'}(m)</span>
+                <div class="spec-label">Length</div>
+              </div>
+              <div class="spec-item">
+                <span class="spec-value">${vessel.beam || 'NA'}(m)</span>
+                <div class="spec-label">Beam</div>
+              </div>
+              <div class="spec-item">
+                <span class="spec-value">${vessel.draft || 'NA'}(m)</span>
+                <div class="spec-label">Draft</div>
+              </div>
+            </div>
+            <div class="info-row" style="margin-top: 15px;">
+              <span class="info-label">Gross Tonnage:</span>
+              <span class="info-value">${vessel.gross ? vessel.gross.toLocaleString() : 'NA'}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Net Tonnage:</span>
+              <span class="info-value">${vessel.net ? vessel.net.toLocaleString() : 'NA'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section" style="margin-top: 20px;">
+          <div class="section-title">Engine Details</div>
+          <div class="info-row">
+            <span class="info-label">Main Engine:</span>
+            <span class="info-value">${vessel.main || 'NA'}</span>
+          </div>
+          <div style="margin-top: 10px;">
+            <div class="info-label" style="margin-bottom: 5px;">Auxiliary Engines:</div>
+            <div class="engine-details">
+                ${vessel.auxiliary ? vessel.auxiliary.replace(/\n/g, '<br>') : 'NA'}
+            </div>
+          </div>
+        </div>
+      `;
+
+            Swal.fire({
+                title: 'Vessel Information',
+                html: htmlContent,
+                width: '800px',
+                showCloseButton: true,
+                showConfirmButton: true,
+                confirmButtonText: 'Edit Vessel',
+                confirmButtonColor: '#005792',
+                showCancelButton: true,
+                cancelButtonText: 'Close',
+                customClass: {
+                    container: 'custom-swal-container',
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    htmlContainer: 'custom-swal-content'
+                },
+                didOpen: () => {
+                    // Add any additional styling or functionality when modal opens
+                    console.log('Vessel information modal opened');
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Handle edit action
+                    Swal.fire({
+                        title: 'Edit Mode',
+                        text: 'Vessel editing functionality would be implemented here',
+                        icon: 'info',
+                        confirmButtonColor: '#005792'
+                    });
+                }
+            });
         }
     }
 }
