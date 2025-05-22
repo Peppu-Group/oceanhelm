@@ -345,14 +345,250 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Handle edit action
-                    Swal.fire({
-                        title: 'Edit Mode',
-                        text: 'Vessel editing functionality would be implemented here',
-                        icon: 'info',
-                        confirmButtonColor: '#005792'
-                    });
+                    this.editVessel(vessel)
                 }
             });
+        },
+        editVessel(vessel = {}) {
+            // Helper function to safely get values
+            const getValue = (value, defaultVal = '') => value || defaultVal;
+
+            // Create the form HTML
+            const formHtml = `
+    <div class="edit-vessel-form" style="text-align: left; max-height: 500px; overflow-y: auto;">
+      <div class="form-section">
+        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
+          Basic Information
+        </h4>
+        
+        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Name</label>
+            <input type="text" id="edit-vessel-name" value="${getValue(vessel.name)}" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">IMO Number</label>
+            <input type="text" id="edit-imo" value="${getValue(vessel.registrationNumber)}" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Type</label>
+            <select id="edit-vessel-type" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+              <option value="">-- Select Vessel Type --</option>
+              <option value="cargo" ${vessel.type === 'Cargo Ship' ? 'selected' : ''}>Cargo Ship</option>
+              <option value="tanker" ${vessel.type === 'Tanker' ? 'selected' : ''}>Tanker</option>
+              <option value="passenger" ${vessel.type === 'Passenger Ship' ? 'selected' : ''}>Passenger Ship</option>
+              <option value="fishing" ${vessel.type === 'Fishing Vessel' ? 'selected' : ''}>Fishing Vessel</option>
+              <option value="offshore" ${vessel.type === 'Offshore Support' ? 'selected' : ''}>Offshore Support</option>
+              <option value="research" ${vessel.type === 'Research Vessel' ? 'selected' : ''}>Research Vessel</option>
+              <option value="other" ${vessel.type === 'Other' ? 'selected' : ''}>Other</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Owner/Operator</label>
+            <input type="text" id="edit-owner" value="${getValue(vessel.owner)}" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Year Built</label>
+            <input type="number" id="edit-year-built" value="${getValue(vessel.yearBuilt)}" 
+                   min="1900" max="2025"
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Flag State</label>
+            <input type="text" id="edit-flag-state" value="${getValue(vessel.flagState)}" 
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
+          Vessel Specifications
+        </h4>
+        
+        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Length (m)</label>
+            <input type="number" id="edit-length" value="${getValue(vessel.specifications?.length)}" 
+                   step="0.01"
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Beam (m)</label>
+            <input type="number" id="edit-beam" value="${getValue(vessel.specifications?.beam)}" 
+                   step="0.01"
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Draft (m)</label>
+            <input type="number" id="edit-draft" value="${getValue(vessel.specifications?.draft)}" 
+                   step="0.01"
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+        </div>
+
+        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Gross Tonnage</label>
+            <input type="number" id="edit-gross-tonnage" value="${getValue(vessel.specifications?.grossTonnage)}" 
+                   step="0.01"
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Net Tonnage</label>
+            <input type="number" id="edit-net-tonnage" value="${getValue(vessel.specifications?.netTonnage)}" 
+                   step="0.01"
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
+          Engine Details
+        </h4>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Main Engine</label>
+          <input type="text" id="edit-main-engine" value="${getValue(vessel.engines?.main)}" 
+                 placeholder="Make, Model, Power"
+                 style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+        </div>
+
+        <div class="form-group">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Auxiliary Engines</label>
+          <textarea id="edit-auxiliary-engines" rows="3" 
+                    placeholder="Details of auxiliary engines"
+                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; resize: vertical;">${getValue(vessel.engines?.auxiliary)}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
+
+            // Show the SweetAlert with the form
+            Swal.fire({
+                title: 'Edit Vessel Information',
+                html: formHtml,
+                width: '800px',
+                showCancelButton: true,
+                confirmButtonText: 'Save Changes',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#005792',
+                cancelButtonColor: '#6c757d',
+                customClass: {
+                    container: 'custom-swal-container',
+                    popup: 'custom-swal-popup',
+                    title: 'custom-swal-title',
+                    htmlContainer: 'custom-swal-content'
+                },
+                preConfirm: () => {
+                    // Collect form data
+                    const formData = {
+                        name: document.getElementById('edit-vessel-name').value.trim(),
+                        imo: document.getElementById('edit-imo').value.trim(),
+                        type: document.getElementById('edit-vessel-type').value,
+                        owner: document.getElementById('edit-owner').value.trim(),
+                        yearBuilt: parseInt(document.getElementById('edit-year-built').value) || null,
+                        flagState: document.getElementById('edit-flag-state').value.trim(),
+                        specifications: {
+                            length: parseFloat(document.getElementById('edit-length').value) || null,
+                            beam: parseFloat(document.getElementById('edit-beam').value) || null,
+                            draft: parseFloat(document.getElementById('edit-draft').value) || null,
+                            grossTonnage: parseFloat(document.getElementById('edit-gross-tonnage').value) || null,
+                            netTonnage: parseFloat(document.getElementById('edit-net-tonnage').value) || null
+                        },
+                        engines: {
+                            main: document.getElementById('edit-main-engine').value.trim(),
+                            auxiliary: document.getElementById('edit-auxiliary-engines').value.trim()
+                        }
+                    };
+
+                    // Basic validation
+                    if (!formData.name) {
+                        Swal.showValidationMessage('Vessel name is required');
+                        return false;
+                    }
+
+                    if (!formData.imo) {
+                        Swal.showValidationMessage('IMO number is required');
+                        return false;
+                    }
+
+                    if (!formData.type) {
+                        Swal.showValidationMessage('Please select a vessel type');
+                        return false;
+                    }
+
+                    return formData;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const updatedVessel = result.value;
+
+                    // Here you would typically save to database/API
+                    // For now, we'll show a success message and log the data
+                    console.log('Updated vessel data:', updatedVessel);
+
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Vessel information has been updated successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#005792',
+                        customClass: {
+                            container: 'custom-swal-container',
+                            popup: 'custom-swal-popup',
+                            title: 'custom-swal-title'
+                        }
+                    }).then(() => {
+                        // Optionally refresh the vessel display or update the UI
+                        // updateVesselDisplay(updatedVessel);
+                    });
+
+                    // Call your save function here
+                    // saveVesselToDatabase(updatedVessel);
+                }
+            }).catch((error) => {
+                console.error('Error in edit vessel form:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'There was an error processing your request. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#005792'
+                });
+            });
+        },
+
+        // Helper function to save vessel data (implement based on your backend)
+        saveVesselToDatabase(vesselData) {
+            // Example implementation:
+            /*
+            fetch('/api/vessels/' + vesselData.id, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(vesselData)
+            })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Vessel saved successfully:', data);
+              // Update UI as needed
+            })
+            .catch(error => {
+              console.error('Error saving vessel:', error);
+              Swal.fire('Error', 'Failed to save vessel information', 'error');
+            });
+            */
         }
     }
 }

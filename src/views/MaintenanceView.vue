@@ -12,95 +12,6 @@
         </nav>
         <div class="content">
             <!-- Dashboard Direct -->
-            <!-- Vessel Information Form -->
-            <section :class="['form-section', { active: activeSection === 'vessel' }]" v-show="activeSection === 'vessel'">
-                <h2>⚓ Vessel Information</h2>
-                <form>
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="vessel-name">Vessel Name</label>
-                            <input type="text" :value="name" readonly>
-                        </div>
-                        <div class="form-group">
-                            <label for="imo-number">IMO Number</label>
-                            <input type="text" :value="no" readonly>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="vessel-type">Vessel Type</label>
-                        <select id="vessel-type" required>
-                            <option value="">-- Select Vessel Type --</option>
-                            <option value="cargo">Cargo Ship</option>
-                            <option value="tanker">Tanker</option>
-                            <option value="passenger">Passenger Ship</option>
-                            <option value="fishing">Fishing Vessel</option>
-                            <option value="offshore">Offshore Support</option>
-                            <option value="research">Research Vessel</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="owner">Owner/Operator</label>
-                        <input type="text" id="owner" required>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="year-built">Year Built</label>
-                            <input type="number" id="year-built" min="1900" max="2025" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="flag-state">Flag State</label>
-                            <input type="text" id="flag-state" required>
-                        </div>
-                    </div>
-
-                    <h3>Vessel Specifications</h3>
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="length">Length (m)</label>
-                            <input type="number" id="length" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="beam">Beam (m)</label>
-                            <input type="number" id="beam" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="draft">Draft (m)</label>
-                            <input type="number" id="draft" step="0.01">
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="gross-tonnage">Gross Tonnage</label>
-                            <input type="number" id="gross-tonnage" step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <label for="net-tonnage">Net Tonnage</label>
-                            <input type="number" id="net-tonnage" step="0.01">
-                        </div>
-                    </div>
-
-                    <h3>Engine Details</h3>
-                    <div class="form-group">
-                        <label for="main-engine">Main Engine</label>
-                        <input type="text" id="main-engine" placeholder="Make, Model, Power">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="auxiliary-engines">Auxiliary Engines</label>
-                        <textarea id="auxiliary-engines" placeholder="Details of auxiliary engines"></textarea>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button type="button" class="btn btn-primary">Save Vessel Information</button>
-                    </div>
-                </form>
-            </section>
-
             <!-- Maintenance Tasks Form -->
             <section :class="['form-section', { active: activeSection === 'maintenance' }]"
                 v-show="activeSection === 'maintenance'">
@@ -380,7 +291,6 @@ export default {
             currentTask: '',
             activeSection: 'inventory',
             sections: [
-                { id: 'vessel', name: 'Vessel Info', icon: '⚓' },
                 { id: 'schedule', name: 'Schedule', icon: '📅' },
                 { id: 'inventory', name: 'All Maintenance', icon: '♻️' },
                 {
