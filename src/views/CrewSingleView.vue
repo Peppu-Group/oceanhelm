@@ -63,10 +63,10 @@
                             Vessel: Unassigned
                         </div>
                         <button class="btn btn-primary"
-                            @click="showAssignForm(member.id, member.nextShift, member.status, member.onBoard)">Assign
+                            @click="showAssignForm(member.name, member.nextShift, member.status, member.onBoard)">Assign
                             Shift</button>
                     </div>
-                    <i class="bi bi-trash icon" @click="deleteCrew(member.id)"></i>
+                    <i class="bi bi-trash icon" @click="deleteCrew(member.name)"></i>
                 </div>
             </div>
 
@@ -192,6 +192,9 @@ export default {
                 onBoard: ''
             }
         };
+    },
+    mounted() {
+        this.$store.dispatch('crew/fetchCrew');
     },
     computed: {
         crew() {
@@ -381,7 +384,7 @@ export default {
         cancelForm() {
             this.showAddForm = false;
         },
-        showAssignForm(id, prevshift, prevstatus, prevtimeline) {
+        showAssignForm(name, prevshift, prevstatus, prevtimeline) {
 
             Swal.fire({
                 title: 'Assign Crew Shift',
@@ -422,13 +425,14 @@ export default {
 
                     // Dispatch to Vuex to update the crew member
                     this.$store.dispatch('crew/updateCrewMember', {
-                        id,
+                        name,
                         nextShift: shift,
                         status: status,
                         onBoard: onBoard
                     }).then(() => {
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
-                    }).catch(() => {
+                    }).catch((err) => {
+                        alert(err)
                         Swal.fire('Error', 'Crew member not found', 'error');
                     });
                 }

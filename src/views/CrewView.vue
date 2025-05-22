@@ -63,10 +63,10 @@
                             Vessel: Unassigned
                         </div>
                         <button class="btn btn-primary"
-                            @click="showAssignForm(member.id, member.nextShift, member.vessel, member.status, member.onBoard)">Assign
+                            @click="showAssignForm(member.name, member.nextShift, member.vessel, member.status, member.onBoard)">Assign
                             Shift</button>
                     </div>
-                    <i class="bi bi-trash icon" @click="deleteCrew(member.id)"></i>
+                    <i class="bi bi-trash icon" @click="deleteCrew(member.name)"></i>
                 </div>
             </div>
 
@@ -216,6 +216,8 @@ export default {
     mounted() {
         // fetch vessels.
         this.$store.dispatch('vessel/fetchVessels');
+        // fetch crew
+        this.$store.dispatch('crew/fetchCrew');
     },
     methods: {
         resetForm() {
@@ -317,7 +319,7 @@ export default {
         cancelForm() {
             this.showAddForm = false;
         },
-        showAssignForm(id, prevshift, prevvessel, prevstatus, prevtimeline) {
+        showAssignForm(name, prevshift, prevvessel, prevstatus, prevtimeline) {
             const vessels = this.vessels;
 
             const vesselOptionsHtml = vessels.map(v =>
@@ -373,15 +375,15 @@ export default {
                     const { shift, vessel, status, onBoard } = result.value;
                     // Dispatch to Vuex to update the crew member
                     this.$store.dispatch('crew/updateCrewMember', {
-                        id,
+                        name,
                         nextShift: shift,
                         status: status,
                         onBoard: onBoard,
                         vessel: vessel
                     }).then(() => {
                         Swal.fire('Success', 'Shift assigned successfully', 'success');
-                    }).catch(() => {
-                        Swal.fire('Error', 'Crew member not found', 'error');
+                    }).catch((err) => {
+                        Swal.fire('Error', `${err}`, 'error');
                     });
                 }
             })
