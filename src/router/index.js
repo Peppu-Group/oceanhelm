@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import supabase  from '../supabase'
+import supabase from '../supabase'
+import store from '../store'
 
 import HomeView from '../views/HomeView.vue'
 import MaintenanceView from '../views/MaintenanceView.vue'
@@ -11,6 +12,7 @@ import CrewRoute from '../views/CrewRoute.vue'
 import InventoryView from '../views/InventoryView.vue'
 import LoginView from '../views/LoginView.vue'
 import RedirectView from '../views/RedirectView.vue'
+import SubRedirect from '../views/SubRedirect.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +73,11 @@ const router = createRouter({
       path: '/redirect',
       name: 'redirect',
       component: RedirectView
+    },
+    {
+      path: '/subredirect',
+      name: 'subredirect',
+      component: SubRedirect
     }
   ]
 })
@@ -80,11 +87,36 @@ router.beforeEach(async (to, from, next) => {
   const { data, error } = await supabase.auth.getUser();
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (data?.user) {
-      next();
-    } else {
-      next('/login');
+    if (!data?.user) {
+      return next('/login');
     }
+
+    // Fetch user profile from Vuex if not already loaded
+    if (!store.getters['user/userProfile']) {
+      await store.dispatch('user/fetchUserProfile');
+    }
+
+    const profile = store.getters['user/userProfile'];
+
+    if (!profile) {
+      return next('/login');
+    }
+    const allowedRoles = ['owner', 'captain'];
+    const isAuthorizedRole = allowedRoles.includes(profile.role);
+
+    // Optional: check if this route has a vesselId param and enforce access restriction
+    if (to.params.id && isAuthorizedRole) {
+      const vesselId = to.params.id;
+      // compare profile.vessel with vesselId
+      if (profile.role == 'captain' && vesselId !== profile.vessel) {
+        Swal.fire({
+          title: "Route Protected!",
+          text: `You have ${profile.role}, you don't have access to this inormation`,
+          icon: "info"
+        });
+      }
+    }
+    next();
   } else {
     next();
   }

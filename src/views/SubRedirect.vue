@@ -36,36 +36,14 @@ export default {
 
         if (session) {
             const user = session.user;
-            // Step 3: Check if the company already exists (optional)
-            const { data: company, error: companyError } = await supabase
-                .from('companies')
-                .select('*')
-                .eq('name', user.user_metadata.company_name)
-                .single();
-
-            let companyId;
-
-            if (company) {
-                companyId = company.id; // reuse existing
-            } else {
-                // Step 4: Create new company
-                const { data: newCompany, error: insertError } = await supabase
-                    .from('companies')
-                    .insert({ name: user.user_metadata.company_name })
-                    .select()
-                    .single();
-
-                companyId = newCompany.id;
-            }
-
             // Step 5: Create the user's profile
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .insert({
                     id: user.id,
                     full_name: user.user_metadata.fullName,
-                    company_id: companyId,
-                    role: 'owner'
+                    company_id: user.user_metadata.company_id,
+                    role: user.user_metadata.role
                 });
 
             // redirect dashboard

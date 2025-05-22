@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
     name: 'SideBar',
     data() {
@@ -59,9 +61,12 @@ export default {
     computed: {
         vessels() {
             return this.$store.getters['vessel/allVessels'];
-        }
+        },
+        ...mapGetters('user', ['userProfile']),
     },
     async mounted() {
+        // fetch users
+        await this.fetchUserProfile()
         // fetch vessels.
         this.$store.dispatch('vessel/fetchVessels');
         // Sidebar toggle
@@ -103,6 +108,7 @@ export default {
         // this.company.vessels = vessels;
     },
     methods: {
+        ...mapActions('user', ['fetchUserProfile']),
         getMaintenance() {
             this.$router.push({ name: 'maintenanceroute' })
         },
@@ -148,6 +154,4 @@ export default {
 .black {
     color: black !important;
 }
-
-
 </style>
