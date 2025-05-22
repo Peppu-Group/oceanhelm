@@ -403,8 +403,7 @@ export default {
 
             this.checklist(taskComponent)
                 .then((res) => {
-                    let checklist = JSON.parse(res);
-                    this.checklists = checklist.map(item => ({
+                    this.checklists = res.map(item => ({
                         ...item,
                         completed: false
                     }));
@@ -607,15 +606,33 @@ export default {
                 this.activeSection = 'inventory';
             }
         },
+        cleanAndParseAIResponse(text) {
+            // Step 1: Replace smart quotes (like ’ or “ ”) with straight quotes
+            text = text
+                .replace(/[‘’]/g, "'")  // smart apostrophes
+                .replace(/[“”]/g, '"'); // smart double quotes
+
+            // Step 2: Replace single quotes around keys/values with double quotes (if needed)
+            text = text.replace(/([{,]\s*)'([^']+?)'\s*:/g, '$1"$2":'); // keys
+            text = text.replace(/:\s*'([^']*?)'/g, ': "$1"'); // string values
+
+            // Now attempt to parse
+            try {
+                return JSON.parse(text);
+            } catch (err) {
+                console.error("Failed to parse cleaned response:", err.message);
+                return null;
+            }
+        },
         async checklist(mainType) {
             try {
-                const res = await axios.post(`https://proctoredserver.peppubuild.com/`, {
+                const res = await axios.post(`https://proctoredserver.peppubuild.com/promptai`, {
                     userReq: mainType
                 });
                 let result = res.data.result;
                 const content = result.match(/```(?:\w*\n)?([\s\S]*?)```/)[1];
-                return content;
-                // console.log(result)
+                const theContent = this.cleanAndParseAIResponse(content)
+                return theContent;
             } catch (err) {
                 console.log(err)
             }
