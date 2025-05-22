@@ -213,6 +213,10 @@ export default {
             });
         }
     },
+    mounted() {
+        // fetch vessels.
+        this.$store.dispatch('vessel/fetchVessels');
+    },
     methods: {
         resetForm() {
             this.newCrew = {

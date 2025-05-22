@@ -120,6 +120,8 @@ export default {
         }
     },
     mounted() {
+        // fetch vessels.
+        this.$store.dispatch('vessel/fetchVessels');
         this.vessels.map(vessel => {
             const registrationNumber = vessel.registrationNumber;
             const untasks = localStorage.getItem(`tasks-${registrationNumber}`) || '[]';
@@ -201,17 +203,6 @@ export default {
 
                     // Add a new vessel
                     this.$store.dispatch('vessel/addVessel', newVessel);
-
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Added to Fleet!',
-                        text: 'Your vessel has been added successfully. It should be in your dashboard now.',
-                        confirmButtonText: 'Close',
-                        customClass: {
-                            confirmButton: 'swal2-confirm'
-                        }
-                    });
                 }
             });
         },
@@ -231,7 +222,6 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     this.deleteVessel(task);
-                    Swal.fire('Deleted!', 'The task has been deleted.', 'success');
                 }
             })
         },

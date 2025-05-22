@@ -61,7 +61,9 @@ export default {
             return this.$store.getters['vessel/allVessels'];
         }
     },
-    mounted() {
+    async mounted() {
+        // fetch vessels.
+        this.$store.dispatch('vessel/fetchVessels');
         // Sidebar toggle
         const sidebarToggle = document.getElementById('sidebarToggle');
         const sidebar = document.getElementById('sidebar');
