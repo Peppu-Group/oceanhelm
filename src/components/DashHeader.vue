@@ -10,40 +10,30 @@
 </template>
 
 <script>
-import supabase from '../supabase'
+import { mapGetters, mapActions } from 'vuex';
+
 export default {
-    name: 'DashHeader',
-    props: ['name'],
+  name: 'DashHeader',
+  props: ['name'],
 
-    methods: {
-        loggedIn() {
-            this.getUser().then((text) => {
-                Swal.fire({
-                title: "Logged in",
-                text: text,
-                icon: "info"
-            });
-            })
-        },
-        async getUser() {
-            const { data: { session } } = await supabase.auth.getSession();
+  computed: {
+    ...mapGetters('user', ['userRoleDescription']),
+  },
 
-            if (session) {
-                const user = session.user;
-                const { data: profile, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-                if (profile.role == 'owner') {
-                    return `You're logged as ${profile.full_name}, with owner access. You have full access, you can see the changes everyone makes.`
-                } else if (profile.role == 'captain') {
-                    return `You're logged as ${profile.full_name}, with captain access. You have full access for your vessel's information, you can see the changes everyone makes to your vessel.`
-                } else if (profile.role == 'staff') {
-                    return `You're logged as ${profile.full_name}, with an employee access. You have limited access, everyone with owner or captain access can see the changes you make.`
-                }
-            }
-        }
+  methods: {
+    ...mapActions('user', ['fetchUserProfile']),
+
+    async loggedIn() {
+      await this.fetchUserProfile();
+
+      if (this.userRoleDescription) {
+        Swal.fire({
+          title: "Logged in",
+          text: this.userRoleDescription,
+          icon: "info"
+        });
+      }
     }
+  }
 }
 </script>
