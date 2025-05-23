@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import supabase from '../supabase'
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
@@ -22,6 +23,9 @@ export default {
 
     computed: {
         ...mapGetters('user', ['userProfile', 'userRoleDescription']),
+        vessels() {
+            return this.$store.getters['vessel/allVessels'];
+        },
     },
 
     methods: {
@@ -51,18 +55,27 @@ export default {
                 }
             }).then(async (result) => {
                 if (result.isConfirmed) {
+                    // Build the vessel options dynamically
+                    const vesselOptions = this.vessels.map(v =>
+                        `<option value="${v.registration_number}">${v.name} (${v.registration_number})</option>`
+                    ).join('');
+
                     const { value: formValues } = await Swal.fire({
                         title: 'Create New User',
                         html:
                             `<input id="swal-input-name" class="swal2-input" placeholder="Full Name">` +
-                            `<input id="swal-input-email" class="swal2-input" placeholder="Email Address">`
+                            `<input id="swal-input-email" class="swal2-input" placeholder="Email Address">` +
                             `<select id="swal-input-role" class="swal2-select">
                             <option value="" disabled selected>Select Role</option>
                             <option value="owner">Owner</option>
                             <option value="captain">Captain</option>
                             <option value="staff">Staff</option>
-                            </select>` +
-                            `<input id="swal-input-password" type="password" class="swal2-input" placeholder="Password">`,
+                        </select>` +
+                            `<input id="swal-input-password" type="password" class="swal2-input" placeholder="Password">` +
+                            `<select id="swal-input-vessel" class="swal2-select">
+                            <option value="" disabled selected>Select Vessel</option>
+                            ${vesselOptions}
+                        </select>`,
                         focusConfirm: false,
                         showCancelButton: true,
                         preConfirm: () => {
@@ -70,13 +83,14 @@ export default {
                             const email = document.getElementById('swal-input-email').value;
                             const role = document.getElementById('swal-input-role').value;
                             const password = document.getElementById('swal-input-password').value;
+                            const vessel = document.getElementById('swal-input-vessel').value;
 
-                            if (!name || !role || !password || !email) {
-                                Swal.showValidationMessage('All fields are required');
-                                return;
+                            if (!name || !email || !role || !password || !vessel) {
+                                Swal.showValidationMessage('Please fill all fields');
+                                return false;
                             }
 
-                            return { name, role, password, email };
+                            return { name, email, role, password, vessel };
                         }
                     });
 
@@ -88,7 +102,8 @@ export default {
                                 data: {
                                     fullName: formValues.name,
                                     company_id: this.userProfile.company_id,
-                                    role: formValues.role
+                                    role: formValues.role,
+                                    vessel: formValues.vessel
                                 },
                                 emailRedirectTo: 'https://marine.peppubuild.com/subredirect'
                             }
