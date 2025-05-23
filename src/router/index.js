@@ -91,34 +91,39 @@ router.beforeEach(async (to, from, next) => {
       return next('/login');
     }
 
-    // Fetch user profile from Vuex if not already loaded
+    // Load user profile from store if not present
     if (!store.getters['user/userProfile']) {
       await store.dispatch('user/fetchUserProfile');
     }
 
     const profile = store.getters['user/userProfile'];
-
     if (!profile) {
       return next('/login');
     }
+
     const allowedRoles = ['owner', 'captain'];
     const isAuthorizedRole = allowedRoles.includes(profile.role);
 
-    // Optional: check if this route has a vesselId param and enforce access restriction
+    // Restrict vessel-specific access
     if (to.params.id && isAuthorizedRole) {
       const vesselId = to.params.id;
-      // compare profile.vessel with vesselId
-      if (profile.role == 'captain' && vesselId !== profile.vessel) {
-        Swal.fire({
+
+      // Block captains from accessing vessels they don't own
+      if (profile.role === 'captain' && vesselId !== profile.vessel) {
+        await Swal.fire({
           title: "Route Protected!",
-          text: `You have ${profile.role}, you don't have access to this inormation`,
-          icon: "info"
+          text: `You are logged in as a ${profile.role}, and you don't have access to this vessel's information.`,
+          icon: "warning",
+          confirmButtonText: "OK"
         });
+
+        return next(false); // Cancel navigation
       }
     }
-    next();
+
+    next(); // All checks passed
   } else {
-    next();
+    next(); // Route doesn't require auth
   }
 });
 

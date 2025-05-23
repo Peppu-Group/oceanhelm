@@ -108,6 +108,14 @@ export default {
                                 emailRedirectTo: 'https://marine.peppubuild.com/subredirect'
                             }
                         });
+
+                        if (!error) {
+                            Swal.fire({
+                                title: "Success",
+                                text: `A confirmation mail has been sent to ${formValues.name}`,
+                                icon: "success"
+                            });
+                        }
                     }
                 }
             });
