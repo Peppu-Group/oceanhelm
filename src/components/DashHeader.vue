@@ -57,7 +57,7 @@ export default {
                 if (result.isConfirmed) {
                     // Build the vessel options dynamically
                     const vesselOptions = this.vessels.map(v =>
-                        `<option value="${v.registration_number}">${v.name} (${v.registration_number})</option>`
+                        `<option value="${v.name}">${v.name} (${v.registrationNumber})</option>`
                     ).join('');
 
                     const { value: formValues } = await Swal.fire({
