@@ -10,7 +10,7 @@
       <div class="hero-buttons">
         <a @click="contactDemo()" class="primary-button">Request
           Demo</a><!-- Add swal button that sends email to marine.peppubuild.com -->
-        <a href="#features" class="secondary-button">Explore Features</a>
+        <a href="/app/dashboard" class="secondary-button">Get Started</a>
       </div>
     </div>
   </section>
