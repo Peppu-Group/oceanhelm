@@ -16,14 +16,20 @@
             <section :class="['form-section', { active: activeSection === 'maintenance' }]"
                 v-show="activeSection === 'maintenance'">
                 <h2>🛠️ Maintenance Tasks</h2>
-                <form>
+                <!-- Loading indicator -->
+                <div class="loading-container" v-if="isLoading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading checklist...</p>
+                </div>
+                <form v-if="!isLoading">
                     <div class="container">
-                        <!-- Loading indicator -->
-                        <div class="loading-container" v-if="isLoading">
-                            <div class="loading-spinner"></div>
-                            <p>Loading checklist...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1>{{ getName }} Maintenance Checklist</h1>
+                            <button v-if="showAddTaskButton" class="btn btn-outline-custom" @click.prevent="addTask()">
+                                Manually Add Task
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
-                        <h1>{{ getName }} Maintenance Checklist</h1>
 
                         <div class="progress-container">
                             <div class="progress-info">
@@ -35,13 +41,26 @@
                         </div>
 
                         <ul class="checklist">
-                            <li v-for="checklist in checklists" :key="checklist.id" class="checklist-item"
-                                @click="toggleTask(checklist)">
-                                <div class="checkbox" :class="{ 'checked': checklist.completed }">
+                            <li v-for="checklist in checklists" :key="checklist.id" class="checklist-item">
+                                <div class="checkbox" :class="{ 'checked': checklist.completed }"
+                                    @click="toggleTask(checklist)">
                                     <span v-if="checklist.completed">✓</span>
                                 </div>
-                                <span class="task-text" :class="{ 'completed': checklist.completed }">{{ checklist.text
-                                }}</span>
+                                <span class="task-text" :class="{ 'completed': checklist.completed }"
+                                    @click="toggleTask(checklist)">
+                                    {{ checklist.text }}
+                                </span>
+                                <button v-if="showAddTaskButton" class="delete-btn" @click="deleteTask(checklist.id)" title="Delete task">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3,6 5,6 21,6"></polyline>
+                                        <path
+                                            d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2">
+                                        </path>
+                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                    </svg>
+                                </button>
                             </li>
                         </ul>
 
@@ -49,7 +68,7 @@
                             All tasks completed! ✅
                         </div>
 
-                        <button class="reset-button" @click.prevent="resetTasks">Save Checklist</button>
+                        <button class="reset-button" @click.prevent="resetTasks">{{ checklistButtonLabel }}</button>
                     </div>
                 </form>
             </section>
@@ -288,6 +307,7 @@ export default {
         return {
             name: null,
             no: null,
+            lastSection: '',
             currentTask: '',
             activeSection: 'inventory',
             sections: [
@@ -373,6 +393,12 @@ export default {
         },
         progress() {
             return Math.round((this.completedCount.length / this.checklists.length) * 100);
+        },
+        checklistButtonLabel() {
+            return this.lastSection === 'schedule' ? 'Approve Maintenance' : 'Save Checklist';
+        },
+        showAddTaskButton() {
+            return this.checklistButtonLabel !== 'Save Checklist';
         }
     },
     async mounted() {
@@ -395,6 +421,37 @@ export default {
         }
     },
     methods: {
+        deleteTask(taskId) {
+            this.checklists = this.checklists.filter(checklist => checklist.id !== taskId);
+        },
+        addTask(event) {
+            if (event) event.preventDefault(); // Stop form from submitting
+            Swal.fire({
+                title: 'Add New Task',
+                input: 'text',
+                inputLabel: 'Task Description',
+                inputPlaceholder: 'Enter the task details',
+                showCancelButton: true,
+                confirmButtonText: 'Add Task',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Please enter a task';
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const newTask = {
+                        id: 30,
+                        text: result.value,
+                        completed: false
+                    };
+
+                    this.checklists.push(newTask);
+                }
+            })
+
+        },
+
         setFilter(filter) {
             this.activeFilter = filter;
         },
@@ -430,6 +487,9 @@ export default {
             // Also update current task in localStorage (optional)
             localStorage.setItem('currentTask', taskComponent);
             this.currentTask = taskComponent;
+            // save the lastsection, to edit button text
+            this.lastSection = 'inventory';
+
             this.activeSection = 'maintenance';
         },
         switchSchedule() {
@@ -527,6 +587,11 @@ export default {
         },
 
         saveSchedule() {
+            // the captain or owner is shown an initial checklist where they can add or remove checklist.
+            // then save the checklist.
+            // on open, open the already saved checklist.
+
+            // perform validation
             const id = this.$route.params.id;
             if (!this.validateForm()) {
                 return; // Stop if validation fails
@@ -534,6 +599,7 @@ export default {
 
             // push the form info into task
             this.tasks.push(this.form);
+
             // save current task in localstorage.
             const existing = localStorage.getItem(`tasks-${id}`);
 
@@ -548,8 +614,14 @@ export default {
             }
             // Then reset
             this.resetForm();
-            // push to the all maintenance page, with the required info.
-            this.activeSection = 'inventory';
+
+            // load maintenance checklist
+            this.loadChecklist(this.form.component);
+
+            // save the lastsection, to edit button text
+            this.lastSection = 'schedule';
+            // push to maintenance section
+            this.activeSection = 'maintenance';
         },
 
         // Then reset
@@ -629,12 +701,17 @@ export default {
                 const res = await axios.post(`https://proctoredserver.peppubuild.com/promptai`, {
                     userReq: mainType
                 });
+                console.log(res.data.result)
                 let result = res.data.result;
                 const content = result.match(/```(?:\w*\n)?([\s\S]*?)```/)[1];
                 const theContent = this.cleanAndParseAIResponse(content)
                 return theContent;
             } catch (err) {
-                console.log(err)
+                Swal.fire({
+                    title: "An error occurred",
+                    text: `We ran into an error while generating the checklist. Try again, or generate checklist manually.`,
+                    icon: "error"
+                });
             }
         }
     }
@@ -734,6 +811,26 @@ body {
     cursor: pointer;
     margin-top: 20px;
     font-weight: bold;
+}
+
+.btn-outline-custom {
+    color: #005792;
+    /* your custom text color */
+    border: 2px solid #005792;
+    /* your custom border color */
+    background-color: transparent;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.btn-outline-custom:hover {
+    background-color: #005792;
+    /* custom hover background */
+    color: white;
+    /* text color on hover */
 }
 
 .reset-button:hover {
@@ -1087,5 +1184,36 @@ textarea {
 
 .status-badge.completed {
     background-color: #4caf50;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 1;
+    margin-left: 8px;
+    flex-shrink: 0;
+    transform: scale(1.1);
+}
+
+.checklist-item:hover .delete-btn {
+    opacity: 1;
+}
+
+.delete-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.1);
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
 }
 </style>
