@@ -6,6 +6,7 @@ export default {
     mutations: {
       SET_TASKS(state, { vesselId, tasks }) {
         state.tasksByVessel[vesselId] = tasks;
+        console.log(tasks)
         localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(tasks));
       },
       ADD_TASK(state, { vesselId, task }) {
@@ -30,7 +31,10 @@ export default {
       },
       deleteTask({ commit }, { vesselId, taskId }) {
         commit('DELETE_TASK', { vesselId, taskId });
-      }
+      },
+      updateTask({ commit }, { vesselId, tasks }) {
+        commit('SET_TASKS', { vesselId, tasks });
+      },
     },
     getters: {
       getTasksByVessel: state => vesselId => state.tasksByVessel[vesselId] || []

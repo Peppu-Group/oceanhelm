@@ -310,6 +310,7 @@ export default {
             no: null,
             lastSection: '',
             currentTask: '',
+            tasks: [],
             activeSection: 'inventory',
             sections: [
                 { id: 'schedule', name: 'Schedule', icon: '📅' },
@@ -323,7 +324,6 @@ export default {
             activeFilter: 'all',
             searchQuery: '',
             activeFilters: [1, 2], // example filter count
-            tasks: [],
             vesselInfo: [],
             checklists: [],
             isLoading: false,
@@ -386,8 +386,7 @@ export default {
         },
         getVesselCrew() {
             let vesselName = this.vesselInfo.name;
-            let crew = JSON.parse(localStorage.getItem('crew') ?? '[]');
-            return crew.filter(member => member.vessel?.trim() === vesselName);
+            return this.$store.getters['crew/getCrewByVessel'](vesselName)
         },
         completedCount() {
             return this.checklists.filter(item => item.completed);
@@ -400,22 +399,24 @@ export default {
         },
         showAddTaskButton() {
             return this.checklistButtonLabel !== 'Save Checklist';
+        },
+        vessels() {
+            return this.$store.getters['vessel/allVessels'];
         }
     },
     async mounted() {
         let id = this.$route.params.id;
-        let vessels = JSON.parse(localStorage.getItem('vessel')) || [];
-
-        let vesselInfo = vessels.find(v => v.registrationNumber === id);
+        let vesselInfo = this.vessels.find(v => v.registrationNumber === id);
         this.vesselInfo = vesselInfo;
 
         if (vesselInfo) {
             this.no = vesselInfo.registrationNumber;
             this.name = vesselInfo.name;
 
-            // get all tasks
-            let tasks = JSON.parse(localStorage.getItem(`tasks-${id}`) ?? '[]');
-            this.tasks.push(...tasks);
+            await this.$store.dispatch('tasks/loadTasks', this.$route.params.id);
+
+            this.tasks = this.$store.getters['tasks/getTasksByVessel'](this.$route.params.id);
+
             this.currentTask = localStorage.getItem('currentTask');
         } else {
             this.$router.push({ path: `/app/dashboard` })
@@ -587,7 +588,7 @@ export default {
             this.form.remainingDays = `${diffDays} Days`;
         },
 
-        saveSchedule() {
+        async saveSchedule() {
             // the captain or owner is shown an initial checklist where they can add or remove checklist.
             // then save the checklist.
             // on open, open the already saved checklist.
@@ -599,20 +600,10 @@ export default {
             }
 
             // push the form info into task
-            this.tasks.push(this.form);
-
-            // save current task in localstorage.
-            const existing = localStorage.getItem(`tasks-${id}`);
-
-            if (!existing) {
-                // If no vessel data in localStorage, create a new array with the vessel
-                localStorage.setItem(`tasks-${id}`, JSON.stringify([this.form]));
-            } else {
-                // If vessel data exists, parse it, push the new vessel, then save it back
-                const tasks = JSON.parse(existing);
-                tasks.push(this.form);
-                localStorage.setItem(`tasks-${id}`, JSON.stringify(tasks));
-            }
+            await this.$store.dispatch('tasks/addTask', {
+                vesselId: this.$route.params.id,
+                task: this.form
+            });
 
             // load maintenance checklist
             this.loadChecklist(this.form.component);
@@ -621,9 +612,6 @@ export default {
             this.lastSection = 'schedule';
             // Also update current task in localStorage (optional)
             localStorage.setItem('currentTask', this.form.component);
-            console.log(this.form)
-            console.log(this.form.component)
-
             // Then reset
             this.resetForm();
             // push to maintenance section
@@ -669,8 +657,6 @@ export default {
             // get current task id from localstorage.
             let currentTask = localStorage.getItem('currentTask');
             let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
-            console.log(taskIndex)
-            console.log(currentTask)
 
             if (taskIndex !== -1) {
                 const allCompleted = this.checklists.every(item => item.completed);
@@ -681,7 +667,11 @@ export default {
                     this.tasks[taskIndex].checklistProgress = [...this.checklists];
                 }
                 // Save and updated tasks array back to localStorage
-                localStorage.setItem(`tasks-${id}`, JSON.stringify(this.tasks));
+                // localStorage.setItem(`tasks-${id}`, JSON.stringify(this.tasks));
+                this.$store.dispatch('tasks/updateTask', {
+                vesselId: id,
+                tasks: this.tasks
+            });
                 // send to maintenance page
                 this.activeSection = 'inventory';
             }
