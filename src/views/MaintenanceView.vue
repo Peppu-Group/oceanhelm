@@ -24,7 +24,7 @@
                 <form v-if="!isLoading">
                     <div class="container">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h1>{{ getName }} Maintenance Checklist</h1>
+                            <h1>Maintenance Checklist</h1>
                             <button v-if="showAddTaskButton" class="btn btn-outline-custom" @click.prevent="addTask()">
                                 Manually Add Task
                                 <i class="fas fa-plus"></i>
@@ -50,7 +50,8 @@
                                     @click="toggleTask(checklist)">
                                     {{ checklist.text }}
                                 </span>
-                                <button v-if="showAddTaskButton" class="delete-btn" @click="deleteTask(checklist.id)" title="Delete task">
+                                <button v-if="showAddTaskButton" class="delete-btn" @click="deleteTask(checklist.id)"
+                                    title="Delete task">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <polyline points="3,6 5,6 21,6"></polyline>
@@ -612,14 +613,19 @@ export default {
                 tasks.push(this.form);
                 localStorage.setItem(`tasks-${id}`, JSON.stringify(tasks));
             }
-            // Then reset
-            this.resetForm();
 
             // load maintenance checklist
             this.loadChecklist(this.form.component);
 
             // save the lastsection, to edit button text
             this.lastSection = 'schedule';
+            // Also update current task in localStorage (optional)
+            localStorage.setItem('currentTask', this.form.component);
+            console.log(this.form)
+            console.log(this.form.component)
+
+            // Then reset
+            this.resetForm();
             // push to maintenance section
             this.activeSection = 'maintenance';
         },
@@ -663,6 +669,8 @@ export default {
             // get current task id from localstorage.
             let currentTask = localStorage.getItem('currentTask');
             let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
+            console.log(taskIndex)
+            console.log(currentTask)
 
             if (taskIndex !== -1) {
                 const allCompleted = this.checklists.every(item => item.completed);
@@ -703,7 +711,16 @@ export default {
                 });
                 console.log(res.data.result)
                 let result = res.data.result;
-                const content = result.match(/```(?:\w*\n)?([\s\S]*?)```/)[1];
+                let content = '';
+
+                try {
+                    const match = result.match(/```(?:\w*\n)?([\s\S]*?)```/);
+                    content = match ? match[1] : result; // If no match, fallback to using the full result
+                } catch (error) {
+                    console.error("Failed to extract code block:", error);
+                    content = result;
+                }
+
                 const theContent = this.cleanAndParseAIResponse(content)
                 return theContent;
             } catch (err) {
