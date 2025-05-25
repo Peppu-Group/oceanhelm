@@ -652,7 +652,7 @@ export default {
             task.completed = !task.completed;
         },
 
-        resetTasks() {
+        async resetTasks() {
             let id = this.$route.params.id;
             // get current task id from localstorage.
             let currentTask = localStorage.getItem('currentTask');
@@ -668,9 +668,15 @@ export default {
                 }
                 // Save and updated tasks array back to localStorage
                 // localStorage.setItem(`tasks-${id}`, JSON.stringify(this.tasks));
-                this.$store.dispatch('tasks/updateTask', {
+                let updateTask = {
+                    checklistProgress: this.tasks[taskIndex].checklistProgress,
+                    status: this.tasks[taskIndex].status,
+                    component: currentTask
+                }
+                await this.$store.dispatch('tasks/updateTask', {
                 vesselId: id,
-                tasks: this.tasks
+                tasks: this.tasks,
+                updateTask
             });
                 // send to maintenance page
                 this.activeSection = 'inventory';

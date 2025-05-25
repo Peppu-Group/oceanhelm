@@ -111,7 +111,6 @@ export default {
       }
     },
     async updateCrewMember({ commit, state }, updatedMember) {
-      console.log(updatedMember)
       // Build payload safely
       const updatePayload = {
         status: updatedMember.status,
@@ -123,7 +122,6 @@ export default {
       if (updatedMember.vessel !== undefined && updatedMember.vessel !== null) {
         updatePayload.vessel = updatedMember.vessel;
       }
-      console.log(updatePayload)
       // Update in Supabase
       const { data, error } = await supabase
         .from('crew')
