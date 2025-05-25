@@ -68,7 +68,6 @@ export default {
       commit('SET_TASKS', { vesselId, tasks: simplifiedTasks });
     },
     async addTask({ commit }, { vesselId, task }) {
-      console.log(task)
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {

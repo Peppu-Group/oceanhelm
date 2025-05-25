@@ -8,11 +8,11 @@
     </button>
 
     <!-- Sidebar -->
-    <Sidebar/>
+    <Sidebar />
     <!-- Page Content -->
     <div id="content">
         <div class="container-fluid">
-            <DashHeader name="Fleet Dashboard"/>
+            <DashHeader name="Fleet Dashboard" />
 
             <!-- Company Details -->
             <div class="company-card">
@@ -26,23 +26,23 @@
                         <h3>{{ company.name }}</h3>
                         <div class="row mt-3">
                             <div class="col-md-4">
-                                <p><strong>Location:</strong> {{ company.location }}</p>
-                                <p><strong>Established:</strong> {{ company.estYear }}</p>
+                                <p><strong>Location:</strong> {{ company.location || 'Not Set'}}  </p>
+                                <p><strong>Established:</strong> {{ company.estYear || 'Not Set'}}</p>
                             </div>
                             <div class="col-md-4">
-                                <p><strong>Contact:</strong> {{ company.phoneNumber }}</p>
-                                <p><strong>Email:</strong> {{ company.email }}</p>
+                                <p><strong>Contact:</strong> {{ company.phoneNumber || 'Not Set'}}</p>
+                                <p><strong>Email:</strong> {{ company.email || 'Not Set'}}</p>
                             </div>
                             <div class="col-md-4">
                                 <p><strong>Fleet Size:</strong> {{ getVesselCount() }}</p>
-                                <p><strong>License:</strong> {{ company.license }}</p>
+                                <p><strong>License:</strong> {{ company.license || 'Not Set'}}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <VesselList/>
+            <VesselList />
         </div>
     </div>
 </template>
@@ -51,21 +51,31 @@
 import Sidebar from '../components/Sidebar.vue';
 import VesselList from '../components/VesselList.vue';
 import DashHeader from '../components/DashHeader.vue';
+import supabase from '../supabase';
+
 
 export default {
     name: 'DashboardView',
-    data() {
-        return {
-            company: {
-                name: "MarineOps Solutions Inc.",
-                location: "Port Harbor, CA 92614",
-                estYear: 2005,
-                phoneNumber: "(555) 123-4567",
-                email: "info@marineops.com",
-                license: "MCL-273845",
-                vessels: []
+    async mounted() {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('company_id')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profile?.company_id) {
+                await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
             }
-        };
+        }
+        console.log(this.company)
+    },
+    computed: {
+        company() {
+            return this.$store.getters['company/company'];
+        }
     },
     methods: {
         getVesselCount() {
@@ -196,16 +206,16 @@ export default {
 }
 
 #content {
-  width: 100%;
-  min-height: 100vh;
-  transition: all 0.3s;
-  position: absolute;
-  padding: 20px;
-  padding-left: 40px;
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    padding: 20px;
+    padding-left: 40px;
 }
 
 #content.active {
-  margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
 }
 </style>
