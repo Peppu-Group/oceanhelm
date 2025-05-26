@@ -42,8 +42,6 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import supabase from '../supabase';
-
 
 export default {
     name: 'SideBar',
@@ -83,18 +81,8 @@ export default {
             }
         });
 
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session) {
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('company_id')
-                .eq('id', session.user.id)
-                .single();
-
-            if (profile?.company_id) {
-                await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
-            }
+        if (this.userProfile) {
+            await this.$store.dispatch('company/fetchCompanyInfo', this.userProfile.company_id);
         }
 
         // get all vessels
@@ -151,9 +139,10 @@ export default {
             return this.$store.getters['tasks/getTasksByVessel'](regno);
         },
         async updateCompanyInfo(currentData = this.company) {
-            const { value: formValues } = await Swal.fire({
-                title: 'Update Company Information',
-                html: `
+            if (this.userProfile.role == 'owner') {
+                const { value: formValues } = await Swal.fire({
+                    title: 'Update Company Information',
+                    html: `
       <div style="text-align: left; max-width: 400px; margin: 0 auto;">
         <div style="margin-bottom: 20px;">
           <label for="swal-location" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
@@ -203,66 +192,74 @@ export default {
         </p>
       </div>
     `,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'Update Information',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#0d6efd',
-                cancelButtonColor: '#6c757d',
-                width: '500px',
-                customClass: {
-                    popup: 'company-info-popup',
-                    title: 'company-info-title'
-                },
-                preConfirm: () => {
-                    const location = document.getElementById('swal-location').value.trim();
-                    const estYear = document.getElementById('swal-estyear').value;
-                    const phoneNumber = document.getElementById('swal-phone').value.trim();
-                    const email = document.getElementById('swal-email').value.trim();
-                    const license = document.getElementById('swal-license').value.trim();
-
-                    // Validate email format if provided
-                    if (email && !this.isValidEmail(email)) {
-                        Swal.showValidationMessage('Please enter a valid email address');
-                        return false;
-                    }
-
-                    // Validate year if provided
-                    if (estYear && (estYear < 1800 || estYear > 2025)) {
-                        Swal.showValidationMessage('Please enter a valid year between 1800 and 2025');
-                        return false;
-                    }
-
-                    // Return only non-empty values
-                    const result = {};
-                    if (location) result.location = location;
-                    if (estYear) result.estYear = parseInt(estYear);
-                    if (phoneNumber) result.phoneNumber = phoneNumber;
-                    if (email) result.email = email;
-                    if (license) result.license = license;
-
-                    return result;
-                }
-            });
-
-            if (formValues) {
-                // Process the form data
-                await this.$store.dispatch('company/updateCompanyInfo', formValues)
-
-                // Show success message
-                await Swal.fire({
-                    title: 'Success!',
-                    text: 'Company information has been updated successfully.',
-                    icon: 'success',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Update Information',
+                    cancelButtonText: 'Cancel',
                     confirmButtonColor: '#0d6efd',
-                    timer: 2000,
-                    timerProgressBar: true
+                    cancelButtonColor: '#6c757d',
+                    width: '500px',
+                    customClass: {
+                        popup: 'company-info-popup',
+                        title: 'company-info-title'
+                    },
+                    preConfirm: () => {
+                        const location = document.getElementById('swal-location').value.trim();
+                        const estYear = document.getElementById('swal-estyear').value;
+                        const phoneNumber = document.getElementById('swal-phone').value.trim();
+                        const email = document.getElementById('swal-email').value.trim();
+                        const license = document.getElementById('swal-license').value.trim();
+
+                        // Validate email format if provided
+                        if (email && !this.isValidEmail(email)) {
+                            Swal.showValidationMessage('Please enter a valid email address');
+                            return false;
+                        }
+
+                        // Validate year if provided
+                        if (estYear && (estYear < 1800 || estYear > 2025)) {
+                            Swal.showValidationMessage('Please enter a valid year between 1800 and 2025');
+                            return false;
+                        }
+
+                        // Return only non-empty values
+                        const result = {};
+                        if (location) result.location = location;
+                        if (estYear) result.estYear = parseInt(estYear);
+                        if (phoneNumber) result.phoneNumber = phoneNumber;
+                        if (email) result.email = email;
+                        if (license) result.license = license;
+
+                        return result;
+                    }
                 });
 
-                return formValues;
-            }
+                if (formValues) {
+                    // Process the form data
+                    await this.$store.dispatch('company/updateCompanyInfo', formValues)
 
-            return null;
+                    // Show success message
+                    await Swal.fire({
+                        title: 'Success!',
+                        text: 'Company information has been updated successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#0d6efd',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+
+                    return formValues;
+                }
+
+                return null;
+            } else {
+                Swal.fire({
+                    title: "Route Protected!",
+                    text: `Only owners can edit company info, you don't have access`,
+                    icon: "warning",
+                    confirmButtonText: "OK"
+                });
+            }
         },
         // Email validation helper function
         isValidEmail(email) {

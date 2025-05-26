@@ -70,10 +70,17 @@ export default {
                 await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
             }
         }
+
+        // fetch vessels.
+        this.$store.dispatch('vessel/fetchVessels');
+        this.company.vessels.push(this.vessels);
     },
     computed: {
         company() {
             return this.$store.getters['company/company'];
+        },
+        vessels() {
+            return this.$store.getters['vessel/allVessels'];
         }
     },
     methods: {
