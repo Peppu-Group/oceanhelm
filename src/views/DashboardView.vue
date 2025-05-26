@@ -70,7 +70,6 @@ export default {
                 await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
             }
         }
-        console.log(this.company)
     },
     computed: {
         company() {

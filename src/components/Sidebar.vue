@@ -31,7 +31,7 @@
                     Processing</a>
             </li>
             <li>
-                <a @click="editInfo()"><i class="bi bi-gear"></i> Settings</a>
+                <a @click="updateCompanyInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>
                 <a @click="comingSoon()"><i class="bi bi-question-circle"></i> Help & Support</a>
@@ -42,25 +42,17 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
+import supabase from '../supabase';
+
 
 export default {
     name: 'SideBar',
-    data() {
-        return {
-            company: {
-                name: "MarineOps Solutions Inc.",
-                location: "Port Harbor, CA 92614",
-                estYear: 2005,
-                phoneNumber: "(555) 123-4567",
-                email: "info@marineops.com",
-                license: "MCL-273845",
-                vessels: []
-            }
-        };
-    },
     computed: {
         vessels() {
             return this.$store.getters['vessel/allVessels'];
+        },
+        company() {
+            return this.$store.getters['company/company'];
         },
         ...mapGetters('user', ['userProfile']),
     },
@@ -90,6 +82,21 @@ export default {
                 content.classList.remove('active');
             }
         });
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('company_id')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profile?.company_id) {
+                await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
+            }
+        }
+
         // get all vessels
         let vessels = this.vessels;
         this.company.vessels.push(...vessels);
@@ -142,6 +149,125 @@ export default {
         },
         getTasks(regno) {
             return this.$store.getters['tasks/getTasksByVessel'](regno);
+        },
+        async updateCompanyInfo(currentData = this.company) {
+            const { value: formValues } = await Swal.fire({
+                title: 'Update Company Information',
+                html: `
+      <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+        <div style="margin-bottom: 20px;">
+          <label for="swal-location" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
+            📍 Location
+          </label>
+          <input id="swal-location" class="swal2-input" placeholder="Enter company location" 
+                 value="${currentData.location || ''}" style="margin: 0; width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label for="swal-estyear" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
+            📅 Established Year
+          </label>
+          <input id="swal-estyear" class="swal2-input" type="number" 
+                 placeholder="Enter establishment year" min="1800" max="2025"
+                 value="${currentData.estYear || ''}" style="margin: 0; width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label for="swal-phone" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
+            📞 Phone Number
+          </label>
+          <input id="swal-phone" class="swal2-input" type="tel" 
+                 placeholder="Enter phone number" 
+                 value="${currentData.phoneNumber || ''}" style="margin: 0; width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label for="swal-email" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
+            📧 Email Address
+          </label>
+          <input id="swal-email" class="swal2-input" type="email" 
+                 placeholder="Enter email address" 
+                 value="${currentData.email || ''}" style="margin: 0; width: 100%;">
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label for="swal-license" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">
+            🏷️ License Number
+          </label>
+          <input id="swal-license" class="swal2-input" placeholder="Enter license number" 
+                 value="${currentData.license || ''}" style="margin: 0; width: 100%;">
+        </div>
+        
+        <p style="font-size: 12px; color: #666; margin-top: 20px; text-align: center;">
+          💡 Don't edit the fields if you don't want to change them
+        </p>
+      </div>
+    `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Update Information',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                width: '500px',
+                customClass: {
+                    popup: 'company-info-popup',
+                    title: 'company-info-title'
+                },
+                preConfirm: () => {
+                    const location = document.getElementById('swal-location').value.trim();
+                    const estYear = document.getElementById('swal-estyear').value;
+                    const phoneNumber = document.getElementById('swal-phone').value.trim();
+                    const email = document.getElementById('swal-email').value.trim();
+                    const license = document.getElementById('swal-license').value.trim();
+
+                    // Validate email format if provided
+                    if (email && !this.isValidEmail(email)) {
+                        Swal.showValidationMessage('Please enter a valid email address');
+                        return false;
+                    }
+
+                    // Validate year if provided
+                    if (estYear && (estYear < 1800 || estYear > 2025)) {
+                        Swal.showValidationMessage('Please enter a valid year between 1800 and 2025');
+                        return false;
+                    }
+
+                    // Return only non-empty values
+                    const result = {};
+                    if (location) result.location = location;
+                    if (estYear) result.estYear = parseInt(estYear);
+                    if (phoneNumber) result.phoneNumber = phoneNumber;
+                    if (email) result.email = email;
+                    if (license) result.license = license;
+
+                    return result;
+                }
+            });
+
+            if (formValues) {
+                // Process the form data
+                await this.$store.dispatch('company/updateCompanyInfo', formValues)
+
+                // Show success message
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Company information has been updated successfully.',
+                    icon: 'success',
+                    confirmButtonColor: '#0d6efd',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+
+                return formValues;
+            }
+
+            return null;
+        },
+        // Email validation helper function
+        isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
         }
     }
 }
