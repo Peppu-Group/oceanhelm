@@ -1,4 +1,6 @@
 import supabase from '../../supabase';
+import axios from 'axios';
+
 function errorMessage(error) {
   Swal.fire({
     icon: 'error',
@@ -35,13 +37,46 @@ export default {
       state.crewMembers = state.crewMembers.filter(m => m.name !== id);
       localStorage.setItem('crew', JSON.stringify(state.crewMembers));
     },
-    UPDATE_CREW_MEMBER(state, updatedMember) {
+    UPDATE_CREW_MEMBER(state, {updatedMember, companyInfo}) {
       const index = state.crewMembers.findIndex(m => m.id === updatedMember.id);
       if (index !== -1) {
+        // Update the crew member in place
         state.crewMembers.splice(index, 1, {
           ...state.crewMembers[index],
           ...updatedMember
         });
+    
+        try {
+          const existingMember = state.crewMembers.find(m => m.name === updatedMember.name);
+          const crew = { ...existingMember, ...updatedMember };
+    
+          let notificationData = {
+            companyName: companyInfo.company.name,
+            name: crew.name,
+            notification_type: "crew",
+            id: crew.vessel,
+            embarkation_date: crew.nextShift,
+            duration: crew.onBoard,
+            contact_person: crew.contactPerson || `${crew.vessel}'s Captain or HR`,
+            email: crew.email,
+            operations_email: companyInfo.company.email,
+            operations_phone: companyInfo.company.phoneNumber
+          };
+
+    
+          let last_shift = localStorage.getItem("last_shift");
+          if (updatedMember.nextShift && last_shift != updatedMember.nextShift) {
+            axios.post('http://localhost:3000/notification', notificationData)
+              .then(response => {
+                console.log('Success:', response.data);
+              })
+              .catch(error => {
+                console.error('Error sending notification:', error.response?.data || error.message);
+              });
+          }
+        } catch (error) {
+          console.error('Try block failed:', error);
+        }
       }
     }
   },
@@ -69,14 +104,13 @@ export default {
             .insert([
               {
                 name: member.name,
+                email: member.email,
                 role: member.role,
                 vessel: member.vessel || '',
                 status: member.status,
-                next_shift: member.nextShift,
                 certifications: member.certifications,
                 notes: member.notes,
-                on_board: member.onBoard,
-                company_id: companyId,
+                company_id: companyId
               }
             ], { returning: 'minimal' }
             );
@@ -106,15 +140,14 @@ export default {
       if (error) {
         errorMessage(error)
       } else {
-        console.log(data)
         commit('DELETE_CREW', id);
       }
     },
-    async updateCrewMember({ commit, state }, updatedMember) {
+    async updateCrewMember({ commit, state, rootState }, updatedMember) {
       // Build payload safely
       const updatePayload = {
         status: updatedMember.status,
-        next_shift: updatedMember.shift,
+        next_shift: updatedMember.nextShift,
         on_board: updatedMember.onBoard,
       };
 
@@ -132,7 +165,8 @@ export default {
         errorMessage(error)
         return;
       } else {
-        commit('UPDATE_CREW_MEMBER', updatedMember);
+        const companyInfo = rootState.company; 
+        commit('UPDATE_CREW_MEMBER', {updatedMember, companyInfo});
         localStorage.setItem('crew', JSON.stringify(state.crewMembers));
       }
     },
@@ -155,7 +189,8 @@ export default {
         certifications: crew.certifications,
         notes: crew.notes,
         vessel: crew.vessel,
-        onBoard: crew.on_board
+        onBoard: crew.on_board,
+        email: crew.email
       }));
 
       commit('SET_CREW', simplifiedCrew);

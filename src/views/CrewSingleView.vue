@@ -104,15 +104,8 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="crew-next-shift">Embarkation Date:</label>
-                        <input type="date" id="crew-next-shift" v-model="newCrew.nextShift">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="crew-days-shift">Expected Days Onboard (in days)</label>
-                        <input type="number" id="crew-days-shift" v-model="newCrew.onBoard">
+                        <label for="crew-email">Email Address</label>
+                        <input type="email" id="crew-email" v-model="newCrew.email">
                     </div>
                 </div>
 
@@ -189,7 +182,8 @@ export default {
                 certificationsInput: '',
                 notes: '',
                 vessel: '',
-                onBoard: ''
+                onBoard: '',
+                email: ''
             }
         };
     },
@@ -226,7 +220,8 @@ export default {
                 certificationExpiry: {},
                 certificationsInput: '',
                 notes: '',
-                onBoard: ''
+                onBoard: '',
+                email: ''
             };
         },
         viewCertification(certificateName, certificateDate) {
@@ -371,10 +366,9 @@ export default {
                 role: this.newCrew.role,
                 status: this.newCrew.status,
                 certifications: certifications,
-                nextShift: this.newCrew.nextShift,
                 notes: this.newCrew.notes,
                 vessel: this.$route.params.id,
-                onBoard: this.newCrew.onBoard
+                email: this.newCrew.email
             };
 
             this.$store.dispatch('crew/addCrew', newMember);
@@ -421,6 +415,7 @@ export default {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    localStorage.setItem("last_shift", prevshift);
                     const { shift, status, onBoard } = result.value;
 
                     // Dispatch to Vuex to update the crew member
