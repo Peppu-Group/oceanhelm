@@ -1,4 +1,6 @@
 import supabase from '../../supabase';
+import axios from 'axios';
+
 function errorMessage(error) {
   Swal.fire({
     icon: 'error',
@@ -20,12 +22,46 @@ export default {
       state.tasksByVessel[vesselId] = tasks;
       localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(tasks));
     },
-    ADD_TASK(state, { vesselId, task }) {
+    ADD_TASK(state, { vesselId, task, rootState }) {
       if (!state.tasksByVessel[vesselId]) {
         state.tasksByVessel[vesselId] = [];
       }
       state.tasksByVessel[vesselId].push(task);
       localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(state.tasksByVessel[vesselId]));
+
+      try {
+        const nameOnly = task.assignedTo.split('-')[0].trim();
+        const crewInfo = rootState.crew.crewMembers.find(m => m.name === nameOnly);
+        const companyInfo = rootState.company.company;
+
+        console.log(companyInfo)
+        console.log(rootState.company)
+  
+        let notificationData = {
+          companyName: companyInfo.name,
+          name: task.assignedTo,
+          notification_type: "task",
+          id: task.component,
+          due_date: task.nextDue,
+          assigned_by: `${companyInfo.name}'s HR`,
+          description: task.description,
+          email: crewInfo.email,
+          operations_email: companyInfo.email,
+          operations_phone: companyInfo.phoneNumber
+        };
+
+  
+          axios.post('http://localhost:3000/notification', notificationData)
+            .then(response => {
+              console.log('Success:', response.data);
+            })
+            .catch(error => {
+              console.error('Error sending notification:', error.response?.data || error.message);
+            });
+
+      } catch (error) {
+        console.error('Try block failed:', error);
+      }
     },
     DELETE_TASK(state, { vesselId, taskId }) {
       state.tasksByVessel[vesselId] = state.tasksByVessel[vesselId].filter(t => t.id !== taskId);
@@ -67,7 +103,7 @@ export default {
 
       commit('SET_TASKS', { vesselId, tasks: simplifiedTasks });
     },
-    async addTask({ commit }, { vesselId, task }) {
+    async addTask({ commit, rootState }, { vesselId, task }) {
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
@@ -112,7 +148,7 @@ export default {
             // tell user about error.
             errorMessage(error)
           } else {
-            commit('ADD_TASK', { vesselId, task });
+            commit('ADD_TASK', { vesselId, task, rootState });
           }
         }
       } else {

@@ -87,7 +87,7 @@ export default {
 
         // get all vessels
         let vessels = this.vessels;
-        this.company.vessels.push(...vessels);
+        // this.company.vessels.push(...vessels);
         // get all tasks and determine if vessel is undermaintenance.
         vessels = vessels.map(vessel => {
             const registrationNumber = vessel.registrationNumber;

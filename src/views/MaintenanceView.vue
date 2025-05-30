@@ -302,6 +302,7 @@
   
 <script>
 import axios from 'axios';
+import supabase from '../supabase';
 
 export default {
     data() {
@@ -420,6 +421,20 @@ export default {
             this.currentTask = localStorage.getItem('currentTask');
         } else {
             this.$router.push({ path: `/app/dashboard` })
+        }
+
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('company_id')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profile?.company_id) {
+                await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
+            }
         }
     },
     methods: {

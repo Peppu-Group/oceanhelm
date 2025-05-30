@@ -73,7 +73,7 @@ export default {
 
         // fetch vessels.
         this.$store.dispatch('vessel/fetchVessels');
-        this.company.vessels.push(this.vessels);
+        // this.company.vessels.push(this.vessels);
     },
     computed: {
         company() {
