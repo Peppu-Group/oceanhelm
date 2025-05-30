@@ -90,7 +90,15 @@
                             <option value="Deckhand">Deckhand</option>
                             <option value="Mechanic">Mechanic</option>
                             <option value="Cook">Cook</option>
+                            <option value="Other">Other</option>
                         </select>
+                        <input 
+                            v-if="newCrew.role === 'Other'" 
+                            type="text" 
+                            placeholder="Enter custom role" 
+                            v-model="newCrew.customRole"
+                            style="margin-top: 8px;"
+                        >
                     </div>
                 </div>
 
@@ -328,10 +336,13 @@ export default {
                 cert.name.trim() !== '' && cert.expiryDate !== ''
             );
 
+            // Use custom role if "Other" is selected
+            const finalRole = this.newCrew.role === 'Other' ? this.newCrew.customRole : this.newCrew.role;
+
             const newMember = {
                 id: this.crewMembers.length + 1,
                 name: this.newCrew.name,
-                role: this.newCrew.role,
+                role: finalRole,
                 status: this.newCrew.status,
                 certifications: validCertifications,
                 notes: this.newCrew.notes,
