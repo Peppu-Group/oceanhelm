@@ -1,7 +1,7 @@
 <template>
     <!-- Fleet Summary -->
     <div class="row mb-3">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body d-flex align-items-center">
                     <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
@@ -14,20 +14,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                        <i class="bi bi-tools text-warning fs-4"></i>
-                    </div>
-                    <div>
-                        <h6 class="mb-0">Under Maintenance</h6>
-                        <h3 class="mt-2 mb-0"> {{ getMaintenanceVesselCount() }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body d-flex align-items-center">
                     <div class="rounded-circle bg-secondary bg-opacity-10 p-3 me-3">
@@ -41,7 +28,7 @@
             </div>
         </div>
         <!-- Register New Fleet -->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card border-0 shadow-sm" @click="newVessel()">
                 <div class="card-body d-flex align-items-center">
                     <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
@@ -122,23 +109,10 @@ export default {
     mounted() {
         // fetch vessels.
         this.$store.dispatch('vessel/fetchVessels');
-        this.vessels.map(vessel => {
-            const registrationNumber = vessel.registrationNumber;
-            const untasks = localStorage.getItem(`tasks-${registrationNumber}`) || '[]';
-            const tasks = JSON.parse(untasks)
-            const soonTask = tasks.find(task => task.status === 'Soon');
-            if (soonTask && vessel.status != 'Inactive') {
-                vessel.status = 'Maintenance';
-            }
-            return vessel;
-        });
     },
     methods: {
         getActiveVesselCount() {
             return this.company.vessels.filter(vessel => vessel.status === "Active").length;
-        },
-        getMaintenanceVesselCount() {
-            return this.company.vessels.filter(vessel => vessel.status === "Maintenance").length;
         },
         getInactiveVesselCount() {
             return this.company.vessels.filter(vessel => vessel.status === "Inactive").length;

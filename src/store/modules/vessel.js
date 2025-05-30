@@ -158,7 +158,7 @@ export default {
       if (newStatus === 'Active') {
         Swal.fire({
           title: 'Vessel Active!',
-          text: 'Your vessel is now active. If it is under maintenance, the status will change soon.',
+          text: 'Your vessel is now active.',
           icon: 'success'
         });
       }

@@ -25,7 +25,7 @@ export default {
         }
     }),
     mutations: {
-        SET_COMPANY(state, companyData) {
+        SET_COMPANY(state, {companyData, vessel}) {
             state.company = { ...state.company, 
             name: companyData.name || "",
             location: companyData.location || "",
@@ -33,11 +33,11 @@ export default {
             phoneNumber: companyData.phone_number || "",
             email: companyData.email || "",
             license: companyData.license || "",
-            vessels: [] };
+            vessels: vessel };
         }
     },
     actions: {
-        async fetchCompanyInfo({ commit }, companyId) {
+        async fetchCompanyInfo({ commit, rootState }, companyId) {
             try {
                 const { data, error } = await supabase
                     .from('companies')
@@ -48,14 +48,16 @@ export default {
                 if (error) {
                     console.error('Error fetching company info:', error);
                 } else {
-                    commit('SET_COMPANY', data);
+                    let vessel = rootState.vessel.vessels;
+                    let companyData = data;
+                    commit('SET_COMPANY', {companyData, vessel});
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);
             }
         },
 
-        async updateCompanyInfo({ commit }, Info) {
+        async updateCompanyInfo({ commit, rootState }, Info) {
             const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
@@ -85,7 +87,9 @@ export default {
                 errorMessage(error)
                 return;
             } else {
-                commit('SET_COMPANY', updatePayload);
+                let vessel = rootState.vessel.vessels;
+                let companyData = updatePayload;
+                commit('SET_COMPANY', {companyData, vessel});
             }}
         }
     },
