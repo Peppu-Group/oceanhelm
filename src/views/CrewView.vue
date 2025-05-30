@@ -111,23 +111,27 @@
 
                 <div class="certification-section">
                     <h3>Certifications</h3>
-                    <div class="certification-grid">
-                        <div v-for="cert in availableCertifications" :key="cert.id" class="certification-item">
-                            <input type="checkbox" :id="'cert-' + cert.id" :value="cert.id"
-                                v-model="newCrew.selectedCertifications">
-                            <label :for="'cert-' + cert.id">{{ cert.name }}</label>
-                        </div>
-                    </div>
-
-                    <div v-if="newCrew.selectedCertifications.length > 0">
-                        <h4>Expiry Dates</h4>
-                        <div class="form-row" v-for="certId in newCrew.selectedCertifications" :key="certId">
+                    <div v-for="(cert, index) in newCrew.certifications" :key="index" class="certification-entry">
+                        <div class="form-row">
                             <div class="form-group">
-                                <label>{{ getCertificationName(certId) }} Expiry Date</label>
-                                <input type="date" v-model="newCrew.certificationExpiry[certId]">
+                                <label>Certification Name</label>
+                                <input type="text" v-model="cert.name" placeholder="Enter certification name">
+                            </div>
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <input type="date" v-model="cert.expiryDate">
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-danger btn-sm" @click="removeCertification(index)" v-if="newCrew.certifications.length > 1">
+                                    Remove
+                                </button>
                             </div>
                         </div>
                     </div>
+                    
+                    <button type="button" class="btn btn-secondary btn-sm" @click="addCertificationEntry">
+                        + Add More Certification
+                    </button>
                 </div>
 
                 <div class="form-row">
@@ -177,9 +181,7 @@ export default {
                 role: 'Deckhand',
                 status: 'available',
                 nextShift: '',
-                selectedCertifications: [],
-                certificationExpiry: {},
-                certificationsInput: '',
+                certifications: [{ name: '', expiryDate: '' }],
                 notes: '',
                 vessel: '',
                 onBoard: '',
@@ -219,14 +221,18 @@ export default {
                 name: '',
                 role: 'Deckhand',
                 status: 'available',
-                selectedCertifications: [],
-                certificationExpiry: {},
                 nextShift: '',
-                certificationsInput: '',
+                certifications: [{ name: '', expiryDate: '' }],
                 notes: '',
                 onBoard: '',
                 email: ''
             };
+        },
+        addCertificationEntry() {
+            this.newCrew.certifications.push({ name: '', expiryDate: '' });
+        },
+        removeCertification(index) {
+            this.newCrew.certifications.splice(index, 1);
         },
         deleteCrew(crewId) {
             Swal.fire({
@@ -256,21 +262,10 @@ export default {
             if (expiry <= oneMonthFromNow) return 'expiringSoon';
             return 'valid';
         },
-        getCertificationName(id) {
-            const cert = this.availableCertifications.find(c => c.id === id);
-            return cert ? cert.name : '';
-        },
         addCrewMember() {
-            const certifications = this.newCrew.selectedCertifications
-                .map(certId => {
-                    const expiry = this.newCrew.certificationExpiry[certId];
-                    if (!expiry) return null; // skip if no expiry date
-                    return {
-                        name: this.getCertificationName(certId),
-                        expiryDate: expiry
-                    };
-                })
-                .filter(cert => cert !== null); // remove null entries
+            const certifications = this.newCrew.certifications.filter(cert => 
+                cert.name.trim() !== '' && cert.expiryDate !== ''
+            );
 
             const newMember = {
                 id: this.crewMembers.length + 1,

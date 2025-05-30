@@ -111,23 +111,27 @@
 
                 <div class="certification-section">
                     <h3>Certifications</h3>
-                    <div class="certification-grid">
-                        <div v-for="cert in availableCertifications" :key="cert.id" class="certification-item">
-                            <input type="checkbox" :id="'cert-' + cert.id" :value="cert.id"
-                                v-model="newCrew.selectedCertifications">
-                            <label :for="'cert-' + cert.id">{{ cert.name }}</label>
-                        </div>
-                    </div>
-
-                    <div v-if="newCrew.selectedCertifications.length > 0">
-                        <h4>Expiry Dates</h4>
-                        <div class="form-row" v-for="certId in newCrew.selectedCertifications" :key="certId">
+                    <div v-for="(cert, index) in newCrew.certifications" :key="index" class="certification-entry">
+                        <div class="form-row">
                             <div class="form-group">
-                                <label>{{ getCertificationName(certId) }} Expiry Date</label>
-                                <input type="date" v-model="newCrew.certificationExpiry[certId]">
+                                <label>Certification Name</label>
+                                <input type="text" v-model="cert.name" placeholder="Enter certification name">
+                            </div>
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <input type="date" v-model="cert.expiryDate">
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-danger btn-sm" @click="removeCertification(index)" v-if="newCrew.certifications.length > 1">
+                                    Remove
+                                </button>
                             </div>
                         </div>
                     </div>
+                    
+                    <button type="button" class="btn btn-secondary btn-sm" @click="addCertificationEntry">
+                        + Add More Certification
+                    </button>
                 </div>
 
                 <div class="form-row">
@@ -154,21 +158,6 @@ export default {
     components: { Sidebar },
     data() {
         return {
-            availableCertifications: [
-                { id: 1, name: "Navigation" },
-                { id: 2, name: "Safety" },
-                { id: 3, name: "Command" },
-                { id: 4, name: "First Aid" },
-                { id: 5, name: "CPR" },
-                { id: 6, name: "Mechanical" },
-                { id: 7, name: "Electrical" },
-                { id: 8, name: "Welding" },
-                { id: 9, name: "Communications" },
-                { id: 10, name: "Fire Fighting" },
-                { id: 11, name: "Survival at Sea" },
-                { id: 12, name: "Food Safety" },
-                { id: 13, name: "Hazardous Materials" }
-            ],
             searchQuery: '',
             filterStatus: 'all',
             showAddForm: false,
@@ -177,9 +166,7 @@ export default {
                 role: 'Deckhand',
                 status: 'available',
                 nextShift: '',
-                selectedCertifications: [],
-                certificationExpiry: {},
-                certificationsInput: '',
+                certifications: [{ name: '', expiryDate: '' }],
                 notes: '',
                 vessel: '',
                 onBoard: '',
@@ -216,13 +203,17 @@ export default {
                 role: 'Deckhand',
                 status: 'available',
                 nextShift: '',
-                selectedCertifications: [],
-                certificationExpiry: {},
-                certificationsInput: '',
+                certifications: [{ name: '', expiryDate: '' }],
                 notes: '',
                 onBoard: '',
                 email: ''
             };
+        },
+        addCertificationEntry() {
+            this.newCrew.certifications.push({ name: '', expiryDate: '' });
+        },
+        removeCertification(index) {
+            this.newCrew.certifications.splice(index, 1);
         },
         viewCertification(certificateName, certificateDate) {
             Swal.fire({
@@ -276,96 +267,73 @@ export default {
             if (expiry <= oneMonthFromNow) return 'expiringSoon';
             return 'valid';
         },
-        getCertificationName(id) {
-            const cert = this.availableCertifications.find(c => c.id === id);
-            return cert ? cert.name : '';
-        },
         async addCertification(crewId) {
-                const member = this.crew.find(m => m.id === crewId);
+            const member = this.crew.find(m => m.id === crewId);
 
             if (!member) {
                 Swal.fire('Error', 'Crew member not found', 'error');
                 return;
             }
 
-            // Create HTML for certifications form
-            const certCheckboxes = this.availableCertifications.map(cert => `
-                <div>
-                    <input type="checkbox" id="cert-${cert.id}" value="${cert.id}">
-                    <label for="cert-${cert.id}">${cert.name}</label>
-                    <input type="date" id="cert-date-${cert.id}" disabled style="margin-left: 10px;" />
-                </div>
-            `).join('');
-
+            // Use dynamic input fields for adding certifications
             await Swal.fire({
-                title: 'Add Certifications',
-                html: `<div>${certCheckboxes}</div>`,
+                title: 'Add Certification',
+                html: `
+                    <div class="swal-cert-form">
+                        <div class="form-group">
+                            <label for="cert-name">Certification Name:</label>
+                            <input type="text" id="cert-name" class="swal2-input" placeholder="Enter certification name">
+                        </div>
+                        <div class="form-group">
+                            <label for="cert-expiry">Expiry Date:</label>
+                            <input type="date" id="cert-expiry" class="swal2-input">
+                        </div>
+                    </div>
+                `,
                 focusConfirm: false,
                 preConfirm: () => {
-                    const selected = [];
-                    const certs = [];
+                    const name = document.getElementById('cert-name').value;
+                    const expiryDate = document.getElementById('cert-expiry').value;
 
-                    this.availableCertifications.forEach(cert => {
-                        const checkbox = document.getElementById(`cert-${cert.id}`);
-                        const dateInput = document.getElementById(`cert-date-${cert.id}`);
+                    if (!name.trim()) {
+                        Swal.showValidationMessage('Please enter certification name');
+                        return false;
+                    }
 
-                        if (checkbox.checked) {
-                            selected.push(cert.id);
+                    if (!expiryDate) {
+                        Swal.showValidationMessage('Please select expiry date');
+                        return false;
+                    }
 
-                            const expiryDate = dateInput.value;
-                            if (!expiryDate) {
-                                Swal.showValidationMessage(`Please select expiry date for ${cert.name}`);
-                                return false;
-                            }
-
-                            certs.push({
-                                name: cert.name,
-                                expiryDate: expiryDate
-                            });
-                        }
-                    });
-
-                    return certs;
-                },
-                didOpen: () => {
-                    // Enable date inputs when checkbox is selected
-                    this.availableCertifications.forEach(cert => {
-                        const checkbox = document.getElementById(`cert-${cert.id}`);
-                        const dateInput = document.getElementById(`cert-date-${cert.id}`);
-                        checkbox.addEventListener('change', () => {
-                            dateInput.disabled = !checkbox.checked;
-                        });
-                    });
+                    return { name: name.trim(), expiryDate };
                 }
             }).then(result => {
                 if (result.isConfirmed && result.value) {
-                    member.certifications = [...(member.certifications || []), ...result.value];
+                    if (!member.certifications) {
+                        member.certifications = [];
+                    }
+                    
+                    member.certifications.push(result.value);
 
                     // Save back to localStorage
                     localStorage.setItem('crew', JSON.stringify(this.crew));
 
-                    Swal.fire('Success', 'Certifications added successfully', 'success');
+                    Swal.fire('Success', 'Certification added successfully', 'success');
                 }
             });
         },
         addCrewMember() {
-            const certifications = this.newCrew.selectedCertifications
-                .map(certId => {
-                    const expiry = this.newCrew.certificationExpiry[certId];
-                    if (!expiry) return null; // skip if no expiry date
-                    return {
-                        name: this.getCertificationName(certId),
-                        expiryDate: expiry
-                    };
-                })
-                .filter(cert => cert !== null); // remove null entries
+            // Filter out certifications that don't have both name and expiry date
+            const validCertifications = this.newCrew.certifications.filter(cert => 
+                cert.name.trim() !== '' && cert.expiryDate !== ''
+            );
 
             const newMember = {
                 id: this.crewMembers.length + 1,
                 name: this.newCrew.name,
                 role: this.newCrew.role,
                 status: this.newCrew.status,
-                certifications: certifications,
+                certifications: validCertifications,
                 notes: this.newCrew.notes,
                 vessel: this.$route.params.id,
                 email: this.newCrew.email
