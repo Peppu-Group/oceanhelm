@@ -8,7 +8,7 @@
     </button>
 
     <!-- Sidebar -->
-    <Sidebar/>
+    <Sidebar />
     <div id="content" class="container">
         <!-- Header -->
         <div class="header">
@@ -26,7 +26,7 @@
                         <div class="stat-label">Low Stock</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value">${{ totalValue.toLocaleString() }}</div>
+                        <div class="stat-value">₦{{ totalValue.toLocaleString() }}</div>
                         <div class="stat-label">Total Value</div>
                     </div>
                 </div>
@@ -87,15 +87,15 @@
                 <i class="fas fa-boxes"></i>
                 Inventory
             </button>
-            <button class="tab" :class="{ active: selectedTab === 'reports' }" @click="selectedTab = 'reports'">
-                <i class="fas fa-chart-line"></i>
-                Reports
+            <button class="tab" :class="{ active: selectedTab === 'vessels' }" @click="selectedTab = 'vessels'">
+                <i class="fas fa-ship"></i>
+                Vessels
             </button>
         </div>
 
         <!-- Inventory Table -->
         <div class="inventory-table" v-if="selectedTab === 'inventory'">
-            <div class="table-responsive">
+            <div class="table-responsive item-row">
                 <table class="table">
                     <thead>
                         <tr>
@@ -112,7 +112,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in filteredInventory" :key="item.id">
+                        <tr v-for="item in filteredInventory" :key="item.id" :class="{ 'inactive-item': !item.active }">
                             <td><strong>{{ item.id }}</strong></td>
                             <td>{{ item.itemName }}</td>
                             <td>{{ item.category }}</td>
@@ -123,7 +123,7 @@
                             </td>
                             <td>
                                 <div class="stock-level">
-                                    <span>{{ item.currentStock }}/{{ item.maxStock }} {{ item.unit }}</span>
+                                    <span>{{ item.currentStock }}</span>
                                     <div class="stock-bar">
                                         <div class="stock-fill" :class="getStockClass(item)"
                                             :style="{ width: getStockPercentage(item) + '%' }"></div>
@@ -139,17 +139,28 @@
                                 <i class="fas fa-calendar"></i>
                                 {{ formatDate(item.lastUpdated) }}
                             </td>
-                            <td>${{ item.value.toLocaleString() }}</td>
+                            <td>₦{{ item.value.toLocaleString() }}</td>
                             <td>
                                 <div class="action-btns">
-                                    <button class="action-btn btn-view" @click="viewItem(item)">
-                                        <i class="fas fa-eye"></i>
+                                    <button class="action-btn btn-view" @click="stockIn(item)" title="Stock In">
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
                                     </button>
-                                    <button class="action-btn btn-edit" @click="editItem(item)">
+                                    <button class="action-btn btn-view" @click="stockOut(item)" title="Stock Out">
+                                        <i class="fa-solid fa-arrow-trend-down"></i>
+                                    </button>
+                                    <button class="action-btn btn-view" @click="transferItem(item)" title="Transfer Item">
+                                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                    </button>
+                                    <button class="action-btn btn-edit" @click="editItem(item)" title="Edit Item">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-btn btn-delete" @click="deleteItem(item)">
-                                        <i class="fas fa-trash"></i>
+                                    <button class="action-btn btn-delete" @click="deleteItem(item)"
+                                        :title="item.active ? 'Mark as Inactive' : 'Mark as Active'">
+                                        <i :class="[
+                                            'fa',
+                                            item.active ? 'fa-trash' : 'fa-check-circle',
+                                            'icon-button'
+                                        ]" aria-hidden="true"></i>
                                     </button>
                                 </div>
                             </td>
@@ -182,7 +193,8 @@
         <!-- Overview Tab Content -->
         <div v-if="selectedTab === 'overview'" class="inventory-table">
             <div style="padding: 40px; text-align: center;">
-                <i class="fas fa-chart-bar" style="font-size: 48px; color: var(--dashprimary-color); margin-bottom: 20px;"></i>
+                <i class="fas fa-chart-bar"
+                    style="font-size: 48px; color: var(--dashprimary-color); margin-bottom: 20px;"></i>
                 <h2>Inventory Overview</h2>
                 <p style="color: #6b7280; margin-top: 10px;">Dashboard and analytics coming soon...</p>
             </div>
@@ -190,19 +202,8 @@
 
         <!-- Vessels Tab Content -->
         <div v-if="selectedTab === 'vessels'" class="inventory-table">
-            <div style="padding: 40px; text-align: center;">
-                <i class="fas fa-ship" style="font-size: 48px; color: var(--dashprimary-color); margin-bottom: 20px;"></i>
-                <h2>Vessel Inventory</h2>
-                <p style="color: #6b7280; margin-top: 10px;">Vessel-specific inventory management coming soon...</p>
-            </div>
-        </div>
-
-        <!-- Reports Tab Content -->
-        <div v-if="selectedTab === 'reports'" class="inventory-table">
-            <div style="padding: 40px; text-align: center;">
-                <i class="fas fa-chart-line" style="font-size: 48px; color: var(--dashprimary-color); margin-bottom: 20px;"></i>
-                <h2>Inventory Reports</h2>
-                <p style="color: #6b7280; margin-top: 10px;">Detailed reports and analytics coming soon...</p>
+            <div>
+                <VesselList />
             </div>
         </div>
     </div>
@@ -210,132 +211,56 @@
 
 <script>
 import Sidebar from '../components/Sidebar.vue';
+import VesselList from '../components/VesselList.vue';
 
 export default {
     name: 'inventory',
-    components: { Sidebar },
+    components: { Sidebar, VesselList },
 
     data() {
         return {
-            selectedTab: 'inventory',
+            selectedTab: 'vessels',
             searchTerm: '',
             selectedVessel: '',
             selectedCategory: '',
             currentPage: 1,
             itemsPerPage: 10,
-            inventoryData: [
-                {
-                    id: 'INV-001',
-                    itemName: 'Marine Engine Oil SAE 40',
-                    category: 'Lubricants',
-                    vessel: 'MV Atlantic Star',
-                    location: 'Engine Room Store',
-                    currentStock: 15,
-                    minStock: 20,
-                    maxStock: 50,
-                    unit: 'Liters',
-                    lastUpdated: '2025-05-18',
-                    status: 'Low Stock',
-                    value: 750.00
-                },
-                {
-                    id: 'INV-002',
-                    itemName: 'Navigation Light Bulbs',
-                    category: 'Electrical',
-                    vessel: 'MV Pacific Dawn',
-                    location: 'Bridge Store',
-                    currentStock: 45,
-                    minStock: 10,
-                    maxStock: 60,
-                    unit: 'Pieces',
-                    lastUpdated: '2025-05-17',
-                    status: 'In Stock',
-                    value: 225.00
-                },
-                {
-                    id: 'INV-003',
-                    itemName: 'Life Jacket Adult Type I',
-                    category: 'Safety Equipment',
-                    vessel: 'MV Atlantic Star',
-                    location: 'Safety Locker #3',
-                    currentStock: 0,
-                    minStock: 50,
-                    maxStock: 100,
-                    unit: 'Pieces',
-                    lastUpdated: '2025-05-16',
-                    status: 'Out of Stock',
-                    value: 0
-                },
-                {
-                    id: 'INV-004',
-                    itemName: 'Hydraulic Hose 1/2 inch',
-                    category: 'Hydraulics',
-                    vessel: 'MV Ocean Explorer',
-                    location: 'Deck Equipment Store',
-                    currentStock: 25,
-                    minStock: 15,
-                    maxStock: 40,
-                    unit: 'Meters',
-                    lastUpdated: '2025-05-15',
-                    status: 'In Stock',
-                    value: 500.00
-                },
-                {
-                    id: 'INV-005',
-                    itemName: 'Fire Extinguisher CO2 5kg',
-                    category: 'Safety Equipment',
-                    vessel: 'MV Pacific Dawn',
-                    location: 'Main Deck',
-                    currentStock: 8,
-                    minStock: 12,
-                    maxStock: 20,
-                    unit: 'Units',
-                    lastUpdated: '2025-05-14',
-                    status: 'Low Stock',
-                    value: 1200.00
-                },
-                {
-                    id: 'INV-006',
-                    itemName: 'Main Engine Coolant',
-                    category: 'Lubricants',
-                    vessel: 'MV Ocean Explorer',
-                    location: 'Engine Room Store',
-                    currentStock: 30,
-                    minStock: 20,
-                    maxStock: 60,
-                    unit: 'Liters',
-                    lastUpdated: '2025-05-13',
-                    status: 'In Stock',
-                    value: 450.00
-                },
-                {
-                    id: 'INV-007',
-                    itemName: 'Radar Antenna Assembly',
-                    category: 'Electronics',
-                    vessel: 'MV Atlantic Star',
-                    location: 'Bridge Equipment',
-                    currentStock: 1,
-                    minStock: 2,
-                    maxStock: 3,
-                    unit: 'Units',
-                    lastUpdated: '2025-05-12',
-                    status: 'Critical',
-                    value: 15000.00
-                },
-                {
-                    id: 'INV-008',
-                    itemName: 'Deck Paint Marine Grade',
-                    category: 'Maintenance',
-                    vessel: 'MV Pacific Dawn',
-                    location: 'Paint Store',
-                    currentStock: 12,
-                    minStock: 8,
-                    maxStock: 25,
-                    unit: 'Liters',
-                    lastUpdated: '2025-05-11',
-                    status: 'In Stock',
-                    value: 300.00
-                }
+            inventoryData: [],
+            categories: [
+                'Engine Parts',
+                'Safety Equipment',
+                'Electronics',
+                'Deck Equipment',
+                'Navigation',
+                'Communication',
+                'Tools',
+                'Consumables',
+                'Other'
+            ],
+            vessels: [
+                'MV Ocean Pioneer',
+                'MV Sea Explorer',
+                'MV Wave Runner',
+                'MV Deep Blue',
+                'Shore Base'
+            ],
+            locations: [
+                'Engine Room',
+                'Bridge',
+                'Main Deck',
+                'Cargo Hold',
+                'Workshop',
+                'Storage Room',
+                'Galley',
+                'Other'
+            ],
+            statusOptions: [
+                'Available',
+                'Low Stock',
+                'Out of Stock',
+                'Reserved',
+                'Maintenance',
+                'Damaged'
             ]
         }
     },
@@ -425,25 +350,114 @@ export default {
                 year: 'numeric'
             });
         },
-        addNewItem() {
-            alert('Add new item functionality will be implemented');
-        },
         exportData() {
             alert('Export functionality will be implemented');
         },
         importData() {
             alert('Import functionality will be implemented');
         },
-        viewItem(item) {
-            alert(`Viewing item: ${item.itemName}`);
+        updateInventory(id, stockData) {
+            const index = this.inventoryData.findIndex(item => item.id === id);
+            if (index !== -1) {
+                this.inventoryData[index].value = stockData.value;
+                this.inventoryData[index].currentStock = stockData.currentStock;
+
+                // Optionally reset the form
+                // this.updateForm = { id: null, value: null, stockLevel: null };
+
+                // You can also show a success message or toast here
+                console.log('Item updated successfully');
+            } else {
+                console.warn('Item not found');
+            }
+        },
+        stockIn(item) {
+            Swal.fire({
+                title: 'Stock-In Entry',
+                html: `
+                    <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                        Add new inventory items to your stock
+                    </p>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="quantityReceived">Quantity Received <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity received" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="supplier">Supplier</label>
+                        <input class="custom-input" type="text" id="supplier" placeholder="Enter supplier name">
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="dateReceived">Date Received</label>
+                        <input class="custom-input" type="date" id="dateReceived">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Add Stock',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                width: '500px',
+                customClass: {
+                    popup: 'swal-custom-popup'
+                },
+                preConfirm: () => {
+                    const quantityReceived = document.getElementById('quantityReceived').value;
+                    const unitPrice = document.getElementById('unitPrice').value;
+                    const supplier = document.getElementById('supplier').value;
+                    const dateReceived = document.getElementById('dateReceived').value;
+
+                    if (!quantityReceived || quantityReceived <= 0) {
+                        Swal.showValidationMessage('Valid quantity received is required');
+                        return false;
+                    }
+                    if (!unitPrice || unitPrice < 0) {
+                        Swal.showValidationMessage('Valid unit price is required');
+                        return false;
+                    }
+
+                    return {
+                        currentStock: parseInt(quantityReceived) + item.currentStock,
+                        // unitPrice: parseFloat(unitPrice),
+                        // supplier: supplier.trim(),
+                        // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        value: parseInt(quantityReceived) * parseFloat(unitPrice) + item.value,
+                        id: item.id
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const stockData = result.value;
+                    this.updateInventory(stockData.id, stockData)
+                }
+            })
+        },
+        stockOut(item) {
+            alert(`Stock out item: ${item.itemName}`);
+        },
+        transferItem(item) {
+            alert(`Transfer item to another location: ${item.itemName}`);
         },
         editItem(item) {
             alert(`Editing item: ${item.itemName}`);
         },
         deleteItem(item) {
-            if (confirm(`Are you sure you want to delete ${item.itemName}?`)) {
-                alert('Item deleted (not implemented in demo)');
-            }
+            Swal.fire({
+                title: 'Only archive is possible',
+                text: "We will archive this stock and you can retrieve it anytime.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, archive it!',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    item.active = !item.active;
+                }
+            })
         },
         prevPage() {
             if (this.currentPage > 1) {
@@ -453,6 +467,266 @@ export default {
         nextPage() {
             if (this.currentPage < this.totalPages) {
                 this.currentPage++;
+            }
+        },
+        async addNewItem() {
+            const { value: formValues } = await Swal.fire({
+                title: 'Add Inventory Item',
+                html: `
+                    <div class="inventory-form-container">
+                        <style>
+                            .inventory-form-container {
+                                text-align: left;
+                                max-height: 500px;
+                                overflow-y: auto;
+                            }
+                            .form-row {
+                                display: flex;
+                                gap: 15px;
+                                margin-bottom: 15px;
+                            }
+                            .form-group {
+                                flex: 1;
+                                display: flex;
+                                flex-direction: column;
+                            }
+                            .form-group label {
+                                font-weight: 600;
+                                margin-bottom: 5px;
+                                color: #333;
+                                font-size: 14px;
+                            }
+                            .form-group input,
+                            .form-group select,
+                            .form-group textarea {
+                                padding: 8px 12px;
+                                border: 1px solid #ddd;
+                                border-radius: 4px;
+                                font-size: 14px;
+                                box-sizing: border-box;
+                            }
+                            .form-group input:focus,
+                            .form-group select:focus,
+                            .form-group textarea:focus {
+                                outline: none;
+                                border-color: #007bff;
+                                box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+                            }
+                            .full-width {
+                                width: 100%;
+                            }
+                            .required {
+                                color: #dc3545;
+                            }
+                        </style>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="itemCode">Item Code <span class="required">*</span></label>
+                                <input type="text" id="itemCode" placeholder="e.g., ENG-001" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="itemName">Item Name <span class="required">*</span></label>
+                                <input type="text" id="itemName" placeholder="Enter item name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category">Category <span class="required">*</span></label>
+                                <select id="category" required>
+                                    <option value="">-- Select Category --</option>
+                                    ${this.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                                </select>
+                                <input type="text" id="customCategory" placeholder="Enter custom category" style="margin-top: 8px; display: none;">
+                            </div>
+                            <div class="form-group">
+                                <label for="vessel">Vessel <span class="required">*</span></label>
+                                <select id="vessel" required>
+                                    <option value="">-- Select Vessel --</option>
+                                    ${this.vessels.map(vessel => `<option value="${vessel}">${vessel}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="location">Location <span class="required">*</span></label>
+                                <select id="location" required>
+                                    <option value="">-- Select Location --</option>
+                                    ${this.locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
+                                </select>
+                                <input type="text" id="customLocation" placeholder="Enter custom location" style="margin-top: 8px; display: none;">
+                            </div>
+                            <div class="form-group">
+                                <label for="stockLevel">Stock Level <span class="required">*</span></label>
+                                <input type="number" id="stockLevel" placeholder="0" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="status">Status <span class="required">*</span></label>
+                                <select id="status" required>
+                                    <option value="">-- Select Status --</option>
+                                    ${this.statusOptions.map(status => `<option value="${status}">${status}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="value">Value (₦) Unit Price</label>
+                                <input type="number" id="value" placeholder="0.00" min="0" step="0.01">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="lastUpdated">Last Updated</label>
+                                <input type="datetime-local" id="lastUpdated">
+                            </div>
+                        </div>
+                    </div>
+                `,
+                width: '600px',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Add Item',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    // Get form values
+                    const itemCode = document.getElementById('itemCode').value;
+                    const itemName = document.getElementById('itemName').value;
+                    const category = document.getElementById('category').value;
+                    const customCategory = document.getElementById('customCategory').value;
+                    const vessel = document.getElementById('vessel').value;
+                    const location = document.getElementById('location').value;
+                    const customLocation = document.getElementById('customLocation').value;
+                    const stockLevel = document.getElementById('stockLevel').value;
+                    const status = document.getElementById('status').value;
+                    const value = document.getElementById('value').value;
+                    const lastUpdated = document.getElementById('lastUpdated').value;
+
+                    // Validation
+                    if (!itemCode.trim()) {
+                        Swal.showValidationMessage('Item Code is required');
+                        return false;
+                    }
+                    if (!itemName.trim()) {
+                        Swal.showValidationMessage('Item Name is required');
+                        return false;
+                    }
+                    if (!category) {
+                        Swal.showValidationMessage('Category is required');
+                        return false;
+                    }
+                    if (category === 'Other' && !customCategory.trim()) {
+                        Swal.showValidationMessage('Please specify custom category');
+                        return false;
+                    }
+                    if (!vessel) {
+                        Swal.showValidationMessage('Vessel is required');
+                        return false;
+                    }
+                    if (!location) {
+                        Swal.showValidationMessage('Location is required');
+                        return false;
+                    }
+                    if (location === 'Other' && !customLocation.trim()) {
+                        Swal.showValidationMessage('Please specify custom location');
+                        return false;
+                    }
+                    if (!stockLevel || stockLevel < 0) {
+                        Swal.showValidationMessage('Valid stock level is required');
+                        return false;
+                    }
+                    if (!status) {
+                        Swal.showValidationMessage('Status is required');
+                        return false;
+                    }
+
+                    // Return processed data
+                    return {
+                        id: itemCode.trim(),
+                        itemName: itemName.trim(),
+                        category: category === 'Other' ? customCategory.trim() : category,
+                        vessel: vessel,
+                        location: location === 'Other' ? customLocation.trim() : location,
+                        currentStock: parseInt(stockLevel),
+                        status: status,
+                        value: value ? parseFloat(value) * parseInt(stockLevel) : null,
+                        active: true,
+                        lastUpdated: lastUpdated || new Date().toISOString()
+                    };
+                },
+                didOpen: () => {
+                    // Set default last updated to current datetime
+                    const now = new Date();
+                    const localDateTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+                    document.getElementById('lastUpdated').value = localDateTime;
+
+                    // Handle "Other" option for category
+                    const categorySelect = document.getElementById('category');
+                    const customCategoryInput = document.getElementById('customCategory');
+                    categorySelect.addEventListener('change', () => {
+                        if (categorySelect.value === 'Other') {
+                            customCategoryInput.style.display = 'block';
+                            customCategoryInput.required = true;
+                        } else {
+                            customCategoryInput.style.display = 'none';
+                            customCategoryInput.required = false;
+                            customCategoryInput.value = '';
+                        }
+                    });
+
+                    // Handle "Other" option for location
+                    const locationSelect = document.getElementById('location');
+                    const customLocationInput = document.getElementById('customLocation');
+                    locationSelect.addEventListener('change', () => {
+                        if (locationSelect.value === 'Other') {
+                            customLocationInput.style.display = 'block';
+                            customLocationInput.required = true;
+                        } else {
+                            customLocationInput.style.display = 'none';
+                            customLocationInput.required = false;
+                            customLocationInput.value = '';
+                        }
+                    });
+                }
+            });
+
+            if (formValues) {
+                // Process the form data
+                await this.addInventoryItem(formValues);
+            }
+        },
+
+        async addInventoryItem(itemData) {
+            try {
+                // Add to your data store, API, etc.
+                this.inventoryData.push(itemData)
+
+                // Example: Add to Vuex store
+                // await this.$store.dispatch('inventory/addItem', itemData);
+
+                // Example: Save to localStorage
+                // const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
+                // inventory.push({ ...itemData, id: Date.now() });
+                // localStorage.setItem('inventory', JSON.stringify(inventory));
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Inventory item has been added successfully.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to add inventory item. Please try again.',
+                    icon: 'error'
+                });
+                console.error('Error adding inventory item:', error);
             }
         }
     }
@@ -836,7 +1110,19 @@ body {
 }
 
 #content.active {
-  margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+}
+
+.inactive-item {
+    color: grey;
+    opacity: 0.6;
 }
 </style>
