@@ -330,7 +330,32 @@ export default {
                 }
             });
         },
+        validateForm() {
+            const requiredFields = [
+                'name',
+                'role',
+                'status',
+                'email'
+            ];
+
+            for (const field of requiredFields) {
+                if (!this.newCrew[field]) {
+                    Swal.fire({
+                        title: "Missing info",
+                        text: `Please fill in the required field: ${field}`,
+                        icon: "error"
+                    });
+                    return false;
+                }
+            }
+
+            return true;
+        },
         addCrewMember() {
+            // validate form
+            if (!this.validateForm()) {
+                return; // Stop if validation fails
+            }
             // Filter out certifications that don't have both name and expiry date
             const validCertifications = this.newCrew.certifications.filter(cert => 
                 cert.name.trim() !== '' && cert.expiryDate !== ''
