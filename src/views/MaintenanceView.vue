@@ -113,8 +113,10 @@
                                 <option value="electrical">Electrical</option>
                                 <option value="hvac">HVAC</option>
                                 <option value="safety">Safety Systems</option>
-                                <option value="other">Other</option>
+                                <option value="Other">Other</option>
                             </select>
+                            <input v-if="form.component === 'Other'" type="text" placeholder="Enter custom component/system"
+                                v-model="form.customComponent" style="margin-top: 8px;">
                         </div>
                     </div>
 
@@ -522,9 +524,11 @@ export default {
                 'maintenanceType',
                 'component',
                 'priority',
+                'estimatedHours',
                 'lastPerformed',
                 'nextDue',
-                'recurrence'
+                'recurrence',
+                'assignedTo'
             ];
 
             for (const field of requiredFields) {
@@ -607,30 +611,59 @@ export default {
             // the captain or owner is shown an initial checklist where they can add or remove checklist.
             // then save the checklist.
             // on open, open the already saved checklist.
-
-            // perform validation
             const id = this.$route.params.id;
             if (!this.validateForm()) {
                 return; // Stop if validation fails
             }
 
-            // push the form info into task
-            await this.$store.dispatch('tasks/addTask', {
-                vesselId: this.$route.params.id,
-                task: this.form
-            });
+            // Create a copy of form data
+            const taskData = { ...this.form };
 
-            // load maintenance checklist
-            this.loadChecklist(this.form.component);
+            // Replace component with custom value if "other" was selected
+            if (this.form.component === 'Other' && this.form.customComponent) {
+                taskData.component = this.form.customComponent;
+            }
+            // perform validation
+            // validate that the component isn't already in maintenance.
+            const tasksData = localStorage.getItem(`tasks-${id}`) || '[]';
+            const tasks = JSON.parse(tasksData);
 
-            // save the lastsection, to edit button text
-            this.lastSection = 'schedule';
-            // Also update current task in localStorage (optional)
-            localStorage.setItem('currentTask', this.form.component);
-            // Then reset
-            this.resetForm();
-            // push to maintenance section
-            this.activeSection = 'maintenance';
+            // Check for duplicate component
+            const hasDuplicateComponent = tasks.some(task => task.component === taskData.component);
+
+            if (hasDuplicateComponent) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Duplicate Component',
+                    text: `A task with the component "${taskData.component}" already exists in maintenance`,
+                    confirmButtonText: 'OK',
+                    customClass: {
+                        confirmButton: 'swal2-confirm'
+                    }
+                });
+                return; // Stop further execution
+            } else {
+
+                // Remove the customComponent field before saving
+                delete taskData.customComponent;
+
+                await this.$store.dispatch('tasks/addTask', {
+                    vesselId: this.$route.params.id,
+                    task: taskData
+                });
+
+                // load maintenance checklist
+                this.loadChecklist(taskData.component);
+
+                // save the lastsection, to edit button text
+                this.lastSection = 'schedule';
+                // Also update current task in localStorage (optional)
+                localStorage.setItem('currentTask', taskData.component);
+                // Then reset
+                this.resetForm();
+                // push to maintenance section
+                this.activeSection = 'maintenance';
+            }
         },
 
         // Then reset
@@ -689,10 +722,10 @@ export default {
                     component: currentTask
                 }
                 await this.$store.dispatch('tasks/updateTask', {
-                vesselId: id,
-                tasks: this.tasks,
-                updateTask
-            });
+                    vesselId: id,
+                    tasks: this.tasks,
+                    updateTask
+                });
                 // send to maintenance page
                 this.activeSection = 'inventory';
             }
