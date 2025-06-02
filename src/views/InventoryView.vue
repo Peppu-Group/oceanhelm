@@ -436,13 +436,155 @@ export default {
             })
         },
         stockOut(item) {
-            alert(`Stock out item: ${item.itemName}`);
+            Swal.fire({
+                title: 'Stock-Out Entry',
+                html: `
+                    <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                        Remove inventory items to your stock
+                    </p>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="quantityReceived">Quantity Removed <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity removed" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="supplier">Handler</label>
+                        <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="dateReceived">Date Received</label>
+                        <input class="custom-input" type="date" id="dateReceived">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Remove Stock',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                width: '500px',
+                customClass: {
+                    popup: 'swal-custom-popup'
+                },
+                preConfirm: () => {
+                    const quantityReceived = document.getElementById('quantityReceived').value;
+                    const unitPrice = document.getElementById('unitPrice').value;
+                    const supplier = document.getElementById('supplier').value;
+                    const dateReceived = document.getElementById('dateReceived').value;
+
+                    if (!quantityReceived || quantityReceived <= 0) {
+                        Swal.showValidationMessage('Valid quantity received is required');
+                        return false;
+                    }
+                    if (!unitPrice || unitPrice < 0) {
+                        Swal.showValidationMessage('Valid unit price is required');
+                        return false;
+                    }
+
+                    return {
+                        currentStock: item.currentStock - parseInt(quantityReceived),
+                        // unitPrice: parseFloat(unitPrice),
+                        // supplier: supplier.trim(),
+                        // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        value: item.value - parseInt(quantityReceived) * parseFloat(unitPrice),
+                        id: item.id
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const stockData = result.value;
+                    this.updateInventory(stockData.id, stockData)
+                }
+            })
         },
         transferItem(item) {
             alert(`Transfer item to another location: ${item.itemName}`);
         },
         editItem(item) {
-            alert(`Editing item: ${item.itemName}`);
+            Swal.fire({
+                title: 'Adjust your Stock Entry',
+                html: `
+                    <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                        Stock Adjustment is used to manually correct inventory levels when there’s a discrepancy between the actual physical stock and the recorded stock in your system.
+                        This can happen due to counting errors, theft, breakage, or unrecorded usage.
+                    </p>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="quantityReceived">Quantity<span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity removed" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="supplier">Handler</label>
+                        <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="adjustmentType">Adjustment Type</label>
+                        <select id="category" required>
+                            <option value="increase">Increase</option>
+                            <option value="decrease">Decrease</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="dateReceived">Date Received</label>
+                        <input class="custom-input" type="datetime-local" id="dateReceived">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Adjust Stock',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                width: '500px',
+                customClass: {
+                    popup: 'swal-custom-popup'
+                },
+                preConfirm: () => {
+                    const quantityReceived = document.getElementById('quantityReceived').value;
+                    const unitPrice = document.getElementById('unitPrice').value;
+                    const supplier = document.getElementById('supplier').value;
+                    const dateReceived = document.getElementById('dateReceived').value;
+                    const adjustmentType = document.getElementById('category').value;
+
+                    if (!quantityReceived || quantityReceived <= 0) {
+                        Swal.showValidationMessage('Valid quantity received is required');
+                        return false;
+                    }
+                    if (!unitPrice || unitPrice < 0) {
+                        Swal.showValidationMessage('Valid unit price is required');
+                        return false;
+                    }
+
+                    if (adjustmentType == 'increase') {
+                        return {
+                            currentStock: item.currentStock + parseInt(quantityReceived),
+                            // unitPrice: parseFloat(unitPrice),
+                            // supplier: supplier.trim(),
+                            // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                            value: item.value + parseInt(quantityReceived) * parseFloat(unitPrice),
+                            id: item.id
+                        };
+                    } else {
+                        return {
+                            currentStock: item.currentStock - parseInt(quantityReceived),
+                            // unitPrice: parseFloat(unitPrice),
+                            // supplier: supplier.trim(),
+                            // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                            value: item.value - parseInt(quantityReceived) * parseFloat(unitPrice),
+                            id: item.id
+                        };
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const stockData = result.value;
+                    this.updateInventory(stockData.id, stockData)
+                }
+            })
         },
         deleteItem(item) {
             Swal.fire({
