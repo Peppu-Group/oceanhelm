@@ -51,7 +51,7 @@ export default {
         };
 
   
-          axios.post('http://localhost:3000/notification', notificationData)
+          axios.post('(`https://proctoredserver.peppubuild.com/notification', notificationData)
             .then(response => {
               console.log('Success:', response.data);
             })
