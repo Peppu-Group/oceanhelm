@@ -499,8 +499,125 @@ export default {
                 }
             })
         },
+        transferItemAction(item, newLocation, transferQuantity) {
+            const existingItem = this.inventoryData.find(entry =>
+                entry.id === item.id
+            );
+            console.log(transferQuantity)
+            if (existingItem && existingItem.location === newLocation && existingItem.vessel === item.vessel) {
+                Swal.fire({
+                    title: 'Chose a different product',
+                    text: 'You cannot move an item to the same location. Either you change location, vessel, or try the stock in action.',
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                // Create full new item with copied fields
+                this.inventoryData.push({
+                    id: item.id,
+                    itemName: existingItem.itemName,
+                    category: existingItem.category,
+                    vessel: item.vessel,
+                    location: newLocation,
+                    currentStock: parseFloat(transferQuantity),
+                    value: parseInt(item.value),
+                    status: 'Available',
+                    active: true,
+                    lastUpdated: new Date().toISOString().split('T')[0],
+                });
+                existingItem.currentStock -= transferQuantity;
+                existingItem.value -= parseInt(item.value);
+            }
+
+            // Optionally recalculate `status` for both entries
+        },
         transferItem(item) {
-            alert(`Transfer item to another location: ${item.itemName}`);
+            Swal.fire({
+                title: 'Transfer Entry',
+                html: `
+                    <p style="color: #6c757d; margin-bottom: 25px; font-size: 16px;">
+                        Transfer inventory item from one location to another. If the item is already part of your stock, it will be added. Else,
+                        a new entry will be created.
+                    </p>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="quantityReceived">Quantity to Transfer <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity to transfer" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
+                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="supplier">Handler</label>
+                        <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="location">Location</label>
+                        <select id="location" required>
+                            <option value="">-- Select Location --</option>
+                            ${this.locations.map(loc => `<option value="${loc}">${loc}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="vessel">Vessel <span class="required">*</span></label>
+                        <select id="vessel" required>
+                            <option value="">-- Select Vessel --</option>
+                            ${this.vessels.map(vessel => `<option value="${vessel}">${vessel}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-input-label" for="dateReceived">Date Transfered</label>
+                        <input class="custom-input" type="date" id="dateReceived">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Transfer Stock',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                width: '500px',
+                customClass: {
+                    popup: 'swal-custom-popup'
+                },
+                preConfirm: () => {
+                    const quantityReceived = document.getElementById('quantityReceived').value;
+                    const unitPrice = document.getElementById('unitPrice').value;
+                    const location = document.getElementById('location').value;
+                    const vessel = document.getElementById('vessel').value;
+                    const supplier = document.getElementById('supplier').value;
+                    const dateReceived = document.getElementById('dateReceived').value;
+
+                    if (!quantityReceived || quantityReceived <= 0) {
+                        Swal.showValidationMessage('Valid quantity received is required');
+                        return false;
+                    }
+                    if (!unitPrice || unitPrice < 0) {
+                        Swal.showValidationMessage('Valid unit price is required');
+                        return false;
+                    }
+                    if (!location) {
+                        Swal.showValidationMessage('Valid location is required');
+                        return false;
+                    }
+
+                    return {
+                        quantity: parseInt(quantityReceived),
+                        // unitPrice: parseFloat(unitPrice),
+                        // supplier: supplier.trim(),
+                        // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        value: parseInt(quantityReceived) * parseFloat(unitPrice),
+                        id: item.id,
+                        vessel: vessel,
+                        location: location
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const stockData = result.value;
+                    this.transferItemAction(stockData, stockData.location, stockData.quantity)
+                }
+            })
         },
         editItem(item) {
             Swal.fire({

@@ -13,7 +13,7 @@
   --maitsecondary: #2e86c1;
   --dashprimary-color: #0d6efd;
   --dashsecondary-color: #1e88e5;
-   --sidebar-width: 280px;
+  --sidebar-width: 280px;
 }
 
 /**
@@ -56,6 +56,22 @@ Swal section
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.3s;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .custom-input:focus {
@@ -247,13 +263,13 @@ Swal section
 /* Responsive adjustments */
 @media (max-width: 768px) {
   #content.active {
-      margin-left: 0;
-      width: 100%;
+    margin-left: 0;
+    width: 100%;
   }
 
   #sidebar {
-      width: 100%;
-      max-width: 280px;
+    width: 100%;
+    max-width: 280px;
   }
 }
 
@@ -339,4 +355,3 @@ Swal section
   border-bottom: 1px solid #e0e0e0;
   padding-bottom: 15px;
 }
-
