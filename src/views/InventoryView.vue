@@ -327,10 +327,23 @@ export default {
                     return 'status-low-stock';
                 case 'Out of Stock':
                     return 'status-out-of-stock';
-                case 'Critical':
+                case 'Over Stock':
                     return 'status-critical';
                 default:
                     return 'status-in-stock';
+            }
+        },
+        getStockStatus(stockLevel, minStock, maxStock) {
+            const currentStock = parseInt(stockLevel);
+
+            if (currentStock === 0) {
+                return 'Out of Stock';
+            } else if (currentStock > parseInt(maxStock)) {
+                return 'Over Stock';
+            } else if (currentStock > parseInt(minStock)) {
+                return 'Available';
+            } else {
+                return 'Low Stock';
             }
         },
         getStockClass(item) {
@@ -825,13 +838,17 @@ export default {
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="status">Status <span class="required">*</span></label>
-                                <select id="status" required>
-                                    <option value="">-- Select Status --</option>
-                                    ${this.statusOptions.map(status => `<option value="${status}">${status}</option>`).join('')}
-                                </select>
+                                <label for="minStock">Minimum Stock Value <span class="required">*</span></label>
+                                <input type="number" id="minStock" placeholder="0" min="0" step="1">
                             </div>
                             <div class="form-group">
+                                <label for="maxStock">Maximum Stock Value <span class="required">*</span></label>
+                                <input type="number" id="maxStock" placeholder="1" min="1" step="2">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group full-width">
                                 <label for="value">Value (₦) Unit Price</label>
                                 <input type="number" id="value" placeholder="0.00" min="0" step="0.01">
                             </div>
@@ -860,7 +877,8 @@ export default {
                     const location = document.getElementById('location').value;
                     const customLocation = document.getElementById('customLocation').value;
                     const stockLevel = document.getElementById('stockLevel').value;
-                    const status = document.getElementById('status').value;
+                    const minStock = document.getElementById('minStock').value;
+                    const maxStock = document.getElementById('maxStock').value;
                     const value = document.getElementById('value').value;
                     const lastUpdated = document.getElementById('lastUpdated').value;
 
@@ -897,8 +915,12 @@ export default {
                         Swal.showValidationMessage('Valid stock level is required');
                         return false;
                     }
-                    if (!status) {
-                        Swal.showValidationMessage('Status is required');
+                    if (!minStock || minStock < 0) {
+                        Swal.showValidationMessage('Minimum stock is required to calculate status');
+                        return false;
+                    }
+                    if (!maxStock || maxStock < 0) {
+                        Swal.showValidationMessage('Maximum stock is required to calculate status');
                         return false;
                     }
 
@@ -910,7 +932,9 @@ export default {
                         vessel: vessel,
                         location: location === 'Other' ? customLocation.trim() : location,
                         currentStock: parseInt(stockLevel),
-                        status: status,
+                        status: this.getStockStatus(stockLevel, minStock, maxStock),
+                        maxStock: maxStock,
+                        minStock: minStock,
                         value: value ? parseFloat(value) * parseInt(stockLevel) : null,
                         active: true,
                         lastUpdated: lastUpdated || new Date().toISOString()
