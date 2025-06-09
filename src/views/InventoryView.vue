@@ -193,10 +193,37 @@
         <!-- Overview Tab Content -->
         <div v-if="selectedTab === 'overview'" class="inventory-table">
             <div style="padding: 40px; text-align: center;">
-                <i class="fas fa-chart-bar"
-                    style="font-size: 48px; color: var(--dashprimary-color); margin-bottom: 20px;"></i>
-                <h2>Inventory Overview</h2>
-                <p style="color: #6b7280; margin-top: 10px;">Dashboard and analytics coming soon...</p>
+                <div class="dashboard div-responsive">
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3 class="chart-title">Inventory by Category</h3>
+                            <div class="chart-container">
+                                <canvas ref="categoryChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <h3 class="chart-title">Stock Status Distribution</h3>
+                            <div class="chart-container">
+                                <canvas ref="stockChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card full-width">
+                            <h3 class="chart-title">Inventory Value Trend (Last 6 Months)</h3>
+                            <div class="chart-container">
+                                <canvas ref="trendChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card full-width">
+                            <h3 class="chart-title">Stock In/Out (Last 6 Months)</h3>
+                            <div class="">
+                                <canvas ref="activityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -212,6 +239,7 @@
 <script>
 import Sidebar from '../components/Sidebar.vue';
 import VesselList from '../components/VesselList.vue';
+import Chart from 'chart.js/auto';
 
 export default {
     name: 'inventory',
@@ -256,8 +284,8 @@ export default {
             ],
             statusOptions: [
                 'Available',
-                'Low Stock',
-                'Out of Stock',
+                'Low',
+                'Out',
                 'Reserved',
                 'Maintenance',
                 'Damaged'
@@ -316,18 +344,41 @@ export default {
         },
         totalPages() {
             return Math.ceil(this.filteredInventory.length / this.itemsPerPage);
+        },
+        categoryData() {
+            const categories = {};
+            this.inventoryData.forEach(item => {
+                categories[item.category] = (categories[item.category] || 0) + item.currentStock;
+            });
+            return categories;
+        },
+        stockStatusData() {
+            const status = { Available: 0, Over: 0, Low: 0, Out: 0 };
+            this.inventoryData.forEach(item => {
+                status[item.status]++;
+            });
+            return status;
         }
     },
+    watch: {
+    selectedTab(newTab) {
+        if (newTab === 'overview') {
+            this.$nextTick(() => {
+                this.createCharts();
+            });
+        }
+    }
+},
     methods: {
         getStatusClass(status) {
             switch (status) {
                 case 'In Stock':
                     return 'status-in-stock';
-                case 'Low Stock':
+                case 'Low':
                     return 'status-low-stock';
-                case 'Out of Stock':
+                case 'Out':
                     return 'status-out-of-stock';
-                case 'Over Stock':
+                case 'Over':
                     return 'status-critical';
                 default:
                     return 'status-in-stock';
@@ -337,13 +388,13 @@ export default {
             const currentStock = parseInt(stockLevel);
 
             if (currentStock === 0) {
-                return 'Out of Stock';
+                return 'Out';
             } else if (currentStock > parseInt(maxStock)) {
-                return 'Over Stock';
+                return 'Over';
             } else if (currentStock > parseInt(minStock)) {
                 return 'Available';
             } else {
-                return 'Low Stock';
+                return 'Low';
             }
         },
         getStockClass(item) {
@@ -545,9 +596,9 @@ export default {
                     active: true,
                     lastUpdated: new Date().toISOString().split('T')[0],
                 });
+                existingItem.status = this.getStockStatus(existingItem.currentStock - transferQuantity, existingItem.minStock, existingItem.maxStock)
                 existingItem.currentStock -= transferQuantity;
                 existingItem.value -= parseInt(item.value);
-                existingItem.status = this.getStockStatus(existingItem.currentStock - transferQuantity, existingItem.minStock, existingItem.maxStock)
             }
 
             // Optionally recalculate `status` for both entries
@@ -1026,6 +1077,190 @@ export default {
                 });
                 console.error('Error adding inventory item:', error);
             }
+        },
+        createCharts() {
+            this.createCategoryChart();
+            this.createStockChart();
+            this.createTrendChart();
+            this.createStocksChart();
+        },
+        createStocksChart() {
+            // 3️⃣ Stock In / Out Activity Line Chart
+            const activityCtx = this.$refs.activityChart.getContext('2d');
+            new Chart(activityCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025'],
+                    datasets: [
+                        {
+                            label: 'Stock In',
+                            data: [20, 30, 25, 10, 50, 40],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Stock Out',
+                            data: [10, 20, 15, 25, 30, 10],
+                            borderColor: '#F44336',
+                            backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        },
+        createCategoryChart() {
+            const ctx = this.$refs.categoryChart.getContext('2d');
+            const data = this.categoryData;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: [
+                            '#3b82f6', '#06b6d4', '#8b5cf6', '#10b981',
+                            '#f59e0b', '#ef4444', '#84cc16', '#f97316'
+                        ],
+                        borderWidth: 0,
+                        hoverBorderWidth: 2,
+                        hoverBorderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#171819',
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        },
+        createStockChart() {
+            const ctx = this.$refs.stockChart.getContext('2d');
+            const data = this.stockStatusData;
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Available Stock', 'Over Stock', 'Low Stock', 'Out Stock'],
+                    datasets: [{
+                        data: [data.Available, data.Over, data.Low, data.Out],
+                        backgroundColor: ['#22c55e', '#5b21b6',  '#f59e0b', '#ef4444'],
+                        borderWidth: 0,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: 'rgba(59, 130, 246, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        },
+        createTrendChart() {
+            const ctx = this.$refs.trendChart.getContext('2d');
+
+            // Mock trend data for the last 6 months
+            const trendData = [
+                { month: 'Jan 2025', value: 180000 },
+                { month: 'Feb 2025', value: 195000 },
+                { month: 'Mar 2025', value: 175000 },
+                { month: 'Apr 2025', value: 210000 },
+                { month: 'May 2025', value: 225000 },
+                { month: 'Jun 2025', value: this.totalValue }
+            ];
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trendData.map(d => d.month),
+                    datasets: [{
+                        label: 'Inventory Value ($)',
+                        data: trendData.map(d => d.value),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function (value) {
+                                    return '$' + (value / 1000) + 'K';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(59, 130, 246, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 

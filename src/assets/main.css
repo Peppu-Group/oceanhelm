@@ -355,3 +355,52 @@ Swal section
   border-bottom: 1px solid #e0e0e0;
   padding-bottom: 15px;
 }
+
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.chart-card {
+  padding: 2rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.3s ease;
+}
+
+.chart-card:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.chart-title {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: #096cee;
+  text-align: center;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin-bottom: 1rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.div-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
