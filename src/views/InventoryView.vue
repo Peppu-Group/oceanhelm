@@ -369,8 +369,8 @@ export default {
         importData() {
             alert('Import functionality will be implemented');
         },
-        updateInventory(id, stockData) {
-            const index = this.inventoryData.findIndex(item => item.id === id);
+        updateInventory(id, stockData, location, vessel) {
+            const index = this.inventoryData.findIndex(item => item.id === id && item.location === location && item.vessel === vessel);
             if (index !== -1) {
                 this.inventoryData[index].value = stockData.value;
                 this.inventoryData[index].currentStock = stockData.currentStock;
@@ -431,12 +431,15 @@ export default {
                         Swal.showValidationMessage('Valid unit price is required');
                         return false;
                     }
-
+                    const currentStock = parseInt(quantityReceived) + item.currentStock;
                     return {
-                        currentStock: parseInt(quantityReceived) + item.currentStock,
+                        currentStock: currentStock,
                         // unitPrice: parseFloat(unitPrice),
                         // supplier: supplier.trim(),
                         // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
+                        maxStock: item.maxStock,
+                        minStock: item.minStock,
                         value: parseInt(quantityReceived) * parseFloat(unitPrice) + item.value,
                         id: item.id
                     };
@@ -444,7 +447,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData)
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel)
                 }
             })
         },
@@ -496,11 +499,15 @@ export default {
                         return false;
                     }
 
+                    const currentStock = item.currentStock - parseInt(quantityReceived);
                     return {
-                        currentStock: item.currentStock - parseInt(quantityReceived),
+                        currentStock: currentStock,
                         // unitPrice: parseFloat(unitPrice),
                         // supplier: supplier.trim(),
                         // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
+                        maxStock: item.maxStock,
+                        minStock: item.minStock,
                         value: item.value - parseInt(quantityReceived) * parseFloat(unitPrice),
                         id: item.id
                     };
@@ -508,13 +515,13 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData)
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel)
                 }
             })
         },
-        transferItemAction(item, newLocation, transferQuantity) {
+        transferItemAction(item, newLocation, transferQuantity, location, vessel) {
             const existingItem = this.inventoryData.find(entry =>
-                entry.id === item.id
+                entry.id === item.id && entry.location === location && entry.vessel === vessel
             );
             console.log(transferQuantity)
             if (existingItem && existingItem.location === newLocation && existingItem.vessel === item.vessel) {
@@ -535,7 +542,9 @@ export default {
                     location: newLocation,
                     currentStock: parseFloat(transferQuantity),
                     value: parseInt(item.value),
-                    status: 'Available',
+                    status: this.getStockStatus(transferQuantity, existingItem.minStock, existingItem.maxStock),
+                    maxStock: existingItem.maxStock,
+                    minStock: existingItem.minStock,
                     active: true,
                     lastUpdated: new Date().toISOString().split('T')[0],
                 });
@@ -628,7 +637,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.transferItemAction(stockData, stockData.location, stockData.quantity)
+                    this.transferItemAction(stockData, stockData.location, stockData.quantity, item.location, item.vessel)
                 }
             })
         },
@@ -690,20 +699,28 @@ export default {
                     }
 
                     if (adjustmentType == 'increase') {
+                        const currentStock = item.currentStock + parseInt(quantityReceived);
                         return {
-                            currentStock: item.currentStock + parseInt(quantityReceived),
+                            currentStock: currentStock,
                             // unitPrice: parseFloat(unitPrice),
                             // supplier: supplier.trim(),
                             // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                            status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
+                            maxStock: item.maxStock,
+                            minStock: item.minStock,
                             value: item.value + parseInt(quantityReceived) * parseFloat(unitPrice),
                             id: item.id
                         };
                     } else {
+                        const currentStock = item.currentStock - parseInt(quantityReceived);
                         return {
-                            currentStock: item.currentStock - parseInt(quantityReceived),
+                            currentStock: currentStock,
                             // unitPrice: parseFloat(unitPrice),
                             // supplier: supplier.trim(),
                             // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                            status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
+                            maxStock: item.maxStock,
+                            minStock: item.minStock,
                             value: item.value - parseInt(quantityReceived) * parseFloat(unitPrice),
                             id: item.id
                         };
@@ -712,7 +729,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData)
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel)
                 }
             })
         },
