@@ -374,14 +374,12 @@ export default {
             if (index !== -1) {
                 this.inventoryData[index].value = stockData.value;
                 this.inventoryData[index].currentStock = stockData.currentStock;
+                this.inventoryData[index].status = stockData.status;
 
                 // Optionally reset the form
                 // this.updateForm = { id: null, value: null, stockLevel: null };
 
                 // You can also show a success message or toast here
-                console.log('Item updated successfully');
-            } else {
-                console.warn('Item not found');
             }
         },
         stockIn(item) {
@@ -523,7 +521,6 @@ export default {
             const existingItem = this.inventoryData.find(entry =>
                 entry.id === item.id && entry.location === location && entry.vessel === vessel
             );
-            console.log(transferQuantity)
             if (existingItem && existingItem.location === newLocation && existingItem.vessel === item.vessel) {
                 Swal.fire({
                     title: 'Chose a different product',
@@ -550,6 +547,7 @@ export default {
                 });
                 existingItem.currentStock -= transferQuantity;
                 existingItem.value -= parseInt(item.value);
+                existingItem.status = this.getStockStatus(existingItem.currentStock - transferQuantity, existingItem.minStock, existingItem.maxStock)
             }
 
             // Optionally recalculate `status` for both entries
@@ -651,7 +649,7 @@ export default {
                     </p>
                     <div class="form-group">
                         <label class="custom-input-label" for="quantityReceived">Quantity<span class="required">*</span></label>
-                        <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity removed" min="1" required>
+                        <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity" min="1" required>
                     </div>
                     <div class="form-group">
                         <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
