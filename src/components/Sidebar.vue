@@ -27,7 +27,7 @@
                 <a href="/app/inventory"><i class="bi bi-clipboard-data"></i> Inventory Management</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="bi bi-calendar-check"></i> Requisition
+                <a href="/app/requisition"><i class="bi bi-calendar-check"></i> Requisition
                     Processing</a>
             </li>
             <li>

@@ -13,6 +13,7 @@ import InventoryView from '../views/InventoryView.vue'
 import LoginView from '../views/LoginView.vue'
 import RedirectView from '../views/RedirectView.vue'
 import SubRedirect from '../views/SubRedirect.vue'
+import NewReq from '../views/NewReq.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -44,6 +45,12 @@ const router = createRouter({
       path: '/app/dashboard/crew',
       name: 'crewroute',
       component: CrewRoute,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/app/requisition',
+      name: 'newreq',
+      component: NewReq,
       meta: { requiresAuth: true }
     },
     {

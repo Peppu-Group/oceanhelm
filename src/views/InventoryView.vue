@@ -211,7 +211,7 @@
                         </div>
 
                         <div class="chart-card full-width">
-                            <h3 class="chart-title">Stock In/Out (Last 6 Months)</h3>
+                            <h3 class="chart-title">Stock In/Out/Transfer (Last 6 Months)</h3>
                             <div class="">
                                 <canvas ref="activityChart"></canvas>
                             </div>
@@ -1102,6 +1102,13 @@ export default {
                             label: 'Stock Out',
                             data: [10, 20, 15, 25, 30, 10],
                             borderColor: '#F44336',
+                            backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Transfer',
+                            data: [5, 35, 55, 25, 30, 10],
+                            borderColor: '#3b82f6',
                             backgroundColor: 'rgba(244, 67, 54, 0.2)',
                             tension: 0.4
                         }
