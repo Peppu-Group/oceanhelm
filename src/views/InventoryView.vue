@@ -362,22 +362,22 @@ export default {
         }
     },
     watch: {
-    selectedTab(newTab) {
-        if (newTab === 'overview') {
-            this.$nextTick(() => {
-                this.createCharts();
-            });
-        }
-    },
-    filteredInventory: {
-        handler() {
-            if (this.$refs.categoryChart) {
-                this.updateCharts();
+        selectedTab(newTab) {
+            if (newTab === 'overview') {
+                this.$nextTick(() => {
+                    this.createCharts();
+                });
             }
         },
-        deep: true
-    }
-},
+        filteredInventory: {
+            handler() {
+                if (this.$refs.categoryChart) {
+                    this.updateCharts();
+                }
+            },
+            deep: true
+        }
+    },
     methods: {
         getStatusClass(status) {
             switch (status) {
@@ -521,10 +521,6 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity removed" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
-                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="supplier">Handler</label>
                         <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
                     </div>
@@ -544,7 +540,6 @@ export default {
                 },
                 preConfirm: () => {
                     const quantityReceived = document.getElementById('quantityReceived').value;
-                    const unitPrice = document.getElementById('unitPrice').value;
                     const supplier = document.getElementById('supplier').value;
                     const dateReceived = document.getElementById('dateReceived').value;
 
@@ -552,12 +547,9 @@ export default {
                         Swal.showValidationMessage('Valid quantity received is required');
                         return false;
                     }
-                    if (!unitPrice || unitPrice < 0) {
-                        Swal.showValidationMessage('Valid unit price is required');
-                        return false;
-                    }
 
                     const currentStock = item.currentStock - parseInt(quantityReceived);
+                    const unitPrice = this.getUnitPriceForItem(item.id);
                     return {
                         currentStock: currentStock,
                         // unitPrice: parseFloat(unitPrice),
@@ -625,10 +617,6 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity to transfer" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
-                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="supplier">Handler</label>
                         <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
                     </div>
@@ -662,7 +650,6 @@ export default {
                 },
                 preConfirm: () => {
                     const quantityReceived = document.getElementById('quantityReceived').value;
-                    const unitPrice = document.getElementById('unitPrice').value;
                     const location = document.getElementById('location').value;
                     const vessel = document.getElementById('vessel').value;
                     const supplier = document.getElementById('supplier').value;
@@ -672,15 +659,11 @@ export default {
                         Swal.showValidationMessage('Valid quantity received is required');
                         return false;
                     }
-                    if (!unitPrice || unitPrice < 0) {
-                        Swal.showValidationMessage('Valid unit price is required');
-                        return false;
-                    }
                     if (!location) {
                         Swal.showValidationMessage('Valid location is required');
                         return false;
                     }
-
+                    const unitPrice = this.getUnitPriceForItem(item.id);
                     return {
                         quantity: parseInt(quantityReceived),
                         // unitPrice: parseFloat(unitPrice),
@@ -712,10 +695,6 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="unitPrice">Unit Price <span class="required">*</span></label>
-                        <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="supplier">Handler</label>
                         <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
                     </div>
@@ -742,17 +721,13 @@ export default {
                 },
                 preConfirm: () => {
                     const quantityReceived = document.getElementById('quantityReceived').value;
-                    const unitPrice = document.getElementById('unitPrice').value;
                     const supplier = document.getElementById('supplier').value;
                     const dateReceived = document.getElementById('dateReceived').value;
                     const adjustmentType = document.getElementById('category').value;
+                    const unitPrice = this.getUnitPriceForItem(item.id);
 
                     if (!quantityReceived || quantityReceived <= 0) {
                         Swal.showValidationMessage('Valid quantity received is required');
-                        return false;
-                    }
-                    if (!unitPrice || unitPrice < 0) {
-                        Swal.showValidationMessage('Valid unit price is required');
                         return false;
                     }
 
@@ -1087,6 +1062,21 @@ export default {
                 console.error('Error adding inventory item:', error);
             }
         },
+        // useful for calculating unit price in stockout, transfer, and edit.
+        getUnitPriceForItem(id) {
+            const matchingItems = this.inventoryData.filter(item => item.id === id);
+
+            const totalValue = matchingItems.reduce((sum, item) => sum + (item.value), 0);
+            const totalStock = matchingItems.reduce((sum, item) => sum + item.currentStock, 0);
+
+            if (totalStock === 0) {
+                return 0;
+            }
+
+            const unitPrice = totalValue / totalStock;
+
+            return unitPrice;
+        },
         createCharts() {
             this.createCategoryChart();
             this.createStockChart();
@@ -1172,7 +1162,7 @@ export default {
                     labels: ['Available Stock', 'Over Stock', 'Low Stock', 'Out Stock'],
                     datasets: [{
                         data: [data.Available, data.Over, data.Low, data.Out],
-                        backgroundColor: ['#22c55e', '#5b21b6',  '#f59e0b', '#ef4444'],
+                        backgroundColor: ['#22c55e', '#5b21b6', '#f59e0b', '#ef4444'],
                         borderWidth: 0,
                         borderRadius: 8
                     }]
@@ -1272,16 +1262,16 @@ export default {
             });
         },
         updateCharts() {
-    // Destroy and recreate charts
-    this.categoryChartInstance?.destroy();
-    this.stockChartInstance?.destroy();
-    this.trendChartInstance?.destroy();
-    this.stocksChartInstance?.destroy();
+            // Destroy and recreate charts
+            this.categoryChartInstance?.destroy();
+            this.stockChartInstance?.destroy();
+            this.trendChartInstance?.destroy();
+            this.stocksChartInstance?.destroy();
 
-    this.$nextTick(() => {
-        this.createCharts();
-    });
-}
+            this.$nextTick(() => {
+                this.createCharts();
+            });
+        }
 
     }
 
