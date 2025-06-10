@@ -211,15 +211,16 @@
                         </div>
 
                         <div class="chart-card full-width">
-                            <h3 class="chart-title">Inventory Value Trend (Last 6 Months)</h3>
-                            <div class="chart-container">
-                                <canvas ref="trendChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="chart-card full-width">
                             <h3 class="chart-title">Stock In/Out (Last 6 Months)</h3>
                             <div class="">
                                 <canvas ref="activityChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card full-width">
+                            <h3 class="chart-title">Inventory Value Trend (Last 6 Months)</h3>
+                            <div class="chart-container">
+                                <canvas ref="trendChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -347,14 +348,14 @@ export default {
         },
         categoryData() {
             const categories = {};
-            this.inventoryData.forEach(item => {
+            this.filteredInventory.forEach(item => {
                 categories[item.category] = (categories[item.category] || 0) + item.currentStock;
             });
             return categories;
         },
         stockStatusData() {
             const status = { Available: 0, Over: 0, Low: 0, Out: 0 };
-            this.inventoryData.forEach(item => {
+            this.filteredInventory.forEach(item => {
                 status[item.status]++;
             });
             return status;
@@ -367,6 +368,14 @@ export default {
                 this.createCharts();
             });
         }
+    },
+    filteredInventory: {
+        handler() {
+            if (this.$refs.categoryChart) {
+                this.updateCharts();
+            }
+        },
+        deep: true
     }
 },
     methods: {
@@ -1087,7 +1096,7 @@ export default {
         createStocksChart() {
             // 3️⃣ Stock In / Out Activity Line Chart
             const activityCtx = this.$refs.activityChart.getContext('2d');
-            new Chart(activityCtx, {
+            this.stocksChartInstance = new Chart(activityCtx, {
                 type: 'line',
                 data: {
                     labels: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025'],
@@ -1122,7 +1131,7 @@ export default {
             const ctx = this.$refs.categoryChart.getContext('2d');
             const data = this.categoryData;
 
-            new Chart(ctx, {
+            this.categoryChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(data),
@@ -1157,7 +1166,7 @@ export default {
             const ctx = this.$refs.stockChart.getContext('2d');
             const data = this.stockStatusData;
 
-            new Chart(ctx, {
+            this.stockChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Available Stock', 'Over Stock', 'Low Stock', 'Out Stock'],
@@ -1211,7 +1220,7 @@ export default {
                 { month: 'Jun 2025', value: this.totalValue }
             ];
 
-            new Chart(ctx, {
+            this.trendChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: trendData.map(d => d.month),
@@ -1261,7 +1270,19 @@ export default {
                     }
                 }
             });
-        }
+        },
+        updateCharts() {
+    // Destroy and recreate charts
+    this.categoryChartInstance?.destroy();
+    this.stockChartInstance?.destroy();
+    this.trendChartInstance?.destroy();
+    this.stocksChartInstance?.destroy();
+
+    this.$nextTick(() => {
+        this.createCharts();
+    });
+}
+
     }
 
 }
