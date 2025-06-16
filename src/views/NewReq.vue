@@ -10,209 +10,237 @@
   <!-- Sidebar -->
   <Sidebar />
   <div id="content">
-  <div class="container">
-    <div class="header">
-      <h1>MarineTech Requisition System</h1>
-      <p>Streamlined Material Request & Ordering Process</p>
-    </div>
+    <div class="container">
+      <div class="header">
+        <h1>MarineTech Requisition System</h1>
+        <p>Streamlined Material Request & Ordering Process</p>
+      </div>
 
-    <!-- Navigation Tabs -->
-    <div class="nav-tabs">
-      <button v-for="tab in visibleTabs" :key="tab.name" :class="['nav-tab', { active: activeTab === tab.name }]"
-        @click="activeTab = tab.name">
-        {{ tab.label }}
-      </button>
-    </div>
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button v-for="tab in visibleTabs" :key="tab.name" :class="['nav-tab', { active: activeTab === tab.name }]"
+          @click="activeTab = tab.name">
+          {{ tab.label }}
+        </button>
+      </div>
 
 
-    <!-- Tabs -->
-    <div v-if="activeTab === 'new-requisition'" class="tab-content active">
-      <form @submit.prevent="submitRequisition">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Requestor Name *</label>
-            <input type="text" v-model="form.requestor" required />
+      <!-- Tabs -->
+      <div v-if="activeTab === 'new-requisition'" class="tab-content active">
+        <form @submit.prevent="submitRequisition">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Requestor Name *</label>
+              <input type="text" v-model="form.requestor" required />
+            </div>
+            <div class="form-group">
+              <label>Department *</label>
+              <select v-model="form.department" required>
+                <option value="">Select Department</option>
+                <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Project/Vessel</label>
+              <input type="text" v-model="form.project" placeholder="e.g., MV Neptune, Platform Alpha" />
+            </div>
+            <div class="form-group">
+              <label>Priority Level *</label>
+              <select v-model="form.priority" required>
+                <option value="">Select Priority</option>
+                <option v-for="priority in priorities" :key="priority" :value="priority">{{ priority }}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date Needed</label>
+              <input type="date" v-model="form.neededDate" />
+            </div>
+            <div class="form-group">
+              <label>Cost Center</label>
+              <input type="text" v-model="form.costCenter" placeholder="e.g., CC-2024-001" />
+            </div>
           </div>
-          <div class="form-group">
-            <label>Department *</label>
-            <select v-model="form.department" required>
-              <option value="">Select Department</option>
-              <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Project/Vessel</label>
-            <input type="text" v-model="form.project" placeholder="e.g., MV Neptune, Platform Alpha" />
-          </div>
-          <div class="form-group">
-            <label>Priority Level *</label>
-            <select v-model="form.priority" required>
-              <option value="">Select Priority</option>
-              <option v-for="priority in priorities" :key="priority" :value="priority">{{ priority }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Date Needed</label>
-            <input type="date" v-model="form.neededDate" />
-          </div>
-          <div class="form-group">
-            <label>Cost Center</label>
-            <input type="text" v-model="form.costCenter" placeholder="e.g., CC-2024-001" />
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label>Business Justification *</label>
-          <textarea v-model="form.justification" placeholder="Explain why these materials are needed..."
-            required></textarea>
-        </div>
-
-        <div class="items-section">
-          <div class="items-header">
-            <h3>Requested Items</h3>
-            <button type="button" class="add-item-btn" @click="addItem">+ Add Item</button>
+          <div class="form-group">
+            <label>Business Justification *</label>
+            <textarea v-model="form.justification" placeholder="Explain why these materials are needed..."
+              required></textarea>
           </div>
-          <div>
-            <div v-for="(item, index) in form.items" :key="index" class="item-row">
-              <div class="form-group">
-                <label>Item Description *</label>
-                <input type="text" v-model="item.desc" required />
+
+          <div class="items-section">
+            <div class="items-header">
+              <h3>Requested Items</h3>
+              <button type="button" class="add-item-btn" @click="addItem">+ Add Item</button>
+            </div>
+            <div>
+              <div v-for="(item, index) in form.items" :key="index" class="item-row">
+                <div class="form-group">
+                  <label>Item Description *</label>
+                  <input type="text" v-model="item.desc" required />
+                </div>
+                <div class="form-group">
+                  <label>Quantity *</label>
+                  <input type="number" v-model.number="item.qty" min="1" required />
+                </div>
+                <div class="form-group">
+                  <label>Unit</label>
+                  <select v-model="item.unit">
+                    <option v-for="unit in units" :key="unit" :value="unit">{{ unit }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Est. Unit Cost</label>
+                  <input type="number" v-model.number="item.cost" step="0.01" placeholder="0.00" />
+                </div>
+                <button type="button" class="remove-item-btn" @click="removeItem(index)">Remove</button>
               </div>
-              <div class="form-group">
-                <label>Quantity *</label>
-                <input type="number" v-model.number="item.qty" min="1" required />
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button type="button" class="btn btn-secondary" @click="saveDraft">Save as Draft</button>
+            <button type="submit" class="btn btn-primary">Submit Requisition</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- My Requisitions Tab -->
+      <div v-if="activeTab === 'my-requisitions'" class="tab-content active">
+        <div class="requisition-list">
+          <div v-for="req in requisitions" :key="req.id" class="requisition-card">
+            <div class="requisition-header">
+              <div class="requisition-id">{{ req.id }}</div>
+              <div :class="['status-badge', `status-${req.status}`]">{{ req.status }}</div>
+            </div>
+            <div class="requisition-details">
+              <div class="detail-item" v-for="field in requisitionFields" :key="field.label">
+                <div class="detail-label">{{ field.label }}</div>
+                <div class="detail-value">{{ field.value(req) }}</div>
               </div>
-              <div class="form-group">
-                <label>Unit</label>
-                <select v-model="item.unit">
-                  <option v-for="unit in units" :key="unit" :value="unit">{{ unit }}</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Est. Unit Cost</label>
-                <input type="number" v-model.number="item.cost" step="0.01" placeholder="0.00" />
-              </div>
-              <button type="button" class="remove-item-btn" @click="removeItem(index)">Remove</button>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="action-buttons">
-          <button type="button" class="btn btn-secondary" @click="saveDraft">Save as Draft</button>
-          <button type="submit" class="btn btn-primary">Submit Requisition</button>
-        </div>
-      </form>
-    </div>
-
-    <!-- My Requisitions Tab -->
-    <div v-if="activeTab === 'my-requisitions'" class="tab-content active">
-      <div class="requisition-list">
-        <div v-for="req in requisitions" :key="req.id" class="requisition-card">
-          <div class="requisition-header">
-            <div class="requisition-id">{{ req.id }}</div>
-            <div :class="['status-badge', `status-${req.status}`]">{{ req.status }}</div>
+      <!-- Pending Approval Tab -->
+      <div v-if="activeTab === 'approvals'" class="tab-content active">
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #1e40af; margin-bottom: 15px;">Department Supervisor Dashboard</h3>
+          <div style="background: #fef3c7; padding: 15px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+            <strong>Role:</strong> Department Supervisor - Review requests for accuracy, necessity, and budget compliance
           </div>
-          <div class="requisition-details">
-            <div class="detail-item" v-for="field in requisitionFields" :key="field.label">
-              <div class="detail-label">{{ field.label }}</div>
-              <div class="detail-value">{{ field.value(req) }}</div>
+        </div>
+        <div class="requisition-list" id="approvalsQueue">
+          <div v-for="req in reviewRequisitions" :key="req.id" class="requisition-card">
+            <div class="requisition-header">
+              <div class="requisition-id">{{ req.id }}</div>
             </div>
+            <div class="requisition-details">
+              <div class="detail-item" v-for="field in requisitionFields" :key="field.label">
+                <div class="detail-label">{{ field.label }}</div>
+                <div class="detail-value">{{ field.value(req) }}</div>
+              </div>
+            </div>
+            <!-- Justification -->
+            <div class="detail-item">
+              <div class="detail-label">Justification</div>
+              <div class="detail-value">{{ req.justification || 'N/A' }}</div>
+            </div>
+
+            <!-- Item list -->
+            <div class="detail-item">
+              <div class="detail-label">Items</div>
+              <ul class="item-list">
+                <li v-for="(item, index) in req.items" :key="index">
+                  {{ item.desc }} - {{ item.qty }} {{ item.unit }} @ ₦{{ item.cost.toFixed(2) }} each
+                </li>
+              </ul>
+            </div>
+            <button type="button" class="add-item-btn" @click="approveRequisition(req.id)">Approve</button>
+            <button type="button" class="marginbox btn-reject" @click="declineRequisition(req.id)">Decline</button>
+            <button type="button" class="marginbox btn-request" @click="infoRequisition(req.id)">Request Info</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchasing Queue Tab -->
+      <div v-if="activeTab === 'purchasing'" class="tab-content active">
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #1e40af; margin-bottom: 15px;">Purchasing Department Dashboard</h3>
+          <div style="background: #dbeafe; padding: 15px; border-radius: 10px; border-left: 4px solid #3b82f6;">
+            <strong>Role:</strong> Purchasing Team - Convert approved requisitions to Purchase Orders
+          </div>
+        </div>
+        <div class="requisition-list" id="purchasingQueue">
+          <!-- Purchasing queue will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Receiving Tab -->
+      <div v-if="activeTab === 'receiving'" class="tab-content active">
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #1e40af; margin-bottom: 15px;">Receiving & Inventory Dashboard</h3>
+          <div style="background: #dcfce7; padding: 15px; border-radius: 10px; border-left: 4px solid #10b981;">
+            <strong>Role:</strong> Warehouse Team - Process incoming deliveries and update inventory
+          </div>
+        </div>
+        <div class="requisition-list" id="receivingQueue">
+          <!-- Receiving queue will be loaded here -->
+        </div>
+      </div>
+
+      <!-- Workflow Guide Tab -->
+      <div v-if="activeTab === 'workflow'" class="tab-content active">
+        <div class="workflow-steps">
+          <div class="workflow-step">
+            <div class="step-icon completed">1</div>
+            <div class="step-title">Request Submitted</div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-icon active">2</div>
+            <div class="step-title">Department Review</div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-icon">3</div>
+            <div class="step-title">Management Approval</div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-icon">4</div>
+            <div class="step-title">Purchase Order Created</div>
+          </div>
+          <div class="workflow-step">
+            <div class="step-icon">5</div>
+            <div class="step-title">Order Fulfilled</div>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 15px; margin-top: 20px;">
+          <h3 style="color: #1e40af; margin-bottom: 20px;">Requisition Workflow Process</h3>
+          <div style="line-height: 1.8; color: #374151;">
+            <p><strong>Step 1: Request Identification</strong><br>
+              Department or individual identifies need for materials, equipment, or services.</p>
+
+            <p><strong>Step 2: Requisition Creation</strong><br>
+              Complete requisition form with detailed specifications, quantities, and business justification.</p>
+
+            <p><strong>Step 3: Department Review</strong><br>
+              Department supervisor reviews request for accuracy, necessity, and budget compliance.</p>
+
+            <p><strong>Step 4: Management Approval</strong><br>
+              Based on cost thresholds, appropriate management level provides approval.</p>
+
+            <p><strong>Step 5: Purchase Order Generation</strong><br>
+              Purchasing team converts approved requisition into formal Purchase Order (PO).</p>
+
+            <p><strong>Step 6: Vendor Processing</strong><br>
+              PO sent to vendor, order processed, and delivery scheduled.</p>
+
+            <p><strong>Step 7: Receipt & Inventory</strong><br>
+              Goods received, inspected, and entered into inventory system.</p>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Pending Approval Tab -->
-    <div v-if="activeTab === 'approvals'" class="tab-content active">
-      <div style="margin-bottom: 20px;">
-        <h3 style="color: #1e40af; margin-bottom: 15px;">Department Supervisor Dashboard</h3>
-        <div style="background: #fef3c7; padding: 15px; border-radius: 10px; border-left: 4px solid #f59e0b;">
-          <strong>Role:</strong> Department Supervisor - Review requests for accuracy, necessity, and budget compliance
-        </div>
-      </div>
-      <div class="requisition-list" id="approvalsQueue">
-        <!-- Approval queue will be loaded here -->
-      </div>
-    </div>
-
-    <!-- Purchasing Queue Tab -->
-    <div v-if="activeTab === 'purchasing'" class="tab-content active">
-      <div style="margin-bottom: 20px;">
-        <h3 style="color: #1e40af; margin-bottom: 15px;">Purchasing Department Dashboard</h3>
-        <div style="background: #dbeafe; padding: 15px; border-radius: 10px; border-left: 4px solid #3b82f6;">
-          <strong>Role:</strong> Purchasing Team - Convert approved requisitions to Purchase Orders
-        </div>
-      </div>
-      <div class="requisition-list" id="purchasingQueue">
-        <!-- Purchasing queue will be loaded here -->
-      </div>
-    </div>
-
-    <!-- Receiving Tab -->
-    <div v-if="activeTab === 'receiving'" class="tab-content active">
-      <div style="margin-bottom: 20px;">
-        <h3 style="color: #1e40af; margin-bottom: 15px;">Receiving & Inventory Dashboard</h3>
-        <div style="background: #dcfce7; padding: 15px; border-radius: 10px; border-left: 4px solid #10b981;">
-          <strong>Role:</strong> Warehouse Team - Process incoming deliveries and update inventory
-        </div>
-      </div>
-      <div class="requisition-list" id="receivingQueue">
-        <!-- Receiving queue will be loaded here -->
-      </div>
-    </div>
-
-    <!-- Workflow Guide Tab -->
-    <div v-if="activeTab === 'workflow'" class="tab-content active">
-      <div class="workflow-steps">
-        <div class="workflow-step">
-          <div class="step-icon completed">1</div>
-          <div class="step-title">Request Submitted</div>
-        </div>
-        <div class="workflow-step">
-          <div class="step-icon active">2</div>
-          <div class="step-title">Department Review</div>
-        </div>
-        <div class="workflow-step">
-          <div class="step-icon">3</div>
-          <div class="step-title">Management Approval</div>
-        </div>
-        <div class="workflow-step">
-          <div class="step-icon">4</div>
-          <div class="step-title">Purchase Order Created</div>
-        </div>
-        <div class="workflow-step">
-          <div class="step-icon">5</div>
-          <div class="step-title">Order Fulfilled</div>
-        </div>
-      </div>
-
-      <div style="background: white; padding: 30px; border-radius: 15px; margin-top: 20px;">
-        <h3 style="color: #1e40af; margin-bottom: 20px;">Requisition Workflow Process</h3>
-        <div style="line-height: 1.8; color: #374151;">
-          <p><strong>Step 1: Request Identification</strong><br>
-            Department or individual identifies need for materials, equipment, or services.</p>
-
-          <p><strong>Step 2: Requisition Creation</strong><br>
-            Complete requisition form with detailed specifications, quantities, and business justification.</p>
-
-          <p><strong>Step 3: Department Review</strong><br>
-            Department supervisor reviews request for accuracy, necessity, and budget compliance.</p>
-
-          <p><strong>Step 4: Management Approval</strong><br>
-            Based on cost thresholds, appropriate management level provides approval.</p>
-
-          <p><strong>Step 5: Purchase Order Generation</strong><br>
-            Purchasing team converts approved requisition into formal Purchase Order (PO).</p>
-
-          <p><strong>Step 6: Vendor Processing</strong><br>
-            PO sent to vendor, order processed, and delivery scheduled.</p>
-
-          <p><strong>Step 7: Receipt & Inventory</strong><br>
-            Goods received, inspected, and entered into inventory system.</p>
-        </div>
-      </div>
-    </div>
-</div>
   </div>
 </template>
   
@@ -271,7 +299,7 @@ export default {
           department: 'Engineering',
           project: 'Platform Alpha',
           priority: 'Normal',
-          status: 'pending',
+          status: 'review',
           submittedDate: '2025-06-09',
           items: [{ desc: 'Hydraulic Pump Assembly', qty: 2, unit: 'Pieces', cost: 2500.0 }]
         }
@@ -307,6 +335,9 @@ export default {
   computed: {
     visibleTabs() {
       return this.tabs.filter(tab => tab.roles.includes(this.userRole))
+    },
+    reviewRequisitions() {
+      return this.requisitions.filter(r => r.status === 'review');
     }
   },
 
@@ -318,6 +349,85 @@ export default {
         unit: 'Pieces',
         cost: 0
       })
+    },
+
+    approveRequisition(id) {
+      const requisition = this.requisitions.find(r => r.id === id);
+      if (requisition) {
+        requisition.status = 'approved';
+        requisition.approvedBy = 'Captain John Doe';
+        Swal.fire({
+          title: "Request Approved",
+          text: `You have approved ${id}, it has moved to stage 5 (Purchase Order Generation)`,
+          icon: "success"
+        });
+      }
+    },
+
+    declineRequisition(id) {
+      const requisition = this.requisitions.find(r => r.id === id);
+      if (!requisition) return;
+
+      Swal.fire({
+        title: 'Decline Requisition',
+        input: 'text',
+        inputLabel: 'Reason for rejection',
+        inputPlaceholder: 'Enter a reason',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You must provide a reason!';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Decline',
+        cancelButtonText: 'Cancel',
+        icon: 'warning'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          requisition.status = 'declined';
+          requisition.declinedBy = 'Captain John Doe';
+          requisition.rejectionReason = result.value;
+
+          Swal.fire({
+            title: "Request Declined",
+            text: `Requisition ${id} was declined for: ${result.value}`,
+            icon: "info"
+          });
+        }
+      });
+    },
+
+    infoRequisition(id) {
+      const requisition = this.requisitions.find(r => r.id === id);
+      if (!requisition) return;
+
+      Swal.fire({
+        title: 'Request Additional Info',
+        input: 'text',
+        inputLabel: 'What information do you need from the requester?',
+        inputPlaceholder: 'Enter your info request',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'You must specify the info you need!';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Send Request',
+        cancelButtonText: 'Cancel',
+        icon: 'question'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          requisition.status = 'info';
+          requisition.infoRequestedBy = 'Captain John Doe';
+          requisition.requestedInfo = result.value;
+
+          Swal.fire({
+            title: "Info Request Sent",
+            text: `You requested: "${result.value}" from the requester for requisition ${id}.`,
+            icon: "success"
+          });
+        }
+      });
     },
 
     removeItem(index) {
@@ -332,7 +442,7 @@ export default {
     },
 
     submitRequisition() {
-      const newReq = this.collectFormData('pending')
+      const newReq = this.collectFormData('review')
       this.requisitions.push(newReq)
       alert(`Requisition submitted successfully! ID: ${newReq.id}`)
       this.resetForm()
@@ -622,6 +732,34 @@ export default {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+.marginbox {
+  margin: 10px
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.item-list li {
+  background: #f1f5f9;
+  /* Light blue-gray background */
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  /* Rounded corners */
+  font-size: 0.95rem;
+  color: #1e293b;
+  /* Dark text */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  content: '•';
+  color: #3b82f6;
+}
+
+
 .remove-item-btn {
   background: #ef4444;
   color: white;
@@ -677,6 +815,24 @@ export default {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
+
+.btn-request {
+  background: linear-gradient(135deg, #ef9a44 0%, #fa920a 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-request:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(240, 162, 52, 0.3);
+}
+
 
 .btn-create-po {
   background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
@@ -813,7 +969,7 @@ export default {
   color: #92400e;
 }
 
-.status-pending {
+.status-review {
   background: #dbeafe;
   color: #1e40af;
 }
@@ -1030,16 +1186,16 @@ export default {
 }
 
 #content {
-    width: 100%;
-    min-height: 100vh;
-    transition: all 0.3s;
-    position: absolute;
-    padding: 20px;
-    padding-left: 40px;
+  width: 100%;
+  min-height: 100vh;
+  transition: all 0.3s;
+  position: absolute;
+  padding: 20px;
+  padding-left: 40px;
 }
 
 #content.active {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
 }
 </style>
