@@ -45,13 +45,6 @@
               <input type="text" v-model="form.project" placeholder="e.g., MV Neptune, Platform Alpha" />
             </div>
             <div class="form-group">
-              <label>Priority Level *</label>
-              <select v-model="form.priority" required>
-                <option value="">Select Priority</option>
-                <option v-for="priority in priorities" :key="priority" :value="priority">{{ priority }}</option>
-              </select>
-            </div>
-            <div class="form-group">
               <label>Date Needed</label>
               <input type="date" v-model="form.neededDate" />
             </div>
@@ -113,10 +106,18 @@
               <div :class="['status-badge', `status-${req.status}`]">{{ req.status }}</div>
             </div>
             <div class="requisition-details">
-              <div class="detail-item" v-for="field in requisitionFields" :key="field.label">
+              <div class="detail-item" v-for="field in getRequisitionFields(req)" :key="field.label">
                 <div class="detail-label">{{ field.label }}</div>
                 <div class="detail-value">{{ field.value(req) }}</div>
               </div>
+            </div>
+            <div v-if="req.status === 'info-requested'" class="form-group comments-section">
+              <label class="detail-label">Your Response</label>
+              <textarea v-model="form.justification" class="response-textarea"
+                placeholder="Submit more info..."></textarea>
+              <button @click="submitInfoResponse(req)" class="add-item-btn comments-section">
+                Submit Info
+              </button>
             </div>
           </div>
         </div>
@@ -253,7 +254,7 @@ export default {
 
   data() {
     return {
-      userRole: 'owner', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
+      userRole: 'staff', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
 
       // Tabs with visibility rules
       tabs: [
@@ -271,11 +272,36 @@ export default {
         requestor: '',
         department: '',
         project: '',
-        priority: '',
         neededDate: '',
         costCenter: '',
         justification: '',
         items: []
+      },
+
+      // common fields
+      requisitionFields: [
+        { label: 'Requestor', value: req => req.requestor },
+        { label: 'Department', value: req => req.department },
+        { label: 'Project', value: req => req.project || 'N/A' },
+        { label: 'Submitted', value: req => req.submittedDate },
+        { label: 'Items', value: req => `${req.items.length} item(s)` }
+      ],
+
+      // Fields for My Requisitions display
+      requisitionFieldsMap: {
+        approved: [
+          { label: 'Approved By', value: req => req.approvedBy },
+        ],
+
+        declined: [
+          { label: 'Declined By', value: req => req.declinedBy },
+          { label: 'Rejection Reason', value: req => req.rejectionReason },
+        ],
+
+        'info-requested': [
+          { label: 'Info Requester', value: req => req.infoRequestedBy },
+          { label: 'Requested Info', value: req => req.requestedInfo }
+        ]
       },
 
       // Data
@@ -285,8 +311,67 @@ export default {
           requestor: 'John Smith',
           department: 'Marine Operations',
           project: 'MV Neptune',
-          priority: 'High',
           status: 'delivered',
+          submittedDate: '2025-06-05',
+          items: [
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+          ]
+        },
+        {
+          id: 'REQ-001234',
+          requestor: 'John Smith',
+          department: 'Marine Operations',
+          project: 'MV Neptune',
+          status: 'declined',
+          submittedDate: '2025-06-05',
+          items: [
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+          ]
+        },
+        {
+          id: 'REQ-001234',
+          requestor: 'John Smith',
+          department: 'Marine Operations',
+          project: 'MV Neptune',
+          status: 'pending-supply',
+          submittedDate: '2025-06-05',
+          items: [
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+          ]
+        },
+        {
+          id: 'REQ-001234',
+          requestor: 'John Smith',
+          department: 'Marine Operations',
+          project: 'MV Neptune',
+          status: 'approved',
+          submittedDate: '2025-06-05',
+          items: [
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+          ]
+        },
+        {
+          id: 'REQ-001234',
+          requestor: 'John Smith',
+          department: 'Marine Operations',
+          project: 'MV Neptune',
+          status: 'po-created',
+          submittedDate: '2025-06-05',
+          items: [
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+          ]
+        },
+        {
+          id: 'REQ-001234',
+          requestor: 'John Smith',
+          department: 'Marine Operations',
+          project: 'MV Neptune',
+          status: 'info-requested',
           submittedDate: '2025-06-05',
           items: [
             { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
@@ -298,8 +383,7 @@ export default {
           requestor: 'Sarah Johnson',
           department: 'Engineering',
           project: 'Platform Alpha',
-          priority: 'Normal',
-          status: 'review',
+          status: 'under-review',
           submittedDate: '2025-06-09',
           items: [{ desc: 'Hydraulic Pump Assembly', qty: 2, unit: 'Pieces', cost: 2500.0 }]
         }
@@ -319,16 +403,6 @@ export default {
       ],
 
       units: ['Pieces', 'Kilograms', 'Liters', 'Meters', 'Sets', 'Boxes'],
-
-      // Fields for My Requisitions display
-      requisitionFields: [
-        { label: 'Requestor', value: req => req.requestor },
-        { label: 'Department', value: req => req.department },
-        { label: 'Project', value: req => req.project || 'N/A' },
-        { label: 'Priority', value: req => req.priority },
-        { label: 'Submitted', value: req => req.submittedDate },
-        { label: 'Items', value: req => `${req.items.length} item(s)` }
-      ]
     }
   },
 
@@ -349,6 +423,35 @@ export default {
         unit: 'Pieces',
         cost: 0
       })
+    },
+
+    submitInfoResponse(req) {
+      const response = this.form.justification;
+      if (!response || response.trim() === '') {
+        Swal.fire({
+          title: 'Response Required',
+          text: 'Please enter a response before submitting.',
+          icon: 'warning'
+        });
+        return;
+      }
+
+      req.justification = response;
+      req.status = 'under-review';
+
+      Swal.fire({
+        title: 'Info Submitted',
+        text: `Your response has been submitted for requisition ${req.id}.`,
+        icon: 'success'
+      });
+
+      this.form.justification = '';
+    },
+
+
+    getRequisitionFields(req) {
+      const statusFields = this.requisitionFieldsMap[req.status] || [];
+      return [...(this.requisitionFields || []), ...statusFields];
     },
 
     approveRequisition(id) {
@@ -417,7 +520,7 @@ export default {
         icon: 'question'
       }).then((result) => {
         if (result.isConfirmed) {
-          requisition.status = 'info';
+          requisition.status = 'info-requested';
           requisition.infoRequestedBy = 'Captain John Doe';
           requisition.requestedInfo = result.value;
 
@@ -442,7 +545,7 @@ export default {
     },
 
     submitRequisition() {
-      const newReq = this.collectFormData('review')
+      const newReq = this.collectFormData('under-review')
       this.requisitions.push(newReq)
       alert(`Requisition submitted successfully! ID: ${newReq.id}`)
       this.resetForm()
@@ -454,7 +557,6 @@ export default {
         requestor: this.form.requestor,
         department: this.form.department,
         project: this.form.project,
-        priority: this.form.priority,
         neededDate: this.form.neededDate,
         costCenter: this.form.costCenter,
         justification: this.form.justification,
@@ -469,7 +571,6 @@ export default {
         requestor: '',
         department: '',
         project: '',
-        priority: '',
         neededDate: '',
         costCenter: '',
         justification: '',
@@ -969,7 +1070,7 @@ export default {
   color: #92400e;
 }
 
-.status-review {
+.status-under-review {
   background: #dbeafe;
   color: #1e40af;
 }
@@ -979,14 +1080,24 @@ export default {
   color: #166534;
 }
 
-.status-rejected {
+.status-declined {
   background: #fee2e2;
   color: #dc2626;
 }
 
-.status-ordered {
+.status-info-requested {
+  background: #e8cf12;
+  color: #da7212;
+}
+
+.status-po-created {
   background: #e0e7ff;
-  color: #4338ca;
+  color: #4bca38;
+}
+
+.status-pending-supply {
+  background: #113fd8;
+  color: #4bca38;
 }
 
 .status-delivered {
