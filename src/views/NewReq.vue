@@ -173,7 +173,33 @@
           </div>
         </div>
         <div class="requisition-list" id="purchasingQueue">
-          <!-- Purchasing queue will be loaded here -->
+          <div v-for="req in poRequisitions" :key="req.id" class="requisition-card">
+            <div class="requisition-header">
+              <div class="requisition-id">{{ req.id }}</div>
+            </div>
+            <div class="requisition-details">
+              <div class="detail-item" v-for="field in requisitionFields" :key="field.label">
+                <div class="detail-label">{{ field.label }}</div>
+                <div class="detail-value">{{ field.value(req) }}</div>
+              </div>
+            </div>
+            <!-- Justification -->
+            <div class="detail-item">
+              <div class="detail-label">Justification</div>
+              <div class="detail-value">{{ req.justification || 'N/A' }}</div>
+            </div>
+
+            <!-- Item list -->
+            <div class="detail-item">
+              <div class="detail-label">Items</div>
+              <ul class="item-list">
+                <li v-for="(item, index) in req.items" :key="index">
+                  {{ item.desc }} - {{ item.qty }} {{ item.unit }} @ ₦{{ item.cost.toFixed(2) }} each
+                </li>
+              </ul>
+            </div>
+            <button type="button" class="add-item-btn" @click="createPO(req.id)">Create PO</button>
+          </div>
         </div>
       </div>
 
@@ -188,6 +214,147 @@
         <div class="requisition-list" id="receivingQueue">
           <!-- Receiving queue will be loaded here -->
         </div>
+      </div>
+
+      <!-- PO Tab -->
+      <div v-if="activeTab === 'po'" class="tab-content active">
+        <div class="po-content">
+          <div class="po-header">
+            <div class="company-info">
+              <h3>Vendor Information</h3>
+              <div class="info-row">
+                <span class="info-label">Company:</span>
+                <span class="info-value">{{ vendorInfo.company }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Contact:</span>
+                <span class="info-value">{{ vendorInfo.contact }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ vendorInfo.email }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Phone:</span>
+                <span class="info-value">{{ vendorInfo.phone }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Address:</span>
+                <span class="info-value">{{ vendorInfo.address }}</span>
+              </div>
+            </div>
+
+            <div class="company-info">
+              <h3>Purchase Order Details</h3>
+              <div class="info-row">
+                <span class="info-label">PO Number:</span>
+                <span class="info-value">{{ poDetails.id }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Requested By:</span>
+                <span class="info-value"></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Department:</span>
+                <span class="info-value">PO-{{ poDetails.department }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Delivery Date:</span>
+                <span class="info-value"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="items-section">
+            <h2 class="section-title">Order Items</h2>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Item #</th>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in poDetails.items" :key="index">
+                  <td>{{ item.itemNumber }}</td>
+                  <td>{{ item.desc }}</td>
+                  <td>{{ item.qty }}</td>
+                  <td>
+                    <span v-if="!item.editing">
+                      ${{ item.cost.toFixed(2) }}
+                      <span v-if="item.cost !== item.unitPrice" class="price-change-indicator">!</span>
+                    </span>
+                    <input v-else v-model.number="item.tempPrice" type="number" step="0.01" class="price-input"
+                      :class="{ 'price-changed': item.cost !== item.tempPrice }">
+                  </td>
+                  <td>${{ (item.unitPrice * item.qty).toFixed(2) }}</td>
+                  <td>
+                    <button v-if="!item.editing" @click="startEdit(index)" class="edit-btn">
+                      Edit Price
+                    </button>
+                    <div v-else>
+                      <button @click="savePrice(index)" class="save-btn">Save</button>
+                      <button @click="cancelEdit(index)" class="cancel-btn">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div v-for="(item, index) in poDetails.items" :key="'note-' + index">
+              <div v-if="item.justification" class="justification-note">
+                <strong>Price Change Justification (Item {{ item.itemNumber }}):</strong> {{ item.justification }}
+              </div>
+            </div>
+
+            <div class="totals">
+              <div class="total-row">
+                <span>Subtotal:</span>
+                <span>${{ subTotal.toFixed(2) }}</span>
+              </div>
+              <div class="total-row">
+                <span>Tax (%):</span>
+                <span>${{ getOptional(vendorInfo.tax) }}</span>
+              </div>
+              <div class="total-row">
+                <span>Shipping:</span>
+                <span>${{ getOptional(vendorInfo.shipping) }}</span>
+              </div>
+              <div class="total-row grand-total">
+                <span>Grand Total:</span>
+                <span>${{ subTotal + getOptional(vendorInfo.tax) + getOptional(vendorInfo.shipping) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Justification Modal -->
+        <div v-if="showJustificationModal" class="justification-modal" @click.self="closeJustificationModal">
+          <div class="modal-content">
+            <h3>Price Change Justification Required</h3>
+            <p style="margin-bottom: 15px; color: #666;">
+              Please provide a justification for changing the price from
+              <strong>${{ currentItem.cost.toFixed(2) }}</strong> to
+              <strong>${{ currentItem.tempPrice.toFixed(2) }}</strong>
+            </p>
+            <textarea v-model="justificationText" class="justification-textarea"
+              placeholder="Enter justification for price change..." required></textarea>
+            <div class="modal-buttons">
+              <button @click="closeJustificationModal" class="cancel-btn">Cancel</button>
+              <button @click="confirmPriceChange" class="save-btn" :disabled="!justificationText.trim()">
+                Confirm Change
+              </button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="add-item-btn" @click="finishPO(poDetails.id)">Finish PO</button>
       </div>
 
       <!-- Workflow Guide Tab -->
@@ -254,7 +421,7 @@ export default {
 
   data() {
     return {
-      userRole: 'staff', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
+      userRole: 'purchasing', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
 
       // Tabs with visibility rules
       tabs: [
@@ -277,7 +444,11 @@ export default {
         justification: '',
         items: []
       },
-
+      poDetails: {
+        editing: false
+      },
+      vendorInfo: {},
+      justificationText: '',
       // common fields
       requisitionFields: [
         { label: 'Requestor', value: req => req.requestor },
@@ -314,8 +485,8 @@ export default {
           status: 'delivered',
           submittedDate: '2025-06-05',
           items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
           ]
         },
         {
@@ -326,8 +497,8 @@ export default {
           status: 'declined',
           submittedDate: '2025-06-05',
           items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
           ]
         },
         {
@@ -338,8 +509,8 @@ export default {
           status: 'pending-supply',
           submittedDate: '2025-06-05',
           items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
           ]
         },
         {
@@ -350,20 +521,20 @@ export default {
           status: 'approved',
           submittedDate: '2025-06-05',
           items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
           ]
         },
         {
-          id: 'REQ-001234',
+          id: 'REQ-001235',
           requestor: 'John Smith',
           department: 'Marine Operations',
           project: 'MV Neptune',
           status: 'po-created',
           submittedDate: '2025-06-05',
           items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '', itemNumber: '' },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '', itemNumber: '' }
           ]
         },
         {
@@ -374,8 +545,8 @@ export default {
           status: 'info-requested',
           submittedDate: '2025-06-05',
           items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0 },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0 }
+            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
+            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
           ]
         },
         {
@@ -385,7 +556,7 @@ export default {
           project: 'Platform Alpha',
           status: 'under-review',
           submittedDate: '2025-06-09',
-          items: [{ desc: 'Hydraulic Pump Assembly', qty: 2, unit: 'Pieces', cost: 2500.0 }]
+          items: [{ desc: 'Hydraulic Pump Assembly', qty: 2, unit: 'Pieces', cost: 2500.0, justification: '' }]
         }
       ],
 
@@ -403,6 +574,8 @@ export default {
       ],
 
       units: ['Pieces', 'Kilograms', 'Liters', 'Meters', 'Sets', 'Boxes'],
+      currentItemIndex: null,
+      showJustificationModal: false
     }
   },
 
@@ -410,12 +583,129 @@ export default {
     visibleTabs() {
       return this.tabs.filter(tab => tab.roles.includes(this.userRole))
     },
+    subTotal() {
+      return this.poDetails.items.reduce((sum, item) => {
+        return sum + (item.unitPrice * item.qty);
+      }, 0);
+    },
     reviewRequisitions() {
-      return this.requisitions.filter(r => r.status === 'review');
+      return this.requisitions.filter(r => r.status === 'under-review');
+    },
+    poRequisitions() {
+      return this.requisitions.filter(r => r.status === 'po-created');
+    },
+    currentItem() {
+      return this.currentItemIndex !== null ? this.poDetails.items[this.currentItemIndex] : null;
     }
   },
 
   methods: {
+    getNumber() {
+      return this.poDetails.items.map((item, index) => {
+        return item.itemNumber = + index + 1;
+      })
+    },
+    getOptional(value) {
+      return typeof value === 'number' ? value.toFixed(2) : 0.00;
+    },
+    startEdit(index) {
+      console.log(this.poDetails.items[index])
+      this.poDetails.items[index].editing = true;
+      this.poDetails.items[index].tempPrice = this.poDetails.items[index].unitPrice;
+    },
+    cancelEdit(index) {
+      this.poDetails.items[index].editing = false;
+      this.poDetails.items[index].tempPrice = this.poDetails.items[index].unitPrice;
+    },
+    confirmPriceChange() {
+      if (!this.justificationText.trim()) {
+        alert('Please provide a justification for the price change.');
+        return;
+      }
+
+      const item = this.poDetails.items[this.currentItemIndex];
+      item.unitPrice = item.tempPrice;
+      item.cost = item.tempPrice;
+      item.justification = this.justificationText.trim();
+      item.editing = false;
+
+      this.closeJustificationModal();
+    },
+    closeJustificationModal() {
+      this.showJustificationModal = false;
+      this.currentItemIndex = null;
+      this.justificationText = '';
+    },
+    savePrice(index) {
+      const item = this.poDetails.items[index];
+      if (item.tempPrice !== item.cost) {
+        // Price changed, require justification
+        this.currentItemIndex = index;
+        this.showJustificationModal = true;
+      } else {
+        // No change, just save
+        item.unitPrice = item.tempPrice;
+        item.editing = false;
+      }
+    },
+    async createPO(id) {
+      const { value: vendor } = await Swal.fire({
+        title: 'Enter Vendor Information',
+        html:
+          `<div class="custom-swal-container">` +
+          `<input id="vendor-company" class="custom-input" placeholder="Company Name *">` +
+          `<input id="vendor-contact" class="custom-input" placeholder="Contact Person *">` +
+          `<input id="vendor-email" type="email" class="custom-input" placeholder="Email *">` +
+          `<input id="vendor-phone" class="custom-input" placeholder="Phone *">` +
+          `<input id="vendor-address" class="custom-input" placeholder="Address *">` +
+          `<input id="vendor-tax" type="number" class="custom-input" placeholder="Tax (Optional)">` +
+          `<input id="vendor-shipping" type="number" class="custom-input" placeholder="Shipping Cost (Optional)">` +
+          `</div>`,
+        focusConfirm: false,
+        showCancelButton: true,
+        customClass: {
+          container: 'custom-swal-container',
+          popup: 'custom-swal-popup',
+        },
+        preConfirm: () => {
+          const company = document.getElementById('vendor-company').value.trim();
+          const contact = document.getElementById('vendor-contact').value.trim();
+          const email = document.getElementById('vendor-email').value.trim();
+          const phone = document.getElementById('vendor-phone').value.trim();
+          const address = document.getElementById('vendor-address').value.trim();
+          const tax = document.getElementById('vendor-tax').value.trim();
+          const shipping = document.getElementById('vendor-shipping').value.trim();
+
+          // Validation
+          if (!company || !contact || !email || !phone || !address) {
+            Swal.showValidationMessage('Please fill in all required fields (*)');
+            return false;
+          }
+
+          return { company, contact, email, phone, address, tax, shipping };
+        }
+      });
+
+      if (vendor) {
+        this.vendorInfo = vendor;
+        this.activeTab = 'po';
+        const requisition = this.requisitions.find(r => r.id === id);
+        this.poDetails = requisition;
+        this.getNumber();
+        for (let item of this.poDetails.items) {
+          item.tempPrice = item.cost;
+          item.unitPrice = item.cost;
+          item.subTotal += item.unitPrice * item.qty;
+        }
+      }
+    },
+
+    finishPO(id) {
+      const requisition = this.requisitions.find(r => r.id === id);
+      requisition.status = 'delivered';
+      this.activeTab = 'purchasing';
+    },
+
     addItem() {
       this.form.items.push({
         desc: '',
@@ -1308,5 +1598,263 @@ export default {
 #content.active {
   margin-left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
+}
+
+.po-content {
+  padding: 40px;
+}
+
+.po-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.company-info,
+.po-details {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 15px;
+  border-left: 5px solid #3498db;
+}
+
+.company-info h3,
+.po-details h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.info-row {
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.info-value {
+  color: #2c3e50;
+}
+
+.items-section {
+  margin-top: 30px;
+}
+
+.section-title {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.items-table th {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.items-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.items-table tr:hover {
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  transition: all 0.3s ease;
+}
+
+.price-input {
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100px;
+  transition: all 0.3s ease;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.price-changed {
+  background: #fff3cd;
+  border-color: #ffc107;
+}
+
+.edit-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+.save-btn {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+.cancel-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.justification-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+
+.justification-textarea {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.justification-textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.modal-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.totals {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 25px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.total-row.grand-total {
+  border-top: 2px solid #3498db;
+  padding-top: 15px;
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #2c3e50;
+}
+
+.justification-note {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #856404;
+}
+
+.price-change-indicator {
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+}
+
+@media (max-width: 768px) {
+  .po-header {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .items-table {
+    font-size: 14px;
+  }
+
+  .items-table th,
+  .items-table td {
+    padding: 10px 8px;
+  }
+
+  .price-input {
+    width: 80px;
+  }
 }
 </style>
