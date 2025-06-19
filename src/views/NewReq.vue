@@ -212,7 +212,33 @@
           </div>
         </div>
         <div class="requisition-list" id="receivingQueue">
-          <!-- Receiving queue will be loaded here -->
+          <div v-for="req in awaitingDelivery" :key="req.id" class="requisition-card">
+            <div class="requisition-header">
+              <div class="requisition-id">{{ req.id }}</div>
+            </div>
+            <div class="requisition-details">
+              <div class="detail-item" v-for="field in requisitionFields" :key="field.label">
+                <div class="detail-label">{{ field.label }}</div>
+                <div class="detail-value">{{ field.value(req) }}</div>
+              </div>
+            </div>
+            <!-- Justification -->
+            <div class="detail-item">
+              <div class="detail-label">Justification</div>
+              <div class="detail-value">{{ req.justification || 'N/A' }}</div>
+            </div>
+
+            <!-- Item list -->
+            <div class="detail-item">
+              <div class="detail-label">Items</div>
+              <ul class="item-list">
+                <li v-for="(item, index) in req.items" :key="index">
+                  {{ item.desc }} - {{ item.qty }} {{ item.unit }} @ ₦{{ item.cost.toFixed(2) }} each
+                </li>
+              </ul>
+            </div>
+            <button type="button" class="add-item-btn" @click="createPO(req.id)">Accept Delivery</button>
+          </div>
         </div>
       </div>
 
@@ -514,7 +540,7 @@ export default {
           ]
         },
         {
-          id: 'REQ-001234',
+          id: 'REQ-001264',
           requestor: 'John Smith',
           department: 'Marine Operations',
           project: 'MV Neptune',
@@ -523,18 +549,6 @@ export default {
           items: [
             { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
             { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
-          ]
-        },
-        {
-          id: 'REQ-001235',
-          requestor: 'John Smith',
-          department: 'Marine Operations',
-          project: 'MV Neptune',
-          status: 'po-created',
-          submittedDate: '2025-06-05',
-          items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '', itemNumber: '' },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '', itemNumber: '' }
           ]
         },
         {
@@ -592,6 +606,9 @@ export default {
       return this.requisitions.filter(r => r.status === 'under-review');
     },
     poRequisitions() {
+      return this.requisitions.filter(r => r.status === 'approved');
+    },
+    awaitingDelivery() {
       return this.requisitions.filter(r => r.status === 'po-created');
     },
     currentItem() {
@@ -702,7 +719,7 @@ export default {
 
     finishPO(id) {
       const requisition = this.requisitions.find(r => r.id === id);
-      requisition.status = 'delivered';
+      requisition.status = 'po-created';
       this.activeTab = 'purchasing';
     },
 
