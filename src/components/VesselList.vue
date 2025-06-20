@@ -105,37 +105,21 @@ export default {
         this.$store.dispatch('vessel/fetchVessels');
     },
     methods: {
-        getDaysToExpiry(expiryDate) {
+        getDaysToExpiry(expiry_date) {
             const today = new Date();
-            const expiry = new Date(expiryDate);
+            const expiry = new Date(expiry_date);
             const diffTime = expiry - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays;
         },
 
-        getExpiryClass(expiryDate) {
-            const days = this.getDaysToExpiry(expiryDate);
+        getExpiryClass(expiry_date) {
+            const days = this.getDaysToExpiry(expiry_date);
             if (days < 30) return 'cert-critical';
             if (days < 90) return 'cert-warning';
             return '';
         },
 
-        addCertification() {
-            if (this.newCert.name && this.newCert.expiryDate) {
-                // Set default image if none provided
-                if (!this.newCert.image) {
-                    this.newCert.image = `https://via.placeholder.com/150x100/007bff/ffffff?text=${encodeURIComponent(this.newCert.name.substring(0, 10))}`;
-                }
-
-                this.certifications.push({
-                    name: this.newCert.name,
-                    expiryDate: this.newCert.expiryDate,
-                    image: this.newCert.image
-                });
-
-                this.closeModal();
-            }
-        },
 
         handleImageUpload(event) {
             const file = event.target.files[0];
@@ -152,7 +136,7 @@ export default {
             this.showAddModal = false;
             this.newCert = {
                 name: '',
-                expiryDate: '',
+                expiry_date: '',
                 image: ''
             };
         },
@@ -332,12 +316,12 @@ export default {
                         <div class="cert-info">
                             <div class="cert-row">
                                 <span class="cert-label">Expiry Date:</span>
-                                <span class="cert-value">${cert.expiryDate}</span>
+                                <span class="cert-value">${cert.expiry_date}</span>
                             </div>
                             <div class="cert-row">
                                 <span class="cert-label">Days to Expiry:</span>
-                                <span class="cert-value cert-expiry-days ${this.getExpiryClass(cert.expiryDate)}">
-                                    ${this.getDaysToExpiry(cert.expiryDate)} days
+                                <span class="cert-value cert-expiry-days ${this.getExpiryClass(cert.expiry_date)}">
+                                    ${this.getDaysToExpiry(cert.expiry_date)} days
                                 </span>
                             </div>
                         </div>
@@ -380,7 +364,7 @@ export default {
                     this.editVessel(vessel)
                 } else if (result.isDenied) {
                     // go to manage certification tab
-                    this.$router.push({ path: `/app/certifications` });
+                    this.$router.push({ path: `/app/certifications/${vessel.registrationNumber}` });
                 }
             });
         },

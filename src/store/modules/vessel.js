@@ -113,7 +113,8 @@ export default {
         beam: vessel.beam,
         draft: vessel.draft,
         gross: vessel.gross,
-        net: vessel.net
+        net: vessel.net,
+        certifications: vessel.certifications
       }));
 
       commit('SET_VESSELS', simplifiedVessels);
@@ -124,6 +125,13 @@ export default {
         .from('vessels')
         .update(vessel)
         .eq('registration_number', vessel.registration_number)
+    },
+    async updateVesselCert({ commit }, {cert, id}) {
+      // Update in Supabase
+      const { data, error } = await supabase
+        .from('vessels')
+        .update({certifications: cert})
+        .eq('registration_number', id)
     },
     async deleteVessel({ commit }, id) {
       const { data, error } = await supabase

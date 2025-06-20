@@ -55,7 +55,7 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/app/certifications',
+      path: '/app/certifications/:id',
       name: 'certifications',
       component: ManageCertifications,
       meta: { requiresAuth: true }

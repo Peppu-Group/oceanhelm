@@ -7,7 +7,6 @@
         <ul class="list-unstyled components mt-4">
             <li class="active">
                 <a href="/app/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
-                <a href="/app/certifications"><i class="bi bi-card-checklist"></i> Manage Certifications</a>
             </li>
             <li>
                 <a> Services</a>
