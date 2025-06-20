@@ -95,23 +95,35 @@ export default {
       const { data, error } = await supabase
         .from('vessels')
         .select('*');
-    
+
       if (error) {
         console.error('Error fetching vessels:', error.message);
         return [];
       }
-    
+
       // Extract only name and registration_number
       const simplifiedVessels = data.map(vessel => ({
         name: vessel.name,
         registrationNumber: vessel.registration_number,
-        status: vessel.status
+        status: vessel.status,
+        type: vessel.type,
+        built: vessel.built,
+        flag: vessel.flag,
+        length: vessel.length,
+        beam: vessel.beam,
+        draft: vessel.draft,
+        gross: vessel.gross,
+        net: vessel.net
       }));
-    
+
       commit('SET_VESSELS', simplifiedVessels);
     },
-    updateVessel({ commit }, vessel) {
-      commit('UPDATE_VESSEL', vessel);
+    async updateVessel({ commit }, vessel) {
+      // Update in Supabase
+      const { data, error } = await supabase
+        .from('vessels')
+        .update(vessel)
+        .eq('registration_number', vessel.registration_number)
     },
     async deleteVessel({ commit }, id) {
       const { data, error } = await supabase
@@ -125,23 +137,23 @@ export default {
         commit('DELETE_VESSEL', id);
       }
     },
-    
+
 
     markInactive: async ({ state, commit }, registrationNumber) => {
       const vessels = [...state.vessels];
       const index = vessels.findIndex(v => v.registrationNumber === registrationNumber);
       if (index === -1) return;
-    
+
       // Toggle status
       const currentStatus = vessels[index].status;
       const newStatus = currentStatus === 'Inactive' ? 'Active' : 'Inactive';
-    
+
       // Update in Supabase
       const { data, error } = await supabase
         .from('vessels')
         .update({ status: newStatus })
         .eq('registration_number', registrationNumber)
-    
+
       if (error) {
         Swal.fire({
           title: 'Error!',
@@ -151,17 +163,17 @@ export default {
         return;
       } else {
         // Update in local state
-      vessels[index].status = newStatus;
-      commit('SET_VESSELS', vessels);
-    
-      // Optional success message
-      if (newStatus === 'Active') {
-        Swal.fire({
-          title: 'Vessel Active!',
-          text: 'Your vessel is now active.',
-          icon: 'success'
-        });
-      }
+        vessels[index].status = newStatus;
+        commit('SET_VESSELS', vessels);
+
+        // Optional success message
+        if (newStatus === 'Active') {
+          Swal.fire({
+            title: 'Vessel Active!',
+            text: 'Your vessel is now active.',
+            icon: 'success'
+          });
+        }
       }
     }
   },

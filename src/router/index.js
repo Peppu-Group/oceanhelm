@@ -14,6 +14,7 @@ import LoginView from '../views/LoginView.vue'
 import RedirectView from '../views/RedirectView.vue'
 import SubRedirect from '../views/SubRedirect.vue'
 import NewReq from '../views/NewReq.vue'
+import ManageCertifications from '../views/ManageCertifications.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,6 +52,12 @@ const router = createRouter({
       path: '/app/requisition',
       name: 'newreq',
       component: NewReq,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/app/certifications',
+      name: 'certifications',
+      component: ManageCertifications,
       meta: { requiresAuth: true }
     },
     {

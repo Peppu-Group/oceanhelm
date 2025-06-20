@@ -96,12 +96,6 @@ export default {
         },
         company() {
             return {
-                name: "MarineOps Solutions Inc.",
-                location: "Port Harbor, CA 92614",
-                estYear: 2005,
-                phoneNumber: "(555) 123-4567",
-                email: "info@marineops.com",
-                license: "MCL-273845",
                 vessels: this.vessels,
             };
         }
@@ -111,6 +105,57 @@ export default {
         this.$store.dispatch('vessel/fetchVessels');
     },
     methods: {
+        getDaysToExpiry(expiryDate) {
+            const today = new Date();
+            const expiry = new Date(expiryDate);
+            const diffTime = expiry - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        },
+
+        getExpiryClass(expiryDate) {
+            const days = this.getDaysToExpiry(expiryDate);
+            if (days < 30) return 'cert-critical';
+            if (days < 90) return 'cert-warning';
+            return '';
+        },
+
+        addCertification() {
+            if (this.newCert.name && this.newCert.expiryDate) {
+                // Set default image if none provided
+                if (!this.newCert.image) {
+                    this.newCert.image = `https://via.placeholder.com/150x100/007bff/ffffff?text=${encodeURIComponent(this.newCert.name.substring(0, 10))}`;
+                }
+
+                this.certifications.push({
+                    name: this.newCert.name,
+                    expiryDate: this.newCert.expiryDate,
+                    image: this.newCert.image
+                });
+
+                this.closeModal();
+            }
+        },
+
+        handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.newCert.image = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        },
+
+        closeModal() {
+            this.showAddModal = false;
+            this.newCert = {
+                name: '',
+                expiryDate: '',
+                image: ''
+            };
+        },
         getActiveVesselCount() {
             return this.company.vessels.filter(vessel => vessel.status === "Active").length;
         },
@@ -202,6 +247,9 @@ export default {
         deleteVessel(registrationNumber) {
             return this.$store.dispatch('vessel/deleteVessel', registrationNumber);
         },
+        updateVesselInfo(vessel) {
+            return this.$store.dispatch('vessel/updateVessel', vessel);
+        },
         markInactive(registrationNumber) {
             return this.$store.dispatch('vessel/markInactive', registrationNumber);
 
@@ -231,12 +279,8 @@ export default {
               <span class="info-value">${vessel.type || 'NA'}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Owner/Operator:</span>
-              <span class="info-value">${vessel.owner || 'NA'}</span>
-            </div>
-            <div class="info-row">
               <span class="info-label">Year Built:</span>
-              <span class="info-value">${vessel.year || 'NA'}</span>
+              <span class="info-value">${vessel.built || 'NA'}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Flag State:</span>
@@ -270,20 +314,42 @@ export default {
             </div>
           </div>
         </div>
-
-        <div class="info-section" style="margin-top: 20px;">
-          <div class="section-title">Engine Details</div>
-          <div class="info-row">
-            <span class="info-label">Main Engine:</span>
-            <span class="info-value">${vessel.main || 'NA'}</span>
-          </div>
-          <div style="margin-top: 10px;">
-            <div class="info-label" style="margin-bottom: 5px;">Auxiliary Engines:</div>
-            <div class="engine-details">
-                ${vessel.auxiliary ? vessel.auxiliary.replace(/\n/g, '<br>') : 'NA'}
+  
+    <div class="info-section" style="margin-top: 20px;">
+    <div class="section-title">
+        Certifications
+    </div>
+  
+    <div class="certifications-grid">
+        ${vessel?.certifications?.length > 0 ?
+                    vessel.certifications.map((cert, index) => `
+                <div class="certification-card">
+                    <div class="cert-image-container">
+                        <img src="${cert.image}" alt="${cert.name}" class="cert-image">
+                    </div>
+                    <div class="cert-details">
+                        <div class="cert-name">${cert.name}</div>
+                        <div class="cert-info">
+                            <div class="cert-row">
+                                <span class="cert-label">Expiry Date:</span>
+                                <span class="cert-value">${cert.expiryDate}</span>
+                            </div>
+                            <div class="cert-row">
+                                <span class="cert-label">Days to Expiry:</span>
+                                <span class="cert-value cert-expiry-days ${this.getExpiryClass(cert.expiryDate)}">
+                                    ${this.getDaysToExpiry(cert.expiryDate)} days
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') :
+                    '<div class="no-certifications"><p>No certifications added yet.</p></div>'
+                }
             </div>
-          </div>
-        </div>
+
+            </div>
+            </div>
       `;
 
             Swal.fire({
@@ -291,8 +357,11 @@ export default {
                 html: htmlContent,
                 width: '800px',
                 showCloseButton: true,
+                showDenyButton: true,
                 showConfirmButton: true,
                 confirmButtonText: 'Edit Vessel',
+                denyButtonText: 'Manage Certifications',
+                denyButtonColor: '#005792',
                 confirmButtonColor: '#005792',
                 showCancelButton: true,
                 cancelButtonText: 'Close',
@@ -304,16 +373,18 @@ export default {
                 },
                 didOpen: () => {
                     // Add any additional styling or functionality when modal opens
-                    console.log('Vessel information modal opened');
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Handle edit action
                     this.editVessel(vessel)
+                } else if (result.isDenied) {
+                    // go to manage certification tab
+                    this.$router.push({ path: `/app/certifications` });
                 }
             });
         },
-        editVessel(vessel = {}) {
+        async editVessel(vessel = {}) {
             // Helper function to safely get values
             const getValue = (value, defaultVal = '') => value || defaultVal;
 
@@ -329,12 +400,12 @@ export default {
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Name</label>
             <input type="text" id="edit-vessel-name" value="${getValue(vessel.name)}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" readonly>
           </div>
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">IMO Number</label>
             <input type="text" id="edit-imo" value="${getValue(vessel.registrationNumber)}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" readonly>
           </div>
         </div>
 
@@ -352,23 +423,18 @@ export default {
               <option value="other" ${vessel.type === 'Other' ? 'selected' : ''}>Other</option>
             </select>
           </div>
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Owner/Operator</label>
-            <input type="text" id="edit-owner" value="${getValue(vessel.owner)}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
         </div>
 
         <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Year Built</label>
-            <input type="number" id="edit-year-built" value="${getValue(vessel.yearBuilt)}" 
+            <input type="number" id="edit-year-built" value="${getValue(vessel.built)}" 
                    min="1900" max="2025"
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Flag State</label>
-            <input type="text" id="edit-flag-state" value="${getValue(vessel.flagState)}" 
+            <input type="text" id="edit-flag-state" value="${getValue(vessel.flag)}" 
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
         </div>
@@ -382,19 +448,19 @@ export default {
         <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Length (m)</label>
-            <input type="number" id="edit-length" value="${getValue(vessel.specifications?.length)}" 
+            <input type="number" id="edit-length" value="${getValue(vessel.length)}" 
                    step="0.01"
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Beam (m)</label>
-            <input type="number" id="edit-beam" value="${getValue(vessel.specifications?.beam)}" 
+            <input type="number" id="edit-beam" value="${getValue(vessel.beam)}" 
                    step="0.01"
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Draft (m)</label>
-            <input type="number" id="edit-draft" value="${getValue(vessel.specifications?.draft)}" 
+            <input type="number" id="edit-draft" value="${getValue(vessel.draft)}" 
                    step="0.01"
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
@@ -403,36 +469,16 @@ export default {
         <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Gross Tonnage</label>
-            <input type="number" id="edit-gross-tonnage" value="${getValue(vessel.specifications?.grossTonnage)}" 
+            <input type="number" id="edit-gross-tonnage" value="${getValue(vessel.gross)}" 
                    step="0.01"
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
           <div class="form-group" style="flex: 1;">
             <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Net Tonnage</label>
-            <input type="number" id="edit-net-tonnage" value="${getValue(vessel.specifications?.netTonnage)}" 
+            <input type="number" id="edit-net-tonnage" value="${getValue(vessel.net)}" 
                    step="0.01"
                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
           </div>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
-          Engine Details
-        </h4>
-        
-        <div class="form-group" style="margin-bottom: 15px;">
-          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Main Engine</label>
-          <input type="text" id="edit-main-engine" value="${getValue(vessel.engines?.main)}" 
-                 placeholder="Make, Model, Power"
-                 style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-        </div>
-
-        <div class="form-group">
-          <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Auxiliary Engines</label>
-          <textarea id="edit-auxiliary-engines" rows="3" 
-                    placeholder="Details of auxiliary engines"
-                    style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; resize: vertical;">${getValue(vessel.engines?.auxiliary)}</textarea>
         </div>
       </div>
     </div>
@@ -460,7 +506,6 @@ export default {
                         name: document.getElementById('edit-vessel-name').value.trim(),
                         imo: document.getElementById('edit-imo').value.trim(),
                         type: document.getElementById('edit-vessel-type').value,
-                        owner: document.getElementById('edit-owner').value.trim(),
                         yearBuilt: parseInt(document.getElementById('edit-year-built').value) || null,
                         flagState: document.getElementById('edit-flag-state').value.trim(),
                         specifications: {
@@ -470,10 +515,6 @@ export default {
                             grossTonnage: parseFloat(document.getElementById('edit-gross-tonnage').value) || null,
                             netTonnage: parseFloat(document.getElementById('edit-net-tonnage').value) || null
                         },
-                        engines: {
-                            main: document.getElementById('edit-main-engine').value.trim(),
-                            auxiliary: document.getElementById('edit-auxiliary-engines').value.trim()
-                        }
                     };
 
                     // Basic validation
@@ -497,10 +538,10 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const updatedVessel = result.value;
+                    console.log(updatedVessel)
 
                     // Here you would typically save to database/API
                     // For now, we'll show a success message and log the data
-                    console.log('Updated vessel data:', updatedVessel);
 
                     // Show success message
                     Swal.fire({
@@ -514,8 +555,41 @@ export default {
                             title: 'custom-swal-title'
                         }
                     }).then(() => {
-                        // Optionally refresh the vessel display or update the UI
-                        // updateVesselDisplay(updatedVessel);
+                        const vesselIndex = this.vessels.findIndex(v => v.registrationNumber === vessel.registrationNumber);
+                        const vesselUpdate = {
+                            name: updatedVessel.name,
+                            registration_number: updatedVessel.imo,
+                            type: updatedVessel.type,
+                            built: updatedVessel.yearBuilt,
+                            flag: updatedVessel.flagState,
+                            length: updatedVessel.specifications.length,
+                            beam: updatedVessel.specifications.beam,
+                            draft: updatedVessel.specifications.draft,
+                            gross: updatedVessel.specifications.grossTonnage,
+                            net: updatedVessel.specifications.netTonnage
+                        }
+                        if (vesselIndex !== -1) {
+                            // Update the vessel in your data array
+                            this.vessels[vesselIndex] = {
+                                ...this.vessels[vesselIndex],
+                                    name: updatedVessel.name,
+                                    registrationNumber: updatedVessel.imo,
+                                    type: updatedVessel.type,
+                                    built: updatedVessel.yearBuilt,
+                                    flag: updatedVessel.flagState,
+                                    length: updatedVessel.specifications.length,
+                                    beam: updatedVessel.specifications.beam,
+                                    draft: updatedVessel.specifications.draft,
+                                    gross: updatedVessel.specifications.grossTonnage,
+                                    net: updatedVessel.specifications.netTonnage
+                            };
+
+                            // Re-show with updated data
+                            this.showVesselInfo(this.vessels[vesselIndex]);
+
+                            // update supabase.
+                            this.updateVesselInfo(vesselUpdate)
+                        }
                     });
 
                     // Call your save function here
@@ -553,7 +627,7 @@ export default {
               Swal.fire('Error', 'Failed to save vessel information', 'error');
             });
             */
-        }
+        },
     }
 }
 </script>
