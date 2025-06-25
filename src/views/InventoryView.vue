@@ -357,7 +357,6 @@ export default {
             selectedCategory: '',
             currentPage: 1,
             itemsPerPage: 10,
-            inventoryData: [],
             categories: [
                 'Engine Parts',
                 'Safety Equipment',
@@ -423,6 +422,9 @@ export default {
         vessels() {
             return this.$store.getters['vessel/allVessels'];
         },
+        inventoryData() {
+            return this.$store.getters['inventory/allInventory'];
+        },
         categories() {
             return [...new Set(this.inventoryData.map(item => item.category))];
         },
@@ -481,6 +483,8 @@ export default {
     mounted() {
         // fetch vessels.
         this.$store.dispatch('vessel/fetchVessels');
+        // fetch inventory
+        this.$store.dispatch('inventory/fetchInventory');
     },
     methods: {
         inventoryVessel(vesselName) {
@@ -974,7 +978,7 @@ export default {
                                 <label for="vessel">Vessel <span class="required">*</span></label>
                                 <select id="vessel" required>
                                     <option value="">-- Select Vessel --</option>
-                                    ${this.vessels.map(vessel => `<option value="${vessel}">${vessel}</option>`).join('')}
+                                    ${this.vessels.map(vessel => `<option value="${vessel.name}">${vessel.name}</option>`).join('')}
                                 </select>
                             </div>
                         </div>
@@ -1143,7 +1147,7 @@ export default {
         async addInventoryItem(itemData) {
             try {
                 // Add to your data store, API, etc.
-                this.inventoryData.push(itemData)
+                // this.inventoryData.push(itemData)
 
                 // Example: Add to Vuex store
                 // await this.$store.dispatch('inventory/addItem', itemData);
@@ -1152,14 +1156,19 @@ export default {
                 // const inventory = JSON.parse(localStorage.getItem('inventory') || '[]');
                 // inventory.push({ ...itemData, id: Date.now() });
                 // localStorage.setItem('inventory', JSON.stringify(inventory));
+                let inventory = {
+                    itemId: itemData.id,
+                    itemname: itemData.itemName,
+                    value: itemData.value,
+                    status: itemData.status,
+                    category: itemData.category,
+                    vessel: itemData.vessel,
+                    currentstock: itemData.currentStock,
+                    lastupdated: itemData.lastUpdated,
+                    location: itemData.location
+                }
 
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Inventory item has been added successfully.',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                this.$store.dispatch('inventory/addInventory', inventory);
 
             } catch (error) {
                 Swal.fire({

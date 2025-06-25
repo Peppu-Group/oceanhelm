@@ -4,6 +4,7 @@ import vessel from './modules/vessel';
 import tasks from './modules/tasks';
 import user from './modules/user';
 import company from './modules/company';
+import inventory from './modules/inventory';
 
 const store = createStore({
   modules: {
@@ -11,7 +12,8 @@ const store = createStore({
     vessel,
     tasks,
     user,
-    company
+    company,
+    inventory
   }
 });
 
