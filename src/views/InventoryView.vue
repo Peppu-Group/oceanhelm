@@ -56,7 +56,7 @@
                 </div>
                 <select v-model="selectedVessel" class="filter-select">
                     <option value="">All Vessels</option>
-                    <option v-for="vessel in vessels" :key="vessel" :value="vessel">{{ vessel }}</option>
+                    <option v-for="vessel in vessels" :key="vessel" :value="vessel">{{ vessel.name }}</option>
                 </select>
                 <select v-model="selectedCategory" class="filter-select">
                     <option value="">All Categories</option>
@@ -230,10 +230,112 @@
 
         <!-- Vessels Tab Content -->
         <div v-if="selectedTab === 'vessels'" class="inventory-table">
-            <div>
-                <VesselList />
+            <div class="row">
+                <div class="col-lg-6" v-for="vessel in vessels">
+                    <div class="vessel-card" @click="inventoryVessel(vessel.name)">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="vessel-icon left">
+                                <i class="fas fa-ship"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0">{{ vessel.name }}</h5>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <small class="text-muted">Registration #:</small>
+                                        <p class="mb-0">{{ vessel.registrationNumber }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Inventory Tab by Vessels -->
+        <div v-if="showModal && vesselInventory.length === 0 && this.selectedTab == 'vessels'" class="empty-state" >
+                <i class="fas fa-box-open"></i>
+                <h3>No items found</h3>
+                <p>Try adjusting your search or filters</p>
+            </div>
+        <div v-if="showModal && vesselInventory.length > 0 && this.selectedTab == 'vessels'" class="table-responsive item-row">
+            <div class="table-responsive item-row">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Vessel</th>
+                            <th>Location</th>
+                            <th>Stock Level</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>Value</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in vesselInventory" :key="item.id" :class="{ 'inactive-item': !item.active }">
+                            <td><strong>{{ item.id }}</strong></td>
+                            <td>{{ item.itemName }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.vessel }}</td>
+                            <td>
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ item.location }}
+                            </td>
+                            <td>
+                                <div class="stock-level">
+                                    <span>{{ item.currentStock }}</span>
+                                    <div class="stock-bar">
+                                        <div class="stock-fill" :class="getStockClass(item)"
+                                            :style="{ width: getStockPercentage(item) + '%' }"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge" :class="getStatusClass(item.status)">
+                                    {{ item.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <i class="fas fa-calendar"></i>
+                                {{ formatDate(item.lastUpdated) }}
+                            </td>
+                            <td>₦{{ item.value.toLocaleString() }}</td>
+                            <td>
+                                <div class="action-btns">
+                                    <button class="action-btn btn-view" @click="stockIn(item)" title="Stock In">
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                    </button>
+                                    <button class="action-btn btn-view" @click="stockOut(item)" title="Stock Out">
+                                        <i class="fa-solid fa-arrow-trend-down"></i>
+                                    </button>
+                                    <button class="action-btn btn-view" @click="transferItem(item)" title="Transfer Item">
+                                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                    </button>
+                                    <button class="action-btn btn-edit" @click="editItem(item)" title="Edit Item">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn btn-delete" @click="deleteItem(item)"
+                                        :title="item.active ? 'Mark as Inactive' : 'Mark as Active'">
+                                        <i :class="[
+                                            'fa',
+                                            item.active ? 'fa-trash' : 'fa-check-circle',
+                                            'icon-button'
+                                        ]" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -249,6 +351,7 @@ export default {
     data() {
         return {
             selectedTab: 'vessels',
+            showModal: false,
             searchTerm: '',
             selectedVessel: '',
             selectedCategory: '',
@@ -265,13 +368,6 @@ export default {
                 'Tools',
                 'Consumables',
                 'Other'
-            ],
-            vessels: [
-                'MV Ocean Pioneer',
-                'MV Sea Explorer',
-                'MV Wave Runner',
-                'MV Deep Blue',
-                'Shore Base'
             ],
             locations: [
                 'Engine Room',
@@ -294,6 +390,10 @@ export default {
         }
     },
     computed: {
+        vesselInventory() {
+            if (!this.selectedVessel) return [];
+            return this.inventoryData.filter(item => item.vessel === this.selectedVessel);
+        },
         filteredInventory() {
             let filtered = this.inventoryData;
 
@@ -321,7 +421,7 @@ export default {
             return filtered;
         },
         vessels() {
-            return [...new Set(this.inventoryData.map(item => item.vessel))];
+            return this.$store.getters['vessel/allVessels'];
         },
         categories() {
             return [...new Set(this.inventoryData.map(item => item.category))];
@@ -359,7 +459,7 @@ export default {
                 status[item.status]++;
             });
             return status;
-        }
+        },
     },
     watch: {
         selectedTab(newTab) {
@@ -378,7 +478,15 @@ export default {
             deep: true
         }
     },
+    mounted() {
+        // fetch vessels.
+        this.$store.dispatch('vessel/fetchVessels');
+    },
     methods: {
+        inventoryVessel(vesselName) {
+            this.selectedVessel = vesselName;
+            this.showModal = true;
+        },
         getStatusClass(status) {
             switch (status) {
                 case 'In Stock':
@@ -1675,5 +1783,38 @@ body {
 .inactive-item {
     color: grey;
     opacity: 0.6;
+}
+
+/* Vessel Cards */
+.left {
+    margin-left: 20px;
+}
+
+.vessel-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 105, 192, 0.15);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border-left: 4px solid var(--accent-color);
+}
+
+.vessel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 105, 192, 0.2);
+}
+
+.vessel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background-color: #e3f2fd;
+    border-radius: 10px;
+    color: var(--accent-color);
+    font-size: 24px;
+    margin-right: 15px;
 }
 </style>

@@ -63,7 +63,28 @@
             </svg>
           </div>
           <h3>Crew Management</h3>
-          <p>Easily manage crew records and assignments across fleets. Automatically sync updates between vessels and shore when connectivity is restored.</p>
+          <p>Easily manage crew records and assignments across fleets. Automatically sync updates between vessels and
+            shore when connectivity is restored.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 64 64" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+              <path d="M2 42l4 8h52l4-8-8-4v-8H10v8l-8 4zM32 10c-1.1 0-2 .9-2 2v6H14v4h36v-4H34v-6c0-1.1-.9-2-2-2zm0-6c-2.2 0-4 1.8-4 4v2h8v-2c0-2.2-1.8-4-4-4z"/>
+              <path d="M10 54c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6zm44 0c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6z"/>
+            </svg>
+          </div>
+          <h3>Fleet Management</h3>
+          <p>Easily manage logistics and positioning of all the vessels in your fleet. Understand when a vessel signs in or out, get timesheet report.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 2H4C2.9 2 2 2.9 2 4v17.17c0 .53.21 1.04.59 1.41.38.38.89.59 1.41.59.26 0 .51-.05.75-.15L12 20.25l7.25 2.77c.24.1.49.15.75.15.52 0 1.03-.21 1.41-.59.38-.37.59-.88.59-1.41V4c0-1.1-.9-2-2-2zm0 17.17l-6.25-2.39a1.01 1.01 0 0 0-.75 0L4 19.17V4h16v15.17z"/>
+              <path d="M7 9h10v2H7zM7 13h7v2H7z"/>
+            </svg>
+          </div>
+          <h3>Compliance Management</h3>
+          <p>Stay ahead of regulatory demands by effortlessly tracking vessel certifications, crew qualifications, and compliance deadlines. Receive timely alerts for expirations, ensure audit readiness, and maintain operational integrity across your fleet.</p>
         </div>
       </div>
     </div>
@@ -72,92 +93,117 @@
   <!-- Platform Overview -->
   <section class="platform" id="platform">
     <div class="container">
-      <div class="platform-grid">
-        <div class="platform-content">
-          <h3>Our Platform</h3>
-          <h2>Designed For Maritime Operations</h2>
-          <p>MarineTech provides a comprehensive, easy-to-use platform that connects all aspects of your fleet management
-            into one unified system. Our software works seamlessly both online and offline, ensuring you have access to
-            critical information wherever you are.</p>
-          <p>Built by maritime professionals for maritime professionals, our solution addresses the unique challenges of
-            vessel operations.</p>
-          <div class="platform-features">
-            <div class="platform-feature">
-              <div class="check-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                </svg>
+      <div class="row align-items-center">
+        <!-- Text content -->
+        <div class="col-lg-6">
+          <div class="platform-content">
+            <h3>Our Platform</h3>
+            <h2>Designed For Maritime Operations</h2>
+            <p>
+              MarineTech provides a comprehensive, easy-to-use platform that connects all aspects of your fleet management
+              into one unified system. Our software works seamlessly both online and offline, ensuring you have access to
+              critical information wherever you are.
+            </p>
+            <p>
+              Built by maritime professionals for maritime professionals, our solution addresses the unique challenges of
+              vessel operations.
+            </p>
+
+            <div class="platform-features">
+              <div class="platform-feature d-flex mb-2">
+                <div class="check-icon me-2">
+                  <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                </div>
+                <p class="mb-0">Works offline with automatic synchronization</p>
               </div>
-              <p>Works offline with automatic synchronization</p>
-            </div>
-            <div class="platform-feature">
-              <div class="check-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                </svg>
+              <div class="platform-feature d-flex mb-2">
+                <div class="check-icon me-2">
+                  <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                </div>
+                <p class="mb-0">Secure cloud-based data storage with encryption</p>
               </div>
-              <p>Secure cloud-based data storage with encryption</p>
-            </div>
-            <div class="platform-feature">
-              <div class="check-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                </svg>
+              <div class="platform-feature d-flex mb-2">
+                <div class="check-icon me-2">
+                  <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                </div>
+                <p class="mb-0">Mobile-friendly interface for on-the-go access</p>
               </div>
-              <p>Mobile-friendly interface for on-the-go access</p>
-            </div>
-            <div class="platform-feature">
-              <div class="check-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                </svg>
+              <div class="platform-feature d-flex mb-2">
+                <div class="check-icon me-2">
+                  <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                  </svg>
+                </div>
+                <p class="mb-0">Customizable dashboards and reporting tools</p>
               </div>
-              <p>Customizable dashboards and reporting tools</p>
             </div>
           </div>
         </div>
-        <div class="platform-image">
-          <img src="https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000"
-            alt="Marine Nexus Platform Dashboard">
+
+        <!-- Image content -->
+        <div class="col-lg-6">
+          <div class="platform-image text-center">
+            <img src="https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000"
+              alt="Marine Nexus Platform Dashboard" class="img-fluid">
+          </div>
         </div>
       </div>
     </div>
   </section>
 
+
   <!-- Benefits Section -->
   <section class="benefits" id="benefits">
     <div class="container">
-      <div class="section-header">
+      <div class="section-header text-center mb-5">
         <h3>Why Choose Us</h3>
         <h2>Results That Matter</h2>
       </div>
-      <div class="benefits-wrapper">
-        <div class="benefits-content">
+
+      <div class="row align-items-center">
+        <!-- Text Content -->
+        <div class="col-lg-6 mb-4 mb-lg-0">
           <h2>Transform Your Maritime Operations</h2>
           <p>Our clients experience significant improvements in operational efficiency, cost savings, and compliance.
             MarineNexus helps you reduce downtime, optimize inventory, and make data-driven decisions.</p>
-          <div class="stat-grid">
-            <div class="stat-item">
-              <div class="stat-number">37%</div>
-              <div class="stat-label">Reduction in Maintenance Costs</div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-number">37%</div>
+                <div class="stat-label">Reduction in Maintenance Costs</div>
+              </div>
             </div>
-            <div class="stat-item">
-              <div class="stat-number">42%</div>
-              <div class="stat-label">Decrease in Unplanned Downtime</div>
+            <div class="col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-number">42%</div>
+                <div class="stat-label">Decrease in Unplanned Downtime</div>
+              </div>
             </div>
-            <div class="stat-item">
-              <div class="stat-number">29%</div>
-              <div class="stat-label">Inventory Cost Savings</div>
+            <div class="col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-number">29%</div>
+                <div class="stat-label">Inventory Cost Savings</div>
+              </div>
             </div>
-            <div class="stat-item">
-              <div class="stat-number">98%</div>
-              <div class="stat-label">Compliance Rate</div>
+            <div class="col-6 mb-3">
+              <div class="stat-item">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Compliance Rate</div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="benefits-image">
+
+        <!-- Image -->
+        <div class="col-lg-6 text-center">
           <img src="https://drive.google.com/thumbnail?id=1rNjyOMILpTrkL-q-1T-gKL-aEpKjBn1s&sz=w1000"
-            alt="Marine vessel operations">
+            alt="Marine vessel operations" class="img-fluid rounded shadow">
         </div>
       </div>
     </div>
@@ -561,12 +607,7 @@ nav a:hover {
   padding: 100px 0;
 }
 
-.platform-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
-}
+
 
 .platform-content h3 {
   color: var(--primary);
@@ -674,6 +715,7 @@ nav a:hover {
   padding: 30px 20px;
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(13, 92, 145, 0.08);
+  margin: 0 10px 10px 10px;
 }
 
 .stat-number {
