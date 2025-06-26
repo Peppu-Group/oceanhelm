@@ -27,17 +27,23 @@ export default {
         },
         UPDATE_INVENTORY_ITEM(state, payload) {
             const { id, location, vessel, stockData } = payload;
-        
+
             const index = state.inventory.findIndex(item =>
-              item.id === id &&
-              item.location === location &&
-              item.vessel === vessel
+                item.id === id &&
+                item.location === location &&
+                item.vessel === vessel
             );
-        
+
             if (index !== -1) {
-              state.inventory[index].value = stockData.value;
-              state.inventory[index].currentStock = stockData.currentStock;
-              state.inventory[index].status = stockData.status;
+                state.inventory[index].value = stockData.value;
+                state.inventory[index].currentStock = stockData.currentStock;
+                state.inventory[index].status = stockData.status;
+                state.inventory[index].actionType.push({
+                    action: payload.actionType.action,
+                    quantity: payload.actionType.quantity,
+                    value: stockData.value,
+                    date: new Date().toISOString()
+                });
             }
         }
     },
@@ -94,7 +100,7 @@ export default {
                             category: inventory.category,
                             vessel: inventory.vessel,
                             currentStock: inventory.currentstock,
-                            lastIpdated: inventory.lastUpdated,
+                            lastUpdated: inventory.lastUpdated,
                             maxStock: inventory.maxStock,
                             minStock: inventory.minStock,
                             active: true
@@ -116,27 +122,45 @@ export default {
 
         },
 
-        async updateInventory({ commit }, payload) {
-            const { data, error } = await supabase
-                .from('inventory')
-                .update({
-                    value: payload.stockData.value,
-                    currentstock: payload.stockData.currentStock,
-                    status: payload.stockData.status,
-                    lastupdated: new Date().toISOString()
-                })
-                .match({
-                    itemId: payload.id,
-                    location: payload.location,
-                    vessel: payload.vessel
+        async updateInventory({ commit, state }, payload) {
+            const { id, location, vessel, stockData } = payload;
+            const index = state.inventory.findIndex(item =>
+                item.id === id &&
+                item.location === location &&
+                item.vessel === vessel
+            );
+
+            if (index !== -1) {
+                let actionType = state.inventory[index].actionType || [];
+                const updatedActionType = [...(actionType)];
+                updatedActionType.push({
+                    action: payload.actionType.action,
+                    quantity: payload.actionType.quantity,
+                    value: stockData.value,
+                    date: new Date().toISOString()
                 });
 
-            if (error) {
-                console.error('Update failed:', error.message);
-            } else {
-                commit('UPDATE_INVENTORY_ITEM', payload);
-            }
+                const { data, error } = await supabase
+                    .from('inventory')
+                    .update({
+                        value: payload.stockData.value,
+                        currentstock: payload.stockData.currentStock,
+                        status: payload.stockData.status,
+                        lastupdated: new Date().toISOString(),
+                        actionType: updatedActionType,
+                    })
+                    .match({
+                        itemId: payload.id,
+                        location: payload.location,
+                        vessel: payload.vessel
+                    });
 
+                if (error) {
+                    console.error('Update failed:', error.message);
+                } else {
+                    commit('UPDATE_INVENTORY_ITEM', payload);
+                }
+            }
         },
 
         async fetchInventory({ commit }) {
@@ -162,7 +186,8 @@ export default {
                 lastUpdated: inventory.lastupdated,
                 maxStock: inventory.maxStock,
                 minStock: inventory.minStock,
-                active: inventory.active
+                active: inventory.active,
+                actionType: inventory.actionType || '[]'
             }));
 
             commit('SET_INVENTORY', inventory);

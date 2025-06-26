@@ -255,12 +255,13 @@
         </div>
 
         <!-- Inventory Tab by Vessels -->
-        <div v-if="showModal && vesselInventory.length === 0 && this.selectedTab == 'vessels'" class="empty-state" >
-                <i class="fas fa-box-open"></i>
-                <h3>No items found</h3>
-                <p>Try adjusting your search or filters</p>
-            </div>
-        <div v-if="showModal && vesselInventory.length > 0 && this.selectedTab == 'vessels'" class="table-responsive item-row">
+        <div v-if="showModal && vesselInventory.length === 0 && this.selectedTab == 'vessels'" class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No items found</h3>
+            <p>Try adjusting your search or filters</p>
+        </div>
+        <div v-if="showModal && vesselInventory.length > 0 && this.selectedTab == 'vessels'"
+            class="table-responsive item-row">
             <div class="table-responsive item-row">
                 <table class="table">
                     <thead>
@@ -541,8 +542,12 @@ export default {
         importData() {
             alert('Import functionality will be implemented');
         },
-        updateInventory(id, stockData, location, vessel) {
-            const payload = { id, location, vessel, stockData };  
+        updateInventory(id, stockData, location, vessel, action) {
+            let actionType = {
+                action: action,
+                quantity: stockData.quantityReceived
+            };
+            const payload = { id, location, vessel, stockData, actionType };
             this.$store.dispatch('inventory/updateInventory', payload);
         },
         stockIn(item) {
@@ -608,7 +613,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData, item.location, item.vessel)
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel, 'stockin')
                 }
             })
         },
@@ -668,7 +673,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData, item.location, item.vessel)
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel, 'stockout')
                 }
             })
         },
@@ -708,8 +713,14 @@ export default {
                     currentStock: existingItem.currentStock - transferQuantity,
                     value: existingItem.value - parseInt(item.value)
                 }
+                let action = 'transfer';
 
-                const payload = { id, location, vessel, stockData };  
+                let actionType = {
+                    action: action,
+                    quantity: transferQuantity
+                };
+
+                const payload = { id, location, vessel, stockData, actionType };
                 this.$store.dispatch('inventory/updateInventory', payload);
             }
 
@@ -873,7 +884,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData, item.location, item.vessel)
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel, 'edit')
                 }
             })
         },
