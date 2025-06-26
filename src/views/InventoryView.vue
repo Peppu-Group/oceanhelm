@@ -1206,6 +1206,73 @@ export default {
 
             return unitPrice;
         },
+        getInventoryChartData() {
+            const now = new Date();
+            const months = [];
+            const monthLabels = [];
+            const actionTypes = ['stockin', 'stockout', 'transfer'];
+
+            // Step 1: Get last 6 months
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; // e.g. "2025-06"
+                months.push(key);
+                monthLabels.push(d.toLocaleString('default', { month: 'short', year: 'numeric' })); // e.g. "Jun 2025"
+            }
+
+            // Step 2: Initialize counters
+            const dataMap = {
+                stockin: Array(6).fill(0),
+                stockout: Array(6).fill(0),
+                transfer: Array(6).fill(0)
+            };
+
+            // Step 3: Loop through inventoryData
+            this.inventoryData.forEach(item => {
+                const actions = Array.isArray(item.actionType) ? item.actionType : [item.actionType];
+
+                actions.forEach(action => {
+                    if (!action || !action.date || !action.action) return;
+
+                    const date = new Date(action.date);
+                    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    const monthIndex = months.indexOf(key);
+
+                    if (monthIndex !== -1 && dataMap[action.action?.toLowerCase()]) {
+                        dataMap[action.action.toLowerCase()][monthIndex]++;
+                    }
+                });
+            });
+
+            // Step 4: Build chart config
+            return {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: 'Stock In',
+                        data: dataMap.stockin,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Stock Out',
+                        data: dataMap.stockout,
+                        borderColor: '#F44336',
+                        backgroundColor: 'rgba(244, 67, 54, 0.2)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Transfer',
+                        data: dataMap.transfer,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        tension: 0.4
+                    }
+                ]
+            };
+        },
+
         createCharts() {
             this.createCategoryChart();
             this.createStockChart();
@@ -1215,33 +1282,12 @@ export default {
         createStocksChart() {
             // 3️⃣ Stock In / Out Activity Line Chart
             const activityCtx = this.$refs.activityChart.getContext('2d');
+            const chartData = this.getInventoryChartData();
             this.stocksChartInstance = new Chart(activityCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan 2025', 'Feb 2025', 'Mar 2025', 'Apr 2025', 'May 2025', 'Jun 2025'],
-                    datasets: [
-                        {
-                            label: 'Stock In',
-                            data: [20, 30, 25, 10, 50, 40],
-                            borderColor: '#4CAF50',
-                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Stock Out',
-                            data: [10, 20, 15, 25, 30, 10],
-                            borderColor: '#F44336',
-                            backgroundColor: 'rgba(244, 67, 54, 0.2)',
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Transfer',
-                            data: [5, 35, 55, 25, 30, 10],
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(244, 67, 54, 0.2)',
-                            tension: 0.4
-                        }
-                    ]
+                    labels: chartData.labels,
+                    datasets: chartData.datasets
                 },
                 options: {
                     responsive: true,
@@ -1333,18 +1379,52 @@ export default {
                 }
             });
         },
+        getTrendDataFromInventory() {
+            const now = new Date();
+            const monthMap = new Map();
+
+            // Generate last 6 month labels (e.g., "Jan 2025") and set initial null value
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i);
+                const label = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+                monthMap.set(label, null);
+            }
+
+            // Process inventoryData
+            this.inventoryData.forEach(item => {
+                if (!Array.isArray(item.actionType)) return;
+
+                item.actionType.forEach(action => {
+                    const actionDate = new Date(action.date);
+                    const label = actionDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+
+                    if (!monthMap.has(label)) return;
+
+                    const existing = monthMap.get(label);
+                    if (!existing || new Date(existing.date) < actionDate) {
+                        // Replace with the latest action for the month
+                        monthMap.set(label, {
+                            month: label,
+                            date: action.date,
+                            value: action.value || 0
+                        });
+                    }
+                });
+            });
+
+            // Final array of 6 records with latest value for each month
+            const trendData = Array.from(monthMap.values()).map(entry => ({
+                month: entry?.month || '',
+                value: entry?.value || 0
+            }));
+
+            return trendData;
+        },
         createTrendChart() {
             const ctx = this.$refs.trendChart.getContext('2d');
 
-            // Mock trend data for the last 6 months
-            const trendData = [
-                { month: 'Jan 2025', value: 180000 },
-                { month: 'Feb 2025', value: 195000 },
-                { month: 'Mar 2025', value: 175000 },
-                { month: 'Apr 2025', value: 210000 },
-                { month: 'May 2025', value: 225000 },
-                { month: 'Jun 2025', value: this.totalValue }
-            ];
+            // Trend data for the last 6 months
+            const trendData = this.getTrendDataFromInventory()
 
             this.trendChartInstance = new Chart(ctx, {
                 type: 'line',
