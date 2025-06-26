@@ -542,17 +542,9 @@ export default {
             alert('Import functionality will be implemented');
         },
         updateInventory(id, stockData, location, vessel) {
-            const index = this.inventoryData.findIndex(item => item.id === id && item.location === location && item.vessel === vessel);
-            if (index !== -1) {
-                this.inventoryData[index].value = stockData.value;
-                this.inventoryData[index].currentStock = stockData.currentStock;
-                this.inventoryData[index].status = stockData.status;
-
-                // Optionally reset the form
-                // this.updateForm = { id: null, value: null, stockLevel: null };
-
-                // You can also show a success message or toast here
-            }
+            const payload = { id, location, vessel, stockData };  
+            console.log(stockData)          
+            this.$store.dispatch('inventory/updateInventory', payload);
         },
         stockIn(item) {
             Swal.fire({
@@ -1165,7 +1157,9 @@ export default {
                     vessel: itemData.vessel,
                     currentstock: itemData.currentStock,
                     lastupdated: itemData.lastUpdated,
-                    location: itemData.location
+                    location: itemData.location,
+                    maxStock: itemData.maxStock,
+                    minStock: itemData.minStock
                 }
 
                 this.$store.dispatch('inventory/addInventory', inventory);
