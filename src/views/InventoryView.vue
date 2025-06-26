@@ -543,7 +543,6 @@ export default {
         },
         updateInventory(id, stockData, location, vessel) {
             const payload = { id, location, vessel, stockData };  
-            console.log(stockData)          
             this.$store.dispatch('inventory/updateInventory', payload);
         },
         stockIn(item) {
@@ -687,23 +686,31 @@ export default {
                 });
             } else {
                 // Create full new item with copied fields
-                this.inventoryData.push({
-                    id: item.id,
-                    itemName: existingItem.itemName,
-                    category: existingItem.category,
-                    vessel: item.vessel,
-                    location: newLocation,
-                    currentStock: parseFloat(transferQuantity),
+                let inventory = {
+                    itemId: item.id,
+                    itemname: existingItem.itemName,
                     value: parseInt(item.value),
                     status: this.getStockStatus(transferQuantity, existingItem.minStock, existingItem.maxStock),
+                    category: existingItem.category,
+                    vessel: item.vessel,
+                    currentstock: parseFloat(transferQuantity),
+                    lastupdated: new Date().toISOString().split('T')[0],
+                    location: newLocation,
                     maxStock: existingItem.maxStock,
                     minStock: existingItem.minStock,
-                    active: true,
-                    lastUpdated: new Date().toISOString().split('T')[0],
-                });
-                existingItem.status = this.getStockStatus(existingItem.currentStock - transferQuantity, existingItem.minStock, existingItem.maxStock)
-                existingItem.currentStock -= transferQuantity;
-                existingItem.value -= parseInt(item.value);
+                }
+
+                this.$store.dispatch('inventory/addInventory', inventory);
+
+                let id = item.id;
+                let stockData = {
+                    status: this.getStockStatus(existingItem.currentStock - transferQuantity, existingItem.minStock, existingItem.maxStock),
+                    currentStock: existingItem.currentStock - transferQuantity,
+                    value: existingItem.value - parseInt(item.value)
+                }
+
+                const payload = { id, location, vessel, stockData };  
+                this.$store.dispatch('inventory/updateInventory', payload);
             }
 
             // Optionally recalculate `status` for both entries
@@ -735,7 +742,7 @@ export default {
                         <label for="vessel">Vessel <span class="required">*</span></label>
                         <select id="vessel" required>
                             <option value="">-- Select Vessel --</option>
-                            ${this.vessels.map(vessel => `<option value="${vessel}">${vessel}</option>`).join('')}
+                            ${this.vessels.map(vessel => `<option value="${vessel.name}">${vessel.name}</option>`).join('')}
                         </select>
                     </div>
                     <div class="form-group">

@@ -46,7 +46,6 @@ export default {
             commit('SET_INVENTORY', inventory);
         },
         async addInventory({ commit }, inventory) {
-            console.log(inventory)
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
