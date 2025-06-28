@@ -41,16 +41,21 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Project/Vessel</label>
-              <input type="text" v-model="form.project" placeholder="e.g., MV Neptune, Platform Alpha" />
+              <label>Project/Vessel *</label>
+              <select v-model="form.project" class="form-control" required>
+                <option disabled value="">Select a vessel</option>
+                <option v-for="v in vessels" :key="v.id" :value="v.name">
+                  {{ v.name }}
+                </option>
+              </select>
             </div>
             <div class="form-group">
-              <label>Date Needed</label>
-              <input type="date" v-model="form.neededDate" />
+              <label>Date Needed *</label>
+              <input type="date" v-model="form.neededDate" required />
             </div>
             <div class="form-group">
-              <label>Cost Center</label>
-              <input type="text" v-model="form.costCenter" placeholder="e.g., CC-2024-001" />
+              <label>Item Code *</label>
+              <input type="text" v-model="form.itemCode" placeholder="e.g., CC-001" required />
             </div>
           </div>
 
@@ -76,14 +81,14 @@
                   <input type="number" v-model.number="item.qty" min="1" required />
                 </div>
                 <div class="form-group">
-                  <label>Unit</label>
-                  <select v-model="item.unit">
+                  <label>Unit *</label>
+                  <select v-model="item.unit" required>
                     <option v-for="unit in units" :key="unit" :value="unit">{{ unit }}</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Est. Unit Cost</label>
-                  <input type="number" v-model.number="item.cost" step="0.01" placeholder="0.00" />
+                  <label>Est. Unit Cost *</label>
+                  <input type="number" v-model.number="item.cost" step="0.01" placeholder="0.00" required />
                 </div>
                 <button type="button" class="remove-item-btn" @click="removeItem(index)">Remove</button>
               </div>
@@ -91,7 +96,6 @@
           </div>
 
           <div class="action-buttons">
-            <button type="button" class="btn btn-secondary" @click="saveDraft">Save as Draft</button>
             <button type="submit" class="btn btn-primary">Submit Requisition</button>
           </div>
         </form>
@@ -451,11 +455,11 @@ export default {
 
       // Tabs with visibility rules
       tabs: [
-        { name: 'new-requisition', label: 'New Requisition', roles: ['staff'] },
-        { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff'] },
-        { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor'] },
-        { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchasing'] },
-        { name: 'receiving', label: 'Receiving', roles: ['purchasing'] },
+        { name: 'new-requisition', label: 'New Requisition', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
+        { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
+        { name: 'approvals', label: 'Pending Approvals', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
+        { name: 'purchasing', label: 'Purchasing Queue', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
+        { name: 'receiving', label: 'Receiving', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
         { name: 'workflow', label: 'Workflow Guide', roles: ['staff', 'supervisor', 'owner', 'purchasing'] } // visible to all
       ],
       activeTab: 'workflow',
@@ -466,7 +470,7 @@ export default {
         department: '',
         project: '',
         neededDate: '',
-        costCenter: '',
+        itemCode: '',
         justification: '',
         items: []
       },
@@ -500,79 +504,6 @@ export default {
           { label: 'Requested Info', value: req => req.requestedInfo }
         ]
       },
-
-      // Data
-      requisitions: [
-        {
-          id: 'REQ-001234',
-          requestor: 'John Smith',
-          department: 'Marine Operations',
-          project: 'MV Neptune',
-          status: 'delivered',
-          submittedDate: '2025-06-05',
-          items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
-          ]
-        },
-        {
-          id: 'REQ-001234',
-          requestor: 'John Smith',
-          department: 'Marine Operations',
-          project: 'MV Neptune',
-          status: 'declined',
-          submittedDate: '2025-06-05',
-          items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
-          ]
-        },
-        {
-          id: 'REQ-001234',
-          requestor: 'John Smith',
-          department: 'Marine Operations',
-          project: 'MV Neptune',
-          status: 'pending-supply',
-          submittedDate: '2025-06-05',
-          items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
-          ]
-        },
-        {
-          id: 'REQ-001264',
-          requestor: 'John Smith',
-          department: 'Marine Operations',
-          project: 'MV Neptune',
-          status: 'approved',
-          submittedDate: '2025-06-05',
-          items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
-          ]
-        },
-        {
-          id: 'REQ-001234',
-          requestor: 'John Smith',
-          department: 'Marine Operations',
-          project: 'MV Neptune',
-          status: 'info-requested',
-          submittedDate: '2025-06-05',
-          items: [
-            { desc: 'Marine Grade Steel Pipe', qty: 50, unit: 'Meters', cost: 125.0, justification: '' },
-            { desc: 'Safety Harness', qty: 10, unit: 'Pieces', cost: 85.0, justification: '' }
-          ]
-        },
-        {
-          id: 'REQ-001235',
-          requestor: 'Sarah Johnson',
-          department: 'Engineering',
-          project: 'Platform Alpha',
-          status: 'under-review',
-          submittedDate: '2025-06-09',
-          items: [{ desc: 'Hydraulic Pump Assembly', qty: 2, unit: 'Pieces', cost: 2500.0, justification: '' }]
-        }
-      ],
 
       // Options
       departments: [
@@ -613,7 +544,20 @@ export default {
     },
     currentItem() {
       return this.currentItemIndex !== null ? this.poDetails.items[this.currentItemIndex] : null;
-    }
+    },
+    requisitions() {
+      return this.$store.getters['requisitions/allRequisitions'];
+    },
+    vessels() {
+      return this.$store.getters['vessel/allVessels'];
+    },
+  },
+
+  mounted() {
+    // fetch requisitions
+    this.$store.dispatch('requisitions/fetchRequisitions');
+    // fetch vessels.
+    this.$store.dispatch('vessel/fetchVessels');
   },
 
   methods: {
@@ -844,17 +788,9 @@ export default {
       this.form.items.splice(index, 1)
     },
 
-    saveDraft() {
-      const newReq = this.collectFormData('draft')
-      this.requisitions.push(newReq)
-      alert(`Requisition saved as draft! ID: ${newReq.id}`)
-      this.resetForm()
-    },
-
     submitRequisition() {
-      const newReq = this.collectFormData('under-review')
-      this.requisitions.push(newReq)
-      alert(`Requisition submitted successfully! ID: ${newReq.id}`)
+      const requisition = this.collectFormData('under-review')
+      this.$store.dispatch('requisitions/addRequisition', requisition);
       this.resetForm()
     },
 
@@ -865,7 +801,7 @@ export default {
         department: this.form.department,
         project: this.form.project,
         neededDate: this.form.neededDate,
-        costCenter: this.form.costCenter,
+        itemCode: this.form.itemCode,
         justification: this.form.justification,
         items: this.form.items.map(item => ({ ...item })),
         status,
@@ -879,7 +815,7 @@ export default {
         department: '',
         project: '',
         neededDate: '',
-        costCenter: '',
+        itemCode: '',
         justification: '',
         items: []
       }
