@@ -21,6 +21,33 @@ export default {
             state.requisitions = payload;
             localStorage.setItem('requisitions', JSON.stringify(payload));
         },
+        UPDATE_REQUISITION(state, updatedRequisition) {
+            const index = state.requisitions.findIndex(r => r.id === updatedRequisition.id);
+            if (index !== -1) {
+                const requisition = state.requisitions[index];
+
+                // Always update status
+                requisition.status = updatedRequisition.status;
+
+                // Conditionally update justification
+                if (updatedRequisition.justification !== undefined && updatedRequisition.justification !== null) {
+                    requisition.justification = updatedRequisition.justification;
+                }
+
+                // Conditionally update declinedBy and rejectionReason
+                if (updatedRequisition.declinedBy !== undefined && updatedRequisition.declinedBy !== null) {
+                    requisition.declinedBy = updatedRequisition.declinedBy;
+                    requisition.rejectionReason = updatedRequisition.rejectionReason;
+                }
+
+                // Conditionally update infoRequestedBy and requestedInfo
+                if (updatedRequisition.infoRequestedBy !== undefined && updatedRequisition.infoRequestedBy !== null) {
+                    requisition.infoRequestedBy = updatedRequisition.infoRequestedBy;
+                    requisition.requestedInfo = updatedRequisition.requestedInfo;
+                }
+            }
+        }
+
     },
     actions: {
         setRequisitions({ commit }, requisitions) {
@@ -64,7 +91,9 @@ export default {
                         // tell user about error.
                         errorMessage(error)
                     } else {
-                        commit('SET_REQUISITIONS', requisition);
+                        const existing = JSON.parse(localStorage.getItem('requisitions') || '[]');
+                        const updated = [...existing, requisition];
+                        commit('SET_REQUISITIONS', updated);
                         Swal.fire({
                             title: 'Success!',
                             text: 'Requisition submitted successfully.',
@@ -79,6 +108,41 @@ export default {
             }
 
         },
+        async updateRequisition({ commit }, updatedRequisition) {
+            return new Promise(async (resolve, reject) => {
+                const updateRequisition = {
+                    status: updatedRequisition.status,
+                };
+
+                if (updatedRequisition.justification !== undefined && updatedRequisition.justification !== null) {
+                    updateRequisition.justification = updatedRequisition.justification;
+                }
+
+                if (updatedRequisition.declinedBy !== undefined && updatedRequisition.declinedBy !== null) {
+                    updateRequisition.declinedBy = updatedRequisition.declinedBy;
+                    updateRequisition.rejectionReason = updatedRequisition.rejectionReason;
+                }
+
+                if (updatedRequisition.infoRequestedBy !== undefined && updatedRequisition.infoRequestedBy !== null) {
+                    updateRequisition.infoRequestedBy = updatedRequisition.infoRequestedBy;
+                    updateRequisition.requestedInfo = updatedRequisition.requestedInfo;
+                }
+
+                const { error } = await supabase
+                    .from('requisitions')
+                    .update(updateRequisition)
+                    .eq('id', updatedRequisition.id);
+
+                if (error) {
+                    errorMessage(error)
+                    reject(error); // Reject promise
+                } else {
+                    commit('UPDATE_REQUISITION', updatedRequisition);
+                    resolve(); // Resolve promise
+                }
+            });
+        },
+
         async fetchRequisitions({ commit }) {
             const { data, error } = await supabase
                 .from('requisitions')

@@ -455,11 +455,11 @@ export default {
 
       // Tabs with visibility rules
       tabs: [
-        { name: 'new-requisition', label: 'New Requisition', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
-        { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
-        { name: 'approvals', label: 'Pending Approvals', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
-        { name: 'purchasing', label: 'Purchasing Queue', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
-        { name: 'receiving', label: 'Receiving', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
+        { name: 'new-requisition', label: 'New Requisition', roles: ['staff'] },
+        { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff'] },
+        { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor'] },
+        { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchasing'] },
+        { name: 'receiving', label: 'Receiving', roles: ['purchasing'] },
         { name: 'workflow', label: 'Workflow Guide', roles: ['staff', 'supervisor', 'owner', 'purchasing'] } // visible to all
       ],
       activeTab: 'workflow',
@@ -663,7 +663,8 @@ export default {
 
     finishPO(id) {
       const requisition = this.requisitions.find(r => r.id === id);
-      requisition.status = 'po-created';
+      const updatedRequisition = { ...requisition, status: 'po-created' };
+      this.$store.dispatch('requisitions/updateRequisition', updatedRequisition);
       this.activeTab = 'purchasing';
     },
 
@@ -687,14 +688,14 @@ export default {
         return;
       }
 
-      req.justification = response;
-      req.status = 'under-review';
-
-      Swal.fire({
-        title: 'Info Submitted',
-        text: `Your response has been submitted for requisition ${req.id}.`,
-        icon: 'success'
-      });
+      const updatedRequisition = { ...req, status: 'under-review', justification: response };
+      this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
+        Swal.fire({
+          title: 'Info Submitted',
+          text: `Your response has been submitted for requisition ${req.id}.`,
+          icon: 'success'
+        });
+      })
 
       this.form.justification = '';
     },
@@ -708,13 +709,14 @@ export default {
     approveRequisition(id) {
       const requisition = this.requisitions.find(r => r.id === id);
       if (requisition) {
-        requisition.status = 'approved';
-        requisition.approvedBy = 'Captain John Doe';
-        Swal.fire({
-          title: "Request Approved",
-          text: `You have approved ${id}, it has moved to stage 5 (Purchase Order Generation)`,
-          icon: "success"
-        });
+        const updatedRequisition = { ...requisition, status: 'approved' };
+        this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
+          Swal.fire({
+            title: "Request Approved",
+            text: `You have approved ${updatedRequisition.id}, it has moved to stage 5 (Purchase Order Generation)`,
+            icon: "success"
+          });
+        })
       }
     },
 
@@ -738,15 +740,14 @@ export default {
         icon: 'warning'
       }).then((result) => {
         if (result.isConfirmed) {
-          requisition.status = 'declined';
-          requisition.declinedBy = 'Captain John Doe';
-          requisition.rejectionReason = result.value;
-
-          Swal.fire({
-            title: "Request Declined",
-            text: `Requisition ${id} was declined for: ${result.value}`,
-            icon: "info"
-          });
+          const updatedRequisition = { ...requisition, status: 'declined', declinedBy: 'Captain John Doe', rejectionReason: result.value };
+          this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
+            Swal.fire({
+              title: "Request Declined",
+              text: `Requisition ${id} was declined for: ${result.value}`,
+              icon: "info"
+            });
+          })
         }
       });
     },
@@ -771,15 +772,14 @@ export default {
         icon: 'question'
       }).then((result) => {
         if (result.isConfirmed) {
-          requisition.status = 'info-requested';
-          requisition.infoRequestedBy = 'Captain John Doe';
-          requisition.requestedInfo = result.value;
-
-          Swal.fire({
-            title: "Info Request Sent",
-            text: `You requested: "${result.value}" from the requester for requisition ${id}.`,
-            icon: "success"
-          });
+          const updatedRequisition = { ...requisition, status: 'info-requested', infoRequestedBy: 'Captain John Doe', requestedInfo: result.value };
+          this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
+            Swal.fire({
+              title: "Info Request Sent",
+              text: `You requested: "${result.value}" from the requester for requisition ${id}.`,
+              icon: "success"
+            });
+          })
         }
       });
     },
