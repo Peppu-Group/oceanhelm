@@ -100,7 +100,7 @@ export default {
                             category: inventory.category,
                             vessel: inventory.vessel,
                             currentStock: inventory.currentstock,
-                            lastUpdated: inventory.lastUpdated,
+                            lastUpdated: inventory.lastupdated,
                             maxStock: inventory.maxStock,
                             minStock: inventory.minStock,
                             active: true
