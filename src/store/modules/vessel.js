@@ -118,6 +118,7 @@ export default {
       }));
 
       commit('SET_VESSELS', simplifiedVessels);
+      return simplifiedVessels;
     },
     async updateVessel({ commit }, vessel) {
       // Update in Supabase

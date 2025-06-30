@@ -31,6 +31,10 @@
                     Processing</a>
             </li>
             <li>
+                <a @click="comingSoon()"><i class="fas fa-ship"></i> Voyage 
+                    Manager</a>
+            </li>
+            <li>
                 <a @click="updateCompanyInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>

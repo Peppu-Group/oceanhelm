@@ -52,7 +52,7 @@
                 </div>
 
                 <!-- Add Certification Modal -->
-                <div v-if="showAddModal" class="cert-modal-overlay" @click.self="closeModal">
+                <div v-if="showAddModal" class="cert-modal-overlay">
                     <div class="cert-modal">
                         <div class="modal-header">
                             <h3>Add New Certification</h3>
@@ -68,7 +68,8 @@
 
                             <div class="form-group">
                                 <label for="certExpiry">Expiry Date:</label>
-                                <input type="date" id="certExpiry" v-model="newCert.expiry_date" required class="form-input">
+                                <input type="date" id="certExpiry" v-model="newCert.expiry_date" required
+                                    class="form-input">
                             </div>
 
                             <div class="form-group">
@@ -126,13 +127,14 @@ export default {
         }
     },
     mounted() {
-        // fetch vessels.
-        this.$store.dispatch('vessel/fetchVessels');
-        let id = this.$route.params.id;
-        let vesselInfo = this.vessels.find(v => v.registrationNumber === id);
-        if (vesselInfo) {
-            this.certifications = vesselInfo.certifications;
-        }
+        const id = this.$route.params.id;
+
+        this.$store.dispatch('vessel/fetchVessels').then(() => {
+            const vesselInfo = this.vessels.find(v => v.registrationNumber === id);
+            if (vesselInfo) {
+                this.certifications = vesselInfo.certifications;
+            }
+        });
     },
     methods: {
         getDaysToExpiry(expiry_date) {
@@ -286,16 +288,10 @@ export default {
 }
 
 .cert-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
 }
 
 .cert-modal {
