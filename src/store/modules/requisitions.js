@@ -73,7 +73,6 @@ export default {
                         .insert([
                             {
                                 id: requisition.id,
-                                itemCode: requisition.itemCode,
                                 items: requisition.items,
                                 justification: requisition.justification,
                                 neededDate: requisition.neededDate,

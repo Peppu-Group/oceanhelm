@@ -41,7 +41,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Project/Vessel *</label>
+              <label>Vessel *</label>
               <select v-model="form.project" class="form-control" required>
                 <option disabled value="">Select a vessel</option>
                 <option v-for="v in vessels" :key="v.id" :value="v.name">
@@ -52,10 +52,6 @@
             <div class="form-group">
               <label>Date Needed *</label>
               <input type="date" v-model="form.neededDate" required />
-            </div>
-            <div class="form-group">
-              <label>Item Code *</label>
-              <input type="text" v-model="form.itemCode" placeholder="e.g., CC-001" required />
             </div>
           </div>
 
@@ -72,6 +68,10 @@
             </div>
             <div>
               <div v-for="(item, index) in form.items" :key="index" class="item-row">
+                <div class="form-group">
+                  <label>Item Code *</label>
+                  <input type="text" v-model="item.id" required />
+                </div>
                 <div class="form-group">
                   <label>Item Description *</label>
                   <input type="text" v-model="item.desc" required />
@@ -241,7 +241,7 @@
                 </li>
               </ul>
             </div>
-            <button type="button" class="add-item-btn" @click="createPO(req.id)">Accept Delivery</button>
+            <button type="button" class="add-item-btn" @click="acceptDelivery(req.id)">Accept Delivery</button>
           </div>
         </div>
       </div>
@@ -384,7 +384,7 @@
             </div>
           </div>
         </div>
-        <button type="button" class="add-item-btn" @click="finishPO(poDetails.id)">Finish PO</button>
+        <button type="button" class="add-item-btn" @click="finishPO(poDetails.id)">Approve PO</button>
       </div>
 
       <!-- Workflow Guide Tab -->
@@ -470,7 +470,6 @@ export default {
         department: '',
         project: '',
         neededDate: '',
-        itemCode: '',
         justification: '',
         items: []
       },
@@ -508,7 +507,8 @@ export default {
       // Options
       departments: [
         'Marine Operations', 'Engineering', 'Maintenance',
-        'Safety & Compliance', 'Logistics', 'Administration'
+        'Safety & Compliance', 'Logistics', 'Administration',
+        'Engine Room'
       ],
 
       priorities: [
@@ -561,6 +561,19 @@ export default {
   },
 
   methods: {
+    getStockStatus(stockLevel, minStock, maxStock) {
+      const currentStock = parseInt(stockLevel);
+
+      if (currentStock === 0) {
+        return 'Out';
+      } else if (currentStock > parseInt(maxStock)) {
+        return 'Over';
+      } else if (currentStock > parseInt(minStock)) {
+        return 'Available';
+      } else {
+        return 'Low';
+      }
+    },
     getNumber() {
       return this.poDetails.items.map((item, index) => {
         return item.itemNumber = + index + 1;
@@ -608,6 +621,166 @@ export default {
         item.unitPrice = item.tempPrice;
         item.editing = false;
       }
+    },
+    async findInventoryFromRequisition(requisition) {
+      const inventoryList = this.$store.state.inventory.inventory;
+      const dispatchPromises = [];
+
+      let hasValidItems = false;
+
+      requisition.items.forEach((requisitionItem) => {
+        const matchingInventory = inventoryList.find(item => item.id === requisitionItem.id);
+
+        if (!matchingInventory) {
+          Swal.fire({
+            title: 'Not Found',
+            text: `No inventory found with ID ${requisitionItem.id}. Navigate to inventory and add the item first.`,
+            icon: 'error'
+          });
+          return;
+        }
+
+        // If full match on vessel + location
+        if (
+          matchingInventory.location === requisition.department &&
+          matchingInventory.vessel === requisition.project
+        ) {
+          hasValidItems = true;
+
+          const currentStock = matchingInventory.currentStock + parseFloat(requisitionItem.qty);
+          const stockData = {
+            value: parseFloat(requisitionItem.cost) + matchingInventory.value,
+            currentStock,
+            status: this.getStockStatus(currentStock, matchingInventory.minStock, matchingInventory.maxStock),
+            quantityReceived: requisitionItem.qty
+          };
+
+          const actionType = {
+            action: 'stockin',
+            quantity: requisitionItem.qty,
+            date: new Date().toISOString()
+          };
+
+          const payload = {
+            id: matchingInventory.id,
+            location: matchingInventory.location,
+            vessel: matchingInventory.vessel,
+            stockData,
+            actionType
+          };
+
+          dispatchPromises.push(this.$store.dispatch('inventory/updateInventory', payload));
+        }
+
+        // Fallback when location/vessel don't match
+        else {
+          const fallback = inventoryList.find(item => item.id === requisitionItem.id);
+
+          if (fallback) {
+            hasValidItems = true;
+
+            const newInventory = {
+              itemId: fallback.id,
+              itemname: fallback.itemName,
+              value: parseFloat(requisitionItem.cost),
+              status: this.getStockStatus(parseFloat(requisitionItem.qty), fallback.minStock, fallback.maxStock),
+              category: fallback.category,
+              location: requisition.department,
+              vessel: requisition.project,
+              currentstock: parseFloat(requisitionItem.qty),
+              lastupdated: new Date().toISOString().split('T')[0],
+              maxStock: fallback.maxStock,
+              minStock: fallback.minStock,
+            };
+
+            dispatchPromises.push(this.$store.dispatch('inventory/addInventory', newInventory));
+
+            const actionType = {
+              action: 'transfer',
+              quantity: requisitionItem.qty,
+              date: new Date().toISOString()
+            };
+
+            const stockData = {
+              value: parseFloat(requisitionItem.cost),
+              currentStock: parseFloat(requisitionItem.qty),
+              status: this.getStockStatus(parseFloat(requisitionItem.qty), fallback.minStock, fallback.maxStock),
+              quantityReceived: requisitionItem.qty
+            };
+
+            const payload = {
+              id: fallback.id,
+              location: requisition.department,
+              vessel: requisition.project,
+              stockData,
+              actionType
+            };
+
+            dispatchPromises.push(this.$store.dispatch('inventory/updateInventory', payload));
+          } else {
+            Swal.fire({
+              title: 'Data Error',
+              text: `Inventory exists but could not extract stock info.`,
+              icon: 'error'
+            });
+          }
+        }
+      });
+
+      // Run updateRequisition and feedback if at least one item succeeded
+      if (hasValidItems) {
+        const updatedRequisition = { ...requisition, status: 'delivered' };
+        dispatchPromises.push(this.$store.dispatch('requisitions/updateRequisition', updatedRequisition));
+      }
+
+      // Execute all store actions
+      if (dispatchPromises.length > 0) {
+        Promise.all(dispatchPromises).then(() => {
+          Swal.fire({
+            title: 'Inventory Updated',
+            text: 'Requisition items have been received into the inventory.',
+            icon: 'success'
+          });
+        });
+      }
+    },
+
+    acceptDelivery(id) {
+      // changing status to delivered.
+      // provide swal to collect information to run stockin command, like: 
+      // this.updateInventory(stockData.id, stockData, item.location, item.vessel, 'stockin')
+      /*
+            const requisition = this.requisitions.find(r => r.id === id);
+      if (!requisition) return;
+
+      const updatedRequisition = { ...requisition, status: 'delivered'};
+      this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
+        Swal.fire({
+          title: 'Info Submitted',
+          text: `Your response has been submitted for requisition ${req.id}.`,
+          icon: 'success'
+        });
+      })
+      updateInventory(id, stockData, location, vessel, action) {
+            let actionType = {
+                action: action,
+                quantity: stockData.quantityReceived
+            };
+            const payload = { id, location, vessel, stockData, actionType };
+            this.$store.dispatch('inventory/updateInventory', payload);
+        },
+       */
+      const requisition = this.requisitions.find(r => r.id === id);
+      requisition.location = 'Engine Room';
+      requisition.vessel = 'MV Possiedon'
+      const inventory = this.findInventoryFromRequisition(requisition);
+
+      if (inventory && inventory.minStock !== undefined) {
+        console.log(inventory)
+        console.log('Min Stock:', inventory.minStock);
+        console.log('Max Stock:', inventory.maxStock);
+      }
+
     },
     async createPO(id) {
       const { value: vendor } = await Swal.fire({
@@ -670,6 +843,7 @@ export default {
 
     addItem() {
       this.form.items.push({
+        id: '',
         desc: '',
         qty: 1,
         unit: 'Pieces',
@@ -801,7 +975,6 @@ export default {
         department: this.form.department,
         project: this.form.project,
         neededDate: this.form.neededDate,
-        itemCode: this.form.itemCode,
         justification: this.form.justification,
         items: this.form.items.map(item => ({ ...item })),
         status,
@@ -815,7 +988,6 @@ export default {
         department: '',
         project: '',
         neededDate: '',
-        itemCode: '',
         justification: '',
         items: []
       }
