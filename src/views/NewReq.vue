@@ -101,10 +101,33 @@
         </form>
       </div>
 
+      <!-- All Requisitions Tab -->
+      <div v-if="activeTab === 'all-requisitions'" class="tab-content active">
+        <div class="requisition-list">
+          <div v-for="req in requisitions" :key="req.id" class="requisition-card">
+            <div class="requisition-header">
+              <div class="requisition-id">{{ req.id }}</div>
+              <div :class="['status-badge', `status-${req.status}`]">{{ req.status }}</div>
+            </div>
+            <div class="requisition-details">
+              <div class="detail-item" v-for="field in getRequisitionFields(req)" :key="field.label">
+                <div class="detail-label">{{ field.label }}</div>
+                <div class="detail-value">{{ field.value(req) }}</div>
+              </div>
+            </div>
+            <div v-if="req.status === 'po-created' || 'delivered'" class="form-group comments-section">
+              <button @click="openPO(req.id)" class="add-item-btn comments-section">
+                Print PO
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- My Requisitions Tab -->
       <div v-if="activeTab === 'my-requisitions'" class="tab-content active">
         <div class="requisition-list">
-          <div v-for="req in requisitions" :key="req.id" class="requisition-card">
+          <div v-for="req in myRequisitions" :key="req.id" class="requisition-card">
             <div class="requisition-header">
               <div class="requisition-id">{{ req.id }}</div>
               <div :class="['status-badge', `status-${req.status}`]">{{ req.status }}</div>
@@ -451,12 +474,13 @@ export default {
 
   data() {
     return {
-      userRole: 'purchasing', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
+      userRole: 'staff', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
 
       // Tabs with visibility rules
       tabs: [
         { name: 'new-requisition', label: 'New Requisition', roles: ['staff'] },
         { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff'] },
+        { name: 'all-requisitions', label: 'All Requisitions', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
         { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor'] },
         { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchasing'] },
         { name: 'receiving', label: 'Receiving', roles: ['purchasing'] },
@@ -547,6 +571,10 @@ export default {
     },
     requisitions() {
       return this.$store.getters['requisitions/allRequisitions'];
+    },
+    myRequisitions() {
+      const userId = localStorage.getItem('user_id');
+      return this.requisitions.filter(req => req.user_id === userId);
     },
     vessels() {
       return this.$store.getters['vessel/allVessels'];
@@ -832,6 +860,19 @@ export default {
           item.subTotal += item.unitPrice * item.qty;
         }
       }
+    },
+
+    openPO(id) {
+      this.activeTab = 'po';
+        const requisition = this.requisitions.find(r => r.id === id);
+        this.poDetails = requisition;
+        this.getNumber();
+        for (let item of this.poDetails.items) {
+          item.tempPrice = item.cost;
+          item.unitPrice = item.cost;
+          item.subTotal += item.unitPrice * item.qty;
+        }
+        // I think you should use htmlpdf and download PO
     },
 
     finishPO(id) {

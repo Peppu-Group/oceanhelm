@@ -8,7 +8,7 @@
     </button>
 
     <!-- Sidebar -->
-    <Sidebar/>
+    <Sidebar />
     <div id="content" class="container">
         <h1>MarineTech Crew Management</h1>
 
@@ -92,13 +92,8 @@
                             <option value="Cook">Cook</option>
                             <option value="Other">Other</option>
                         </select>
-                        <input 
-                            v-if="newCrew.role === 'Other'" 
-                            type="text" 
-                            placeholder="Enter custom role" 
-                            v-model="newCrew.customRole"
-                            style="margin-top: 8px;"
-                        >
+                        <input v-if="newCrew.role === 'Other'" type="text" placeholder="Enter custom role"
+                            v-model="newCrew.customRole" style="margin-top: 8px;">
                     </div>
                 </div>
 
@@ -130,13 +125,14 @@
                                 <input type="date" v-model="cert.expiryDate">
                             </div>
                             <div class="form-group">
-                                <button type="button" class="btn btn-danger btn-sm" @click="removeCertification(index)" v-if="newCrew.certifications.length > 1">
+                                <button type="button" class="btn btn-danger btn-sm" @click="removeCertification(index)"
+                                    v-if="newCrew.certifications.length > 1">
                                     Remove
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
+
                     <button type="button" class="btn btn-secondary btn-sm" @click="addCertificationEntry">
                         + Add More Certification
                     </button>
@@ -222,8 +218,26 @@ export default {
         this.$store.dispatch('vessel/fetchVessels');
         // fetch crew
         this.$store.dispatch('crew/fetchCrew');
+        console.log(this.filteredCrew)
     },
     methods: {
+        checkExpiredCertifications() {
+            const today = new Date();
+
+            return this.filteredCrew.map(member => {
+                const expiredCerts = member.certifications.filter(cert => {
+                    const expiry = new Date(cert.expiryDate);
+                    return expiry < today;
+                });
+
+                return {
+                    name: member.name,
+                    email: member.email,
+                    expiredCertifications: expiredCerts
+                };
+                // look for way to run this function once a day automatically.
+            });
+        },
         resetForm() {
             this.newCrew = {
                 name: '',
@@ -297,7 +311,7 @@ export default {
                 return; // Stop if validation fails
             }
 
-            const certifications = this.newCrew.certifications.filter(cert => 
+            const certifications = this.newCrew.certifications.filter(cert =>
                 cert.name.trim() !== '' && cert.expiryDate !== ''
             );
 
@@ -460,7 +474,7 @@ export default {
                     if (!member.certifications) {
                         member.certifications = [];
                     }
-                    
+
                     member.certifications.push(result.value);
 
                     // Save back to localStorage
@@ -709,7 +723,7 @@ h1 {
 }
 
 #content.active {
-  margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
 }
 </style>

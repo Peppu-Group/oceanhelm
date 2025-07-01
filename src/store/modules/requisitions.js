@@ -60,7 +60,7 @@ export default {
                 const user = session.user;
                 const { data: profile, error } = await supabase
                     .from('profiles')
-                    .select('company_id')
+                    .select('id, company_id')
                     .eq('id', user.id)
                     .single();
 
@@ -68,6 +68,7 @@ export default {
                     console.error('Error fetching profile:', error);
                 } else {
                     const companyId = profile.company_id;
+                    localStorage.setItem('profile_id', profile.id)
                     const { data, error } = await supabase
                         .from('requisitions')
                         .insert([
@@ -81,7 +82,8 @@ export default {
                                 project: requisition.project,
                                 requestor: requisition.requestor,
                                 status: requisition.status,
-                                company_id: companyId
+                                company_id: companyId,
+                                profile_id: profile.id
                             }
                         ], { returning: 'minimal' }
                         );
