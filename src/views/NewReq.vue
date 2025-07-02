@@ -115,7 +115,7 @@
                 <div class="detail-value">{{ field.value(req) }}</div>
               </div>
             </div>
-            <div v-if="req.status === 'po-created' || 'delivered'" class="form-group comments-section">
+            <div v-if="req.status === 'po-created' || req.status === 'delivered'" class="form-group comments-section">
               <button @click="openPO(req.id)" class="add-item-btn comments-section">
                 Print PO
               </button>
@@ -271,29 +271,29 @@
 
       <!-- PO Tab -->
       <div v-if="activeTab === 'po'" class="tab-content active">
-        <div class="po-content">
+        <div class="po-content" id="po-content">
           <div class="po-header">
             <div class="company-info">
               <h3>Vendor Information</h3>
               <div class="info-row">
                 <span class="info-label">Company:</span>
-                <span class="info-value">{{ vendorInfo.company }}</span>
+                <span class="info-value">{{ vendorInfo.company }} || {{ poDetails.vendorInfo.company }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Contact:</span>
-                <span class="info-value">{{ vendorInfo.contact }}</span>
+                <span class="info-value">{{ vendorInfo.contact }}|| {{ poDetails.vendorInfo.contact }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Email:</span>
-                <span class="info-value">{{ vendorInfo.email }}</span>
+                <span class="info-value">{{ vendorInfo.email }}|| {{ poDetails.vendorInfo.email }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Phone:</span>
-                <span class="info-value">{{ vendorInfo.phone }}</span>
+                <span class="info-value">{{ vendorInfo.phone }}|| {{ poDetails.vendorInfo.phone }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Address:</span>
-                <span class="info-value">{{ vendorInfo.address }}</span>
+                <span class="info-value">{{ vendorInfo.address }}|| {{ poDetails.vendorInfo.address }}</span>
               </div>
             </div>
 
@@ -305,11 +305,11 @@
               </div>
               <div class="info-row">
                 <span class="info-label">Date:</span>
-                <span class="info-value"></span>
+                <span class="info-value"> {{ vendorInfo.poDate || poDetails.vendorInfo.poDate }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Requested By:</span>
-                <span class="info-value"></span>
+                <span class="info-value">{{ vendorInfo.poApproved || poDetails.vendorInfo.poApproved }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Department:</span>
@@ -317,7 +317,7 @@
               </div>
               <div class="info-row">
                 <span class="info-label">Delivery Date:</span>
-                <span class="info-value"></span>
+                <span class="info-value"> {{ poDetails.neededDate }}</span>
               </div>
             </div>
           </div>
@@ -332,7 +332,7 @@
                   <th>Quantity</th>
                   <th>Unit Price</th>
                   <th>Total</th>
-                  <th>Actions</th>
+                  <th v-if="!isPrinting">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -349,7 +349,7 @@
                       :class="{ 'price-changed': item.cost !== item.tempPrice }">
                   </td>
                   <td>${{ (item.unitPrice * item.qty).toFixed(2) }}</td>
-                  <td>
+                  <td v-if="!isPrinting">
                     <button v-if="!item.editing" @click="startEdit(index)" class="edit-btn">
                       Edit Price
                     </button>
@@ -407,7 +407,8 @@
             </div>
           </div>
         </div>
-        <button type="button" class="add-item-btn" @click="finishPO(poDetails.id)">Approve PO</button>
+        <button v-if="!isPrinting" type="button" class="add-item-btn" @click="finishPO(poDetails.id)">Approve
+          PO</button>
       </div>
 
       <!-- Workflow Guide Tab -->
@@ -467,6 +468,8 @@
   
 <script>
 import Sidebar from '../components/Sidebar.vue';
+import html2pdf from 'html2pdf.js';
+
 
 export default {
   name: 'NewReq',
@@ -474,8 +477,9 @@ export default {
 
   data() {
     return {
-      userRole: 'staff', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
+      userRole: 'purchasing', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
 
+      isPrinting: false,
       // Tabs with visibility rules
       tabs: [
         { name: 'new-requisition', label: 'New Requisition', roles: ['staff'] },
@@ -811,6 +815,7 @@ export default {
 
     },
     async createPO(id) {
+      let reqId = id;
       const { value: vendor } = await Swal.fire({
         title: 'Enter Vendor Information',
         html:
@@ -837,14 +842,16 @@ export default {
           const address = document.getElementById('vendor-address').value.trim();
           const tax = document.getElementById('vendor-tax').value.trim();
           const shipping = document.getElementById('vendor-shipping').value.trim();
-
+          const id = reqId;
+          const poDate = new Date();
+          const poApproved = 'Po Owner';
           // Validation
           if (!company || !contact || !email || !phone || !address) {
             Swal.showValidationMessage('Please fill in all required fields (*)');
             return false;
           }
 
-          return { company, contact, email, phone, address, tax, shipping };
+          return { company, contact, email, phone, address, tax, shipping, id, poDate, poApproved };
         }
       });
 
@@ -852,6 +859,7 @@ export default {
         this.vendorInfo = vendor;
         this.activeTab = 'po';
         const requisition = this.requisitions.find(r => r.id === id);
+        this.$store.dispatch('requisitions/updateVendor', vendor)
         this.poDetails = requisition;
         this.getNumber();
         for (let item of this.poDetails.items) {
@@ -862,18 +870,54 @@ export default {
       }
     },
 
-    openPO(id) {
+    async openPO(id) {
+      // switch to printing mode
+      this.isPrinting = true;
+      // Switch to PO tab
       this.activeTab = 'po';
-        const requisition = this.requisitions.find(r => r.id === id);
-        this.poDetails = requisition;
-        this.getNumber();
-        for (let item of this.poDetails.items) {
-          item.tempPrice = item.cost;
-          item.unitPrice = item.cost;
-          item.subTotal += item.unitPrice * item.qty;
+
+      // Find the requisition
+      const requisition = this.requisitions.find(r => r.id === id);
+      this.poDetails = requisition;
+      this.getNumber();
+
+      // Process item prices
+      for (let item of this.poDetails.items) {
+        item.tempPrice = item.cost;
+        item.unitPrice = item.cost;
+        item.subTotal = item.unitPrice * item.qty;
+      }
+
+      // Wait for DOM to render with $nextTick
+      this.$nextTick(async () => {
+        const element = document.getElementById('po-content');
+
+        if (!element) {
+          console.error('PO element not found');
+          this.isLoadingPO = false;
+          return;
         }
-        // I think you should use htmlpdf and download PO
-    },
+
+        const options = {
+          margin: 0.5,
+          filename: `PO-${this.poDetails.id}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        try {
+          await html2pdf().set(options).from(element).save();
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+          alert('Error generating PDF. Please try again.');
+        } finally {
+          // Hide loading
+          this.isLoadingPO = false;
+        }
+      });
+    }
+    ,
 
     finishPO(id) {
       const requisition = this.requisitions.find(r => r.id === id);

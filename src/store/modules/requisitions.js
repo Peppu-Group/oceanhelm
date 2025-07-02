@@ -144,6 +144,23 @@ export default {
             });
         },
 
+        async updateVendor({ commit }, updateVendor) {
+                const updatedVendor = {
+                    vendorInfo: updateVendor,
+                };
+
+                const { error } = await supabase
+                    .from('requisitions')
+                    .update(updatedVendor)
+                    .eq('id', updateVendor.id);
+
+                if (error) {
+                    errorMessage(error)
+                    reject(error); // Reject promise
+                }
+                console.log(updateVendor)
+        },
+
         async fetchRequisitions({ commit }) {
             const { data, error } = await supabase
                 .from('requisitions')
