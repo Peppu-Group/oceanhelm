@@ -19,23 +19,31 @@
                 <div class="row">
                     <div class="col-md-2">
                         <div class="company-logo">
-                            <i class="bi bi-building"></i>
+                            <img v-if="previewLogo" :src="previewLogo" class="img-fluid rounded" alt="Company Logo" />
+                            <img v-else-if="company.logo" :src="company.logo" class="img-fluid rounded"
+                                alt="Company Logo" />
+                            <i v-else class="bi bi-building"></i>
+
                         </div>
+                        <label class="file-upload">
+                            <i class="bi bi-upload"></i> Logo
+                            <input type="file" @change="handleLogoChange" accept="image/*" />
+                        </label>
                     </div>
                     <div class="col-md-10">
                         <h3>{{ company.name }}</h3>
                         <div class="row mt-3">
                             <div class="col-md-4">
-                                <p><strong>Location:</strong> {{ company.location || 'Not Set'}}  </p>
-                                <p><strong>Established:</strong> {{ company.estYear || 'Not Set'}}</p>
+                                <p><strong>Location:</strong> {{ company.location || 'Not Set' }} </p>
+                                <p><strong>Established:</strong> {{ company.estYear || 'Not Set' }}</p>
                             </div>
                             <div class="col-md-4">
-                                <p><strong>Contact:</strong> {{ company.phoneNumber || 'Not Set'}}</p>
-                                <p><strong>Email:</strong> {{ company.email || 'Not Set'}}</p>
+                                <p><strong>Contact:</strong> {{ company.phoneNumber || 'Not Set' }}</p>
+                                <p><strong>Email:</strong> {{ company.email || 'Not Set' }}</p>
                             </div>
                             <div class="col-md-4">
                                 <p><strong>Fleet Size:</strong> {{ getVesselCount() }}</p>
-                                <p><strong>License:</strong> {{ company.license || 'Not Set'}}</p>
+                                <p><strong>License:</strong> {{ company.license || 'Not Set' }}</p>
                             </div>
                         </div>
                     </div>
@@ -56,6 +64,12 @@ import supabase from '../supabase';
 
 export default {
     name: 'DashboardView',
+    data() {
+        return {
+            previewLogo: null,
+            selectedLogoFile: null
+        }
+    },
     async mounted() {
         const { data: { session } } = await supabase.auth.getSession();
 
@@ -74,6 +88,8 @@ export default {
         // fetch vessels.
         this.$store.dispatch('vessel/fetchVessels');
         // this.company.vessels.push(this.vessels);
+
+        console.log(this.company)
     },
     computed: {
         company() {
@@ -87,6 +103,54 @@ export default {
         getVesselCount() {
             return this.company.vessels.length;
         },
+        async handleLogoChange(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.selectedLogoFile = file;
+                // Generate a temporary preview
+                this.previewLogo = URL.createObjectURL(file);
+                // You can now use this.selectedLogoFile in your Supabase upload
+                // Example: this.uploadLogoToSupabase(this.selectedLogoFile);
+                let companyId = localStorage.getItem('company_id');
+                const { data, error } = await supabase.storage
+                    .from('company-files')
+                    .upload(`logos/${companyId}.png`, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+
+                if (data) {
+                    const filePath = data.path;
+
+                    const { data: publicUrlData, error: urlError } = supabase
+                        .storage
+                        .from('company-files')
+                        .getPublicUrl(filePath);
+
+                    if (urlError) {
+                        console.error('Failed to get public URL', urlError);
+                        return;
+                    }
+
+                    const publicUrl = publicUrlData.publicUrl;
+
+                    // Update the company's logo with the public URL
+                    const { error: updateError } = await supabase
+                        .from('companies')
+                        .update({ logo: publicUrl })
+                        .eq('id', companyId);
+
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Image Uploaded!',
+                            text: 'Image update may take as much as 1 hour to update in your local system due to caching',
+                        });
+
+                    if (updateError) console.error('Update failed', error);
+                }
+            }
+        }
     },
     components: { Sidebar, VesselList, DashHeader }
 }
@@ -223,5 +287,51 @@ export default {
 #content.active {
     margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
+}
+
+.company-logo {
+    width: 100px;
+    height: 100px;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.company-logo img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.file-upload {
+    margin-top: 5px;
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: #005792;
+    /* Indigo */
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.file-upload:hover {
+    background-color: #00a8e8;
+    /* Darker indigo */
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
 }
 </style>

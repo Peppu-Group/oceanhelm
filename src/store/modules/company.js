@@ -33,6 +33,7 @@ export default {
             phoneNumber: companyData.phone_number || "",
             email: companyData.email || "",
             license: companyData.license || "",
+            logo: companyData.logo || "",
             vessels: vessel };
         }
     },
@@ -50,6 +51,7 @@ export default {
                 } else {
                     let vessel = rootState.vessel.vessels;
                     let companyData = data;
+                    localStorage.setItem('company_id', companyData.id);
                     commit('SET_COMPANY', {companyData, vessel});
                 }
             } catch (err) {
