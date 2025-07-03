@@ -51,7 +51,7 @@ export default {
         };
 
   
-          axios.post('(`https://proctoredserver.peppubuild.com/notification', notificationData)
+          axios.post('https://proctoredserver.peppubuild.com/notification', notificationData)
             .then(response => {
               console.log('Success:', response.data);
             })
@@ -136,7 +136,7 @@ export default {
                 notes: task.notes,
                 status: task.status,
                 remaining_days: task.reminderDays,
-                attachments: task.attachments,
+                attachments: task.attachments.file,
                 checklist_progress: task.checklistProgress,
                 vessel: vesselId,
                 company_id: companyId

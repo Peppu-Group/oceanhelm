@@ -66,8 +66,8 @@ export default {
     
           let last_shift = localStorage.getItem("last_shift");
           if (updatedMember.nextShift && last_shift != updatedMember.nextShift) {
-            axios.post('(`https://proctoredserver.peppubuild.com/notification', notificationData)
-              .then(response => {
+            axios.post('https://proctoredserver.peppubuild.com/notification', notificationData)
+            .then(response => {
                 console.log('Success:', response.data);
               })
               .catch(error => {

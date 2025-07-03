@@ -221,14 +221,21 @@
                     <div class="form-group">
                         <label>Attachments</label>
                         <div class="attachment-area">
-                            <p>Drag and drop files here or</p>
+                            <p>{{ imgText }}</p>
                             <input type="file" id="maintenance-files" class="file-input" @change="handleFiles" multiple>
                             <label for="maintenance-files" class="file-label">Browse Files</label>
                         </div>
                     </div>
 
                     <div class="action-buttons">
-                        <button type="button" class="btn btn-primary" @click.prevent="saveSchedule">Save Schedule</button>
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            @click.prevent="saveSchedule"
+                            :disabled="isSaving"
+                            >
+                            {{ isSaving ? 'Saving...' : 'Save Schedule' }}
+                        </button>
                     </div>
                 </form>
             </section>
@@ -305,7 +312,7 @@
             <div class="header">
                 <div class="report-title">MAINTENANCE TASK REPORT</div>
             </div>
-            
+
             <div class="report-info">
                 <div class="info-box">
                     <div class="info-label">Report Generated:</div>
@@ -324,7 +331,7 @@
                     <div>MarineTech System</div>
                 </div>
             </div>
-            
+
             <div class="section">
                 <div class="section-title">📊 Task Summary</div>
                 <div class="summary-grid">
@@ -346,12 +353,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="section">
                 <div class="section-title">🔧 Maintenance Tasks</div>
-                <div v-for="task in maintenanceTasks" :key="task.taskName" 
-                     :class="['task-item', getTaskStatusClass(task)]">
-                    
+                <div v-for="task in maintenanceTasks" :key="task.taskName" :class="['task-item', getTaskStatusClass(task)]">
+
                     <div class="task-header">
                         <div>
                             <div class="task-title">
@@ -366,7 +372,7 @@
                             {{ task.status }}
                         </span>
                     </div>
-                    
+
                     <div class="task-details">
                         <div class="detail-item">
                             <div class="detail-label">Assigned To</div>
@@ -393,24 +399,26 @@
                             <div class="detail-value">{{ task.remainingDays }} days</div>
                         </div>
                     </div>
-                    
-                    <div v-if="task.description" style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
+
+                    <div v-if="task.description"
+                        style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
                         <div class="detail-label">Description</div>
                         <div class="detail-value">{{ task.description }}</div>
                     </div>
-                    
+
                     <div v-if="task.notes" style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
                         <div class="detail-label">Notes</div>
                         <div class="detail-value">{{ task.notes }}</div>
                     </div>
-                    
+
                     <div v-if="task.checklistProgress && task.checklistProgress.length > 0" class="checklist-progress">
                         <div class="detail-label">Checklist Progress</div>
                         <div class="progress-bar">
                             <div class="progress-fill" :style="{ width: getChecklistProgress(task) + '%' }"></div>
                         </div>
                         <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
-                            {{ getCompletedChecklistItems(task) }} of {{ task.checklistProgress.length }} items completed ({{ getChecklistProgress(task) }}%)
+                            {{ getCompletedChecklistItems(task) }} of {{ task.checklistProgress.length }} items completed
+                            ({{ getChecklistProgress(task) }}%)
                         </div>
                         <div class="checklist-items">
                             <div v-for="(item, index) in task.checklistProgress" :key="index" class="checklist-item">
@@ -421,7 +429,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="section">
                 <div class="section-title">📋 Recommendations</div>
                 <div class="info-box">
@@ -432,7 +440,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="signature-section">
                 <div class="signature-box">
                     <div><strong>Report Generated By</strong></div>
@@ -456,8 +464,10 @@ export default {
         return {
             name: null,
             no: null,
+            isSaving: false,
             lastSection: '',
             currentTask: '',
+            imgText: 'Drag and drop files here or',
             tasks: [],
             activeSection: 'inventory',
             sections: [
@@ -495,7 +505,7 @@ export default {
                 notes: '',
                 status: 'Soon',
                 remainingDays: null,
-                attachments: []
+                attachments: {}
             },
             maintenanceTasks: [],
             showReport: false,
@@ -689,7 +699,10 @@ export default {
             this.activeSection = 'schedule';
         },
         handleFiles(event) {
-            this.form.attachments = Array.from(event.target.files);
+            this.imgText = event.target.files[0].name
+            this.form.attachments = {
+                file: event.target.files[0] // only the first file
+            };
         },
         validateForm() {
             const requiredFields = [
@@ -784,8 +797,10 @@ export default {
             // the captain or owner is shown an initial checklist where they can add or remove checklist.
             // then save the checklist.
             // on open, open the already saved checklist.
+            this.isSaving = true;
             const id = this.$route.params.id;
             if (!this.validateForm()) {
+                this.isSaving = false;
                 return; // Stop if validation fails
             }
 
@@ -816,14 +831,53 @@ export default {
                 });
                 return; // Stop further execution
             } else {
-
                 // Remove the customComponent field before saving
                 delete taskData.customComponent;
+
+                const file = taskData.attachments.file;
 
                 await this.$store.dispatch('tasks/addTask', {
                     vesselId: this.$route.params.id,
                     task: taskData
                 });
+
+                /* Push Image */
+                const randomText = Math.random().toString(36).substring(2, 8);
+                let companyId = localStorage.getItem('company_id');
+                const { data, error } = await supabase.storage
+                    .from('company-files')
+                    .upload(`tasks/${companyId}-${randomText}.png`, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+
+                if (data) {
+                    const filePath = data.path;
+
+                    const { data: publicUrlData, error: urlError } = supabase
+                        .storage
+                        .from('company-files')
+                        .getPublicUrl(filePath);
+
+                    if (urlError) {
+                        console.error('Failed to get public URL', urlError);
+                        return;
+                    }
+
+                    console.log(publicUrlData)
+
+                    const publicUrl = publicUrlData.publicUrl;
+
+                    // Update the company's logo with the public URL
+                    const { error: updateError } = await supabase
+                        .from('tasks')
+                        .update({ attachments: publicUrl })
+                        .eq('company_id', companyId)
+                        .eq('vessel', this.$route.params.id)
+                        .eq('component', taskData.component);
+
+                    if (updateError) console.error('Update failed', error);
+                }
 
                 // load maintenance checklist
                 this.loadChecklist(taskData.component);
@@ -904,20 +958,28 @@ export default {
             }
         },
         cleanAndParseAIResponse(text) {
-            // Step 1: Replace smart quotes (like ’ or “ ”) with straight quotes
+            // Step 1: Replace smart quotes with straight quotes
             text = text
-                .replace(/[‘’]/g, "'")  // smart apostrophes
-                .replace(/[“”]/g, '"'); // smart double quotes
+                .replace(/[‘’]/g, "'")   // smart apostrophes
+                .replace(/[“”]/g, '"');  // smart double quotes
 
-            // Step 2: Replace single quotes around keys/values with double quotes (if needed)
-            text = text.replace(/([{,]\s*)'([^']+?)'\s*:/g, '$1"$2":'); // keys
-            text = text.replace(/:\s*'([^']*?)'/g, ': "$1"'); // string values
+            // Step 2: Convert single quotes around keys to double quotes
+            text = text.replace(/([{,]\s*)'([^']+?)'\s*:/g, '$1"$2":');
 
-            // Now attempt to parse
+            // Step 3: Convert single quotes around string values to double quotes
+            // only when the value doesn't contain inner single quotes (to avoid breaking apostrophes)
+            text = text.replace(/:\s*'([^']*?)'/g, (match, p1) => {
+                if (p1.includes('"')) return match; // skip if it already contains double quotes
+                if (p1.includes("'")) return match; // skip if value contains apostrophes
+                return `: "${p1}"`;
+            });
+
+            // Step 4: Attempt parsing
             try {
                 return JSON.parse(text);
             } catch (err) {
                 console.error("Failed to parse cleaned response:", err.message);
+                console.log("Raw cleaned text:", text);
                 return null;
             }
         },
@@ -1504,336 +1566,336 @@ textarea {
 }
 
 .print-only-container {
-            text-align: center;
-        }
-        
-        .initial-print-btn {
-            background: linear-gradient(135deg, #0066cc, #004499);
-            color: white;
-            border: none;
-            padding: 20px 40px;
-            font-size: 1.3em;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(0,102,204,0.3);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 0 auto;
-        }
-        
-        .initial-print-btn:hover {
-            background: linear-gradient(135deg, #004499, #003366);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,102,204,0.4);
-        }
-        
-        .initial-print-btn:active {
-            transform: translateY(0);
-        }
-        
-        .company-branding {
-            margin-bottom: 30px;
-        }
-        
-        .company-logo {
-            font-size: 3em;
-            font-weight: bold;
-            color: #0066cc;
-            margin-bottom: 10px;
-        }
-        
-        .company-tagline {
-            font-size: 1.1em;
-            color: #666;
-        }
-        
-        /* Report Styles - Hidden Initially */
-        .report-container {
-            display: none;
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #0066cc;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .report-logo {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #0066cc;
-            margin-bottom: 10px;
-        }
-        
-        .report-title {
-            font-size: 1.8em;
-            color: #333;
-            margin: 10px 0;
-        }
-        
-        .report-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .info-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #0066cc;
-        }
+    text-align: center;
+}
 
-        .info-box ul li {
-            margin-left: 15px;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #0066cc;
-            margin-bottom: 5px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-        }
-        
-        .section-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #0066cc;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .task-item {
-            background: #f8f9fa;
-            margin: 15px 0;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #28a745;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        .task-item.pending {
-            border-left-color: #ffc107;
-        }
-        
-        .task-item.overdue {
-            border-left-color: #dc3545;
-        }
-        
-        .task-item.in-progress {
-            border-left-color: #17a2b8;
-        }
-        
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .task-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .task-component {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .status-completed {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-overdue {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .status-in-progress {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        
-        .task-details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 15px 0;
-        }
-        
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .detail-label {
-            font-weight: bold;
-            font-size: 0.85em;
-            color: #0066cc;
-            margin-bottom: 3px;
-        }
-        
-        .detail-value {
-            font-size: 0.95em;
-            color: #333;
-        }
-        
-        .checklist-progress {
-            margin-top: 15px;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #28a745, #20c997);
-            transition: width 0.3s ease;
-        }
-        
-        .checklist-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .checklist-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            background: white;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        
-        .checklist-icon {
-            margin-right: 8px;
-            font-size: 1.1em;
-        }
-        
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 2px solid #e9ecef;
-        }
-        
-        .summary-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #0066cc;
-        }
-        
-        .summary-label {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .signature-section {
-            margin-top: 40px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-        
-        .signature-box {
-            padding-top: 10px;
-            text-align: center;
-        }
-        
-        .maintenance-type {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75em;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-left: 10px;
-        }
-        
-        .type-corrective {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .type-preventive {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .type-predictive {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-                padding: 0;
-                display: block;
-            }
-            
-            .print-only-container {
-                display: none !important;
-            }
-            
-            .report-container {
-                display: block !important;
-                box-shadow: none;
-                padding: 0;
-                margin: 0;
-                max-width: none;
-            }
-        }
+.initial-print-btn {
+    background: linear-gradient(135deg, #0066cc, #004499);
+    color: white;
+    border: none;
+    padding: 20px 40px;
+    font-size: 1.3em;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 0 auto;
+}
+
+.initial-print-btn:hover {
+    background: linear-gradient(135deg, #004499, #003366);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 102, 204, 0.4);
+}
+
+.initial-print-btn:active {
+    transform: translateY(0);
+}
+
+.company-branding {
+    margin-bottom: 30px;
+}
+
+.company-logo {
+    font-size: 3em;
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 10px;
+}
+
+.company-tagline {
+    font-size: 1.1em;
+    color: #666;
+}
+
+/* Report Styles - Hidden Initially */
+.report-container {
+    display: none;
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    text-align: center;
+    border-bottom: 3px solid #0066cc;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.report-logo {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 10px;
+}
+
+.report-title {
+    font-size: 1.8em;
+    color: #333;
+    margin: 10px 0;
+}
+
+.report-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #0066cc;
+}
+
+.info-box ul li {
+    margin-left: 15px;
+}
+
+.info-label {
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 5px;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #0066cc;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.task-item {
+    background: #f8f9fa;
+    margin: 15px 0;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.task-item.pending {
+    border-left-color: #ffc107;
+}
+
+.task-item.overdue {
+    border-left-color: #dc3545;
+}
+
+.task-item.in-progress {
+    border-left-color: #17a2b8;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.task-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+}
+
+.task-component {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-overdue {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-in-progress {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.task-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-weight: bold;
+    font-size: 0.85em;
+    color: #0066cc;
+    margin-bottom: 3px;
+}
+
+.detail-value {
+    font-size: 0.95em;
+    color: #333;
+}
+
+.checklist-progress {
+    margin-top: 15px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    transition: width 0.3s ease;
+}
+
+.checklist-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: white;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.checklist-icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.summary-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid #e9ecef;
+}
+
+.summary-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.summary-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+.signature-section {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.signature-box {
+    padding-top: 10px;
+    text-align: center;
+}
+
+.maintenance-type {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 10px;
+}
+
+.type-corrective {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.type-preventive {
+    background: #d4edda;
+    color: #155724;
+}
+
+.type-predictive {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+        display: block;
+    }
+
+    .print-only-container {
+        display: none !important;
+    }
+
+    .report-container {
+        display: block !important;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        max-width: none;
+    }
+}
 </style>
