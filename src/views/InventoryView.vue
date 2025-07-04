@@ -322,13 +322,14 @@
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="action-btn btn-delete" @click="deleteItem(item)"
-                                        :title="item.active ? 'Mark as Inactive' : 'Mark as Active'">
+                                        :title="item.active ? 'Archive Item' : 'Restore Item'">
                                         <i :class="[
                                             'fa',
-                                            item.active ? 'fa-trash' : 'fa-check-circle',
+                                            item.active ? 'fa-box-archive' : 'fa-undo',
                                             'icon-button'
                                         ]" aria-hidden="true"></i>
                                     </button>
+
                                 </div>
                             </td>
                         </tr>
@@ -889,19 +890,33 @@ export default {
             })
         },
         deleteItem(item) {
+            const isArchiving = item.active;
+
             Swal.fire({
-                title: 'Only archive is possible',
-                text: "We will archive this stock and you can retrieve it anytime.",
+                title: isArchiving ? 'Archive this stock?' : 'Unarchive this stock?',
+                text: isArchiving
+                    ? "We will archive this stock and you can retrieve it anytime."
+                    : "We will restore this stock to active inventory.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, archive it!',
+                confirmButtonColor: isArchiving ? '#d33' : '#3085d6',
+                cancelButtonColor: '#aaa',
+                confirmButtonText: isArchiving ? 'Yes, archive it!' : 'Yes, unarchive it!',
             }).then((result) => {
                 if (result.isConfirmed) {
                     item.active = !item.active;
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: isArchiving ? 'Archived!' : 'Restored!',
+                        text: isArchiving
+                            ? 'The stock has been archived.'
+                            : 'The stock has been restored.',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
                 }
-            })
+            });
         },
         prevPage() {
             if (this.currentPage > 1) {
