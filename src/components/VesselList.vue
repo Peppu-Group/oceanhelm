@@ -77,9 +77,9 @@
                     </div>
                 </div>
                 <div class="action-icon left delete">
-                    <i class="bi bi-trash" @click.stop="confirmDelete(vessel.registrationNumber)"></i>
+                    <i class="bi bi-trash" @click.stop="confirmDelete(vessel)"></i>
                 </div>
-                <button class="btn btn-primary" @click.stop="markInactive(vessel.registrationNumber)">
+                <button class="btn btn-primary" @click.stop="markInactive(vessel)">
                     {{ vessel.status === 'Active' ? 'Mark Inactive' : 'Mark Active' }}
                 </button>
             </div>
@@ -216,7 +216,7 @@ export default {
             const normalized = status.toLowerCase();
             return `status-${normalized}`;
         },
-        confirmDelete(task) {
+        confirmDelete(vessel) {
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You're trying to delete a vessel, this action cannot be undone!",
@@ -227,19 +227,22 @@ export default {
                 confirmButtonText: 'Yes, delete it!',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    this.deleteVessel(task);
+                    this.deleteVessel(vessel);
                 }
             })
         },
-        deleteVessel(registrationNumber) {
-            return this.$store.dispatch('vessel/deleteVessel', registrationNumber);
+        deleteVessel(vessel) {
+            return this.$store.dispatch('vessel/deleteVessel', vessel.registrationNumber);
         },
         updateVesselInfo(vessel) {
             return this.$store.dispatch('vessel/updateVessel', vessel);
         },
-        markInactive(registrationNumber) {
-            return this.$store.dispatch('vessel/markInactive', registrationNumber);
-
+        markInactive(vessel) {
+            if (this.grantAccess(vessel)) {
+                return this.$store.dispatch('vessel/markInactive', vessel.registrationNumber);
+            } else {
+                this.rejectAccess();
+            }
         },
         handleNavigation(id, vname, vessel) {
             let name = this.$route.name;
@@ -249,6 +252,11 @@ export default {
                 this.$router.push({ path: `/app/crew/${vname}` });
             } else if (name == 'dashboard') {
                 this.showVesselInfo(vessel)
+            }
+        },
+        grantAccess(vessel) {
+            if (this.userProfile.role == 'owner' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
+                return true
             }
         },
         showVesselInfo(vessel) {
@@ -367,16 +375,21 @@ export default {
                     this.editVessel(vessel)
                 } else if (result.isDenied) {
                     // go to manage certification tab
-                    this.$router.push({ path: `/app/certifications/${vessel.registrationNumber}` });
+                    if (this.grantAccess(vessel)) {
+                        this.$router.push({ path: `/app/certifications/${vessel.registrationNumber}` });
+                    } else {
+                        this.rejectAccess();
+                    }
                 }
             });
         },
         async editVessel(vessel = {}) {
-            // Helper function to safely get values
-            const getValue = (value, defaultVal = '') => value || defaultVal;
+            if (this.grantAccess(vessel)) {
+                // Helper function to safely get values
+                const getValue = (value, defaultVal = '') => value || defaultVal;
 
-            // Create the form HTML
-            const formHtml = `
+                // Create the form HTML
+                const formHtml = `
     <div class="edit-vessel-form" style="text-align: left; max-height: 500px; overflow-y: auto;">
       <div class="form-section">
         <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
@@ -471,94 +484,94 @@ export default {
     </div>
   `;
 
-            // Show the SweetAlert with the form
-            Swal.fire({
-                title: 'Edit Vessel Information',
-                html: formHtml,
-                width: '800px',
-                showCancelButton: true,
-                confirmButtonText: 'Save Changes',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#005792',
-                cancelButtonColor: '#6c757d',
-                customClass: {
-                    container: 'custom-swal-container',
-                    popup: 'custom-swal-popup',
-                    title: 'custom-swal-title',
-                    htmlContainer: 'custom-swal-content'
-                },
-                preConfirm: () => {
-                    // Collect form data
-                    const formData = {
-                        name: document.getElementById('edit-vessel-name').value.trim(),
-                        imo: document.getElementById('edit-imo').value.trim(),
-                        type: document.getElementById('edit-vessel-type').value,
-                        yearBuilt: parseInt(document.getElementById('edit-year-built').value) || null,
-                        flagState: document.getElementById('edit-flag-state').value.trim(),
-                        specifications: {
-                            length: parseFloat(document.getElementById('edit-length').value) || null,
-                            beam: parseFloat(document.getElementById('edit-beam').value) || null,
-                            draft: parseFloat(document.getElementById('edit-draft').value) || null,
-                            grossTonnage: parseFloat(document.getElementById('edit-gross-tonnage').value) || null,
-                            netTonnage: parseFloat(document.getElementById('edit-net-tonnage').value) || null
-                        },
-                    };
+                // Show the SweetAlert with the form
+                Swal.fire({
+                    title: 'Edit Vessel Information',
+                    html: formHtml,
+                    width: '800px',
+                    showCancelButton: true,
+                    confirmButtonText: 'Save Changes',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#005792',
+                    cancelButtonColor: '#6c757d',
+                    customClass: {
+                        container: 'custom-swal-container',
+                        popup: 'custom-swal-popup',
+                        title: 'custom-swal-title',
+                        htmlContainer: 'custom-swal-content'
+                    },
+                    preConfirm: () => {
+                        // Collect form data
+                        const formData = {
+                            name: document.getElementById('edit-vessel-name').value.trim(),
+                            imo: document.getElementById('edit-imo').value.trim(),
+                            type: document.getElementById('edit-vessel-type').value,
+                            yearBuilt: parseInt(document.getElementById('edit-year-built').value) || null,
+                            flagState: document.getElementById('edit-flag-state').value.trim(),
+                            specifications: {
+                                length: parseFloat(document.getElementById('edit-length').value) || null,
+                                beam: parseFloat(document.getElementById('edit-beam').value) || null,
+                                draft: parseFloat(document.getElementById('edit-draft').value) || null,
+                                grossTonnage: parseFloat(document.getElementById('edit-gross-tonnage').value) || null,
+                                netTonnage: parseFloat(document.getElementById('edit-net-tonnage').value) || null
+                            },
+                        };
 
-                    // Basic validation
-                    if (!formData.name) {
-                        Swal.showValidationMessage('Vessel name is required');
-                        return false;
-                    }
-
-                    if (!formData.imo) {
-                        Swal.showValidationMessage('IMO number is required');
-                        return false;
-                    }
-
-                    if (!formData.type) {
-                        Swal.showValidationMessage('Please select a vessel type');
-                        return false;
-                    }
-
-                    return formData;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const updatedVessel = result.value;
-                    console.log(updatedVessel)
-
-                    // Here you would typically save to database/API
-                    // For now, we'll show a success message and log the data
-
-                    // Show success message
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Vessel information has been updated successfully.',
-                        icon: 'success',
-                        confirmButtonColor: '#005792',
-                        customClass: {
-                            container: 'custom-swal-container',
-                            popup: 'custom-swal-popup',
-                            title: 'custom-swal-title'
+                        // Basic validation
+                        if (!formData.name) {
+                            Swal.showValidationMessage('Vessel name is required');
+                            return false;
                         }
-                    }).then(() => {
-                        const vesselIndex = this.vessels.findIndex(v => v.registrationNumber === vessel.registrationNumber);
-                        const vesselUpdate = {
-                            name: updatedVessel.name,
-                            registration_number: updatedVessel.imo,
-                            type: updatedVessel.type,
-                            built: updatedVessel.yearBuilt,
-                            flag: updatedVessel.flagState,
-                            length: updatedVessel.specifications.length,
-                            beam: updatedVessel.specifications.beam,
-                            draft: updatedVessel.specifications.draft,
-                            gross: updatedVessel.specifications.grossTonnage,
-                            net: updatedVessel.specifications.netTonnage
+
+                        if (!formData.imo) {
+                            Swal.showValidationMessage('IMO number is required');
+                            return false;
                         }
-                        if (vesselIndex !== -1) {
-                            // Update the vessel in your data array
-                            this.vessels[vesselIndex] = {
-                                ...this.vessels[vesselIndex],
+
+                        if (!formData.type) {
+                            Swal.showValidationMessage('Please select a vessel type');
+                            return false;
+                        }
+
+                        return formData;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const updatedVessel = result.value;
+                        console.log(updatedVessel)
+
+                        // Here you would typically save to database/API
+                        // For now, we'll show a success message and log the data
+
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Vessel information has been updated successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#005792',
+                            customClass: {
+                                container: 'custom-swal-container',
+                                popup: 'custom-swal-popup',
+                                title: 'custom-swal-title'
+                            }
+                        }).then(() => {
+                            const vesselIndex = this.vessels.findIndex(v => v.registrationNumber === vessel.registrationNumber);
+                            const vesselUpdate = {
+                                name: updatedVessel.name,
+                                registration_number: updatedVessel.imo,
+                                type: updatedVessel.type,
+                                built: updatedVessel.yearBuilt,
+                                flag: updatedVessel.flagState,
+                                length: updatedVessel.specifications.length,
+                                beam: updatedVessel.specifications.beam,
+                                draft: updatedVessel.specifications.draft,
+                                gross: updatedVessel.specifications.grossTonnage,
+                                net: updatedVessel.specifications.netTonnage
+                            }
+                            if (vesselIndex !== -1) {
+                                // Update the vessel in your data array
+                                this.vessels[vesselIndex] = {
+                                    ...this.vessels[vesselIndex],
                                     name: updatedVessel.name,
                                     registrationNumber: updatedVessel.imo,
                                     type: updatedVessel.type,
@@ -569,28 +582,39 @@ export default {
                                     draft: updatedVessel.specifications.draft,
                                     gross: updatedVessel.specifications.grossTonnage,
                                     net: updatedVessel.specifications.netTonnage
-                            };
+                                };
 
-                            // Re-show with updated data
-                            this.showVesselInfo(this.vessels[vesselIndex]);
+                                // Re-show with updated data
+                                this.showVesselInfo(this.vessels[vesselIndex]);
 
-                            // update supabase.
-                            this.updateVesselInfo(vesselUpdate)
-                        }
+                                // update supabase.
+                                this.updateVesselInfo(vesselUpdate)
+                            }
+                        });
+
+                        // Call your save function here
+                        // saveVesselToDatabase(updatedVessel);
+                    }
+                }).catch((error) => {
+                    console.error('Error in edit vessel form:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'There was an error processing your request. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#005792'
                     });
-
-                    // Call your save function here
-                    // saveVesselToDatabase(updatedVessel);
-                }
-            }).catch((error) => {
-                console.error('Error in edit vessel form:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'There was an error processing your request. Please try again.',
-                    icon: 'error',
-                    confirmButtonColor: '#005792'
                 });
-            });
+            } else {
+                this.rejectAccess()
+            }
+        },
+
+        rejectAccess() {
+            Swal.fire({
+                    title: 'Unauthorized',
+                    text: 'You do not have the access to do this',
+                    icon: 'info'
+                });
         },
 
         // Helper function to save vessel data (implement based on your backend)
