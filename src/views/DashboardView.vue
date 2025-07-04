@@ -25,8 +25,8 @@
                             <i v-else class="bi bi-building"></i>
 
                         </div>
-                        <label class="file-upload">
-                            <i class="bi bi-upload"></i> Logo
+                        <label class="file-upload" v-if="this.userProfile.role == 'owner'">
+                            <i class="bi bi-upload"></i> Change Logo
                             <input type="file" @change="handleLogoChange" accept="image/*" />
                         </label>
                     </div>
@@ -60,6 +60,7 @@ import Sidebar from '../components/Sidebar.vue';
 import VesselList from '../components/VesselList.vue';
 import DashHeader from '../components/DashHeader.vue';
 import supabase from '../supabase';
+import { mapGetters, mapActions } from 'vuex';
 
 
 export default {
@@ -91,6 +92,7 @@ export default {
 
     },
     computed: {
+        ...mapGetters('user', ['userProfile', 'userRoleDescription']),
         company() {
             return this.$store.getters['company/company'];
         },

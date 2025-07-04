@@ -28,7 +28,7 @@
             </div>
         </div>
         <!-- Register New Fleet -->
-        <div class="col-md-4">
+        <div class="col-md-4" v-if="this.userProfile.role == 'owner'">
             <div class="card border-0 shadow-sm" @click="newVessel()">
                 <div class="card-body d-flex align-items-center">
                     <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
@@ -88,9 +88,12 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
     name: 'VesselList',
     computed: {
+        ...mapGetters('user', ['userProfile', 'userRoleDescription']),
         vessels() {
             return this.$store.getters['vessel/allVessels'];
         },
