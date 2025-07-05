@@ -228,12 +228,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            @click.prevent="saveSchedule"
-                            :disabled="isSaving"
-                            >
+                        <button type="button" class="btn btn-primary" @click.prevent="saveSchedule" :disabled="isSaving">
                             {{ isSaving ? 'Saving...' : 'Save Schedule' }}
                         </button>
                     </div>
@@ -458,6 +453,7 @@
 <script>
 import axios from 'axios';
 import supabase from '../supabase';
+import { mapGetters } from 'vuex';
 
 export default {
     data() {
@@ -525,6 +521,7 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('user', ['userProfile', 'userRoleDescription']),
         filteredTasks() {
             let result = [...this.tasks];
             if (this.activeFilter === 'all') {
@@ -574,38 +571,47 @@ export default {
         }
     },
     async mounted() {
-        let id = this.$route.params.id;
-        let vesselInfo = this.vessels.find(v => v.registrationNumber === id);
-        this.vesselInfo = vesselInfo;
+            let id = this.$route.params.id;
+            let vesselInfo = this.vessels.find(v => v.registrationNumber === id);
+            this.vesselInfo = vesselInfo;
+            if (this.grantAccess(vesselInfo.name)) {
 
-        if (vesselInfo) {
-            this.no = vesselInfo.registrationNumber;
-            this.name = vesselInfo.name;
+            if (vesselInfo) {
+                this.no = vesselInfo.registrationNumber;
+                this.name = vesselInfo.name;
 
-            await this.$store.dispatch('tasks/loadTasks', this.$route.params.id);
+                await this.$store.dispatch('tasks/loadTasks', this.$route.params.id);
 
-            this.tasks = this.$store.getters['tasks/getTasksByVessel'](this.$route.params.id);
+                this.tasks = this.$store.getters['tasks/getTasksByVessel'](this.$route.params.id);
 
-            this.currentTask = localStorage.getItem('currentTask');
+                this.currentTask = localStorage.getItem('currentTask');
+            } else {
+                this.$router.push({ path: `/app/dashboard` })
+            }
+
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('company_id')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile?.company_id) {
+                    await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
+                }
+            }
         } else {
             this.$router.push({ path: `/app/dashboard` })
         }
-
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session) {
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('company_id')
-                .eq('id', session.user.id)
-                .single();
-
-            if (profile?.company_id) {
-                await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
-            }
-        }
     },
     methods: {
+        grantAccess(vessel) {
+            if (this.userProfile.role == 'owner' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
+                return true
+            }
+        },
         deleteTask(taskId) {
             this.checklists = this.checklists.filter(checklist => checklist.id !== taskId);
         },

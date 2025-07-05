@@ -247,9 +247,17 @@ export default {
         handleNavigation(id, vname, vessel) {
             let name = this.$route.name;
             if (name == 'maintenanceroute') {
-                this.$router.push({ path: `/app/maintenance/${id}` });
+                if (this.grantAccess(vessel)) {
+                    this.$router.push({ path: `/app/maintenance/${id}` });
+                } else {
+                    this.rejectAccess();
+                }
             } else if (name == 'crewroute') {
-                this.$router.push({ path: `/app/crew/${vname}` });
+                if (this.grantAccess(vessel)) {
+                    this.$router.push({ path: `/app/crew/${vname}` });
+                } else {
+                    this.rejectAccess();
+                }
             } else if (name == 'dashboard') {
                 this.showVesselInfo(vessel)
             }

@@ -218,7 +218,6 @@ export default {
         this.$store.dispatch('vessel/fetchVessels');
         // fetch crew
         this.$store.dispatch('crew/fetchCrew');
-        console.log(this.filteredCrew)
     },
     methods: {
         checkExpiredCertifications() {
