@@ -277,23 +277,23 @@
               <h3>Vendor Information</h3>
               <div class="info-row">
                 <span class="info-label">Company:</span>
-                <span class="info-value">{{ vendorInfo.company }} || {{ poDetails.vendorInfo.company }}</span>
+                <span class="info-value">{{ vendorInfo.company || poDetails.vendorInfo.company}} </span>
               </div>
               <div class="info-row">
                 <span class="info-label">Contact:</span>
-                <span class="info-value">{{ vendorInfo.contact }}|| {{ poDetails.vendorInfo.contact }}</span>
+                <span class="info-value">{{ vendorInfo.contact || poDetails.vendorInfo.contact}}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Email:</span>
-                <span class="info-value">{{ vendorInfo.email }}|| {{ poDetails.vendorInfo.email }}</span>
+                <span class="info-value">{{ vendorInfo.email || poDetails.vendorInfo.email}}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Phone:</span>
-                <span class="info-value">{{ vendorInfo.phone }}|| {{ poDetails.vendorInfo.phone }}</span>
+                <span class="info-value">{{ vendorInfo.phone || poDetails.vendorInfo.phone}}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Address:</span>
-                <span class="info-value">{{ vendorInfo.address }}|| {{ poDetails.vendorInfo.address }}</span>
+                <span class="info-value">{{ vendorInfo.address ||  poDetails.vendorInfo.address }}</span>
               </div>
             </div>
 

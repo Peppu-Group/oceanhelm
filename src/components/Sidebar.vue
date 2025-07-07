@@ -9,6 +9,9 @@
                 <a href="/app/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
             </li>
             <li>
+                <a href="/activity-log"><i class="bi bi-activity"></i> Activity Log</a>
+            </li>
+            <li>
                 <a> Services</a>
             </li>
             <li class="dropdown" @click="getMaintenance()">
@@ -239,6 +242,7 @@ export default {
                 });
 
                 if (formValues) {
+                    formValues.logo = this.company.logo;
                     // Process the form data
                     await this.$store.dispatch('company/updateCompanyInfo', formValues)
 

@@ -15,6 +15,7 @@ import RedirectView from '../views/RedirectView.vue'
 import SubRedirect from '../views/SubRedirect.vue'
 import NewReq from '../views/NewReq.vue'
 import ManageCertifications from '../views/ManageCertifications.vue'
+import LogView from '../views/LogView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,6 +83,12 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView
+    },
+    {
+      path: '/activity-log',
+      name: 'logview',
+      component: LogView,
+      meta: { requiresAuth: true }
     },
     {
       path: '/redirect',

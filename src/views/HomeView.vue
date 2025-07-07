@@ -73,7 +73,7 @@
               <path d="M10 54c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6zm44 0c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6z"/>
             </svg>
           </div>
-          <h3>Fleet Management</h3>
+          <h3>Voyage Management</h3>
           <p>Easily manage logistics and positioning of all the vessels in your fleet. Understand when a vessel signs in or out, get timesheet report.</p>
         </div>
         <div class="feature-card">
