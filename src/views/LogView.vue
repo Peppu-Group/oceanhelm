@@ -222,11 +222,12 @@ export default {
             };
             return classes[action] || 'badge-view';
         },
-        refreshLogs() {
+        async refreshLogs() {
             this.loading = true;
             // Simulate API call
-            setTimeout(() => {
+            setTimeout(async () => {
                 this.loading = false;
+                this.logs = await getActivityLogs();
                 this.filterLogs();
             }, 1000);
         },
