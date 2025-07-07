@@ -34,7 +34,7 @@
                     Processing</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="fas fa-ship"></i> Voyage 
+                <a @click="comingSoon()"><i class="fas fa-ship"></i> Voyage
                     Manager</a>
             </li>
             <li>
@@ -232,7 +232,7 @@ export default {
                         // Return only non-empty values
                         const result = {};
                         if (location) result.location = location;
-                        if (estYear) result.estYear = parseInt(estYear);
+                        if (estYear) result.estYear = estYear;
                         if (phoneNumber) result.phoneNumber = phoneNumber;
                         if (email) result.email = email;
                         if (license) result.license = license;
@@ -243,10 +243,32 @@ export default {
 
                 if (formValues) {
                     formValues.logo = this.company.logo;
-                    // Process the form data
-                    await this.$store.dispatch('company/updateCompanyInfo', formValues)
 
-                    // Show success message
+                    // Detect changes
+                    const changedFields = {};
+                    for (const key in formValues) {
+                        if (formValues[key] !== currentData[key]) {
+                            changedFields[key] = {
+                                from: currentData[key],
+                                to: formValues[key]
+                            };
+                        }
+                    }
+
+                    // If no changes at all
+                    if (Object.keys(changedFields).length === 0) {
+                        await Swal.fire({
+                            title: 'No Changes Detected',
+                            text: 'No fields were changed. Update cancelled.',
+                            icon: 'info',
+                            confirmButtonColor: '#0d6efd'
+                        });
+                        return null;
+                    }
+
+                    // Proceed with update
+                    await this.$store.dispatch('company/updateCompanyInfo', {formValues, changedFields});
+
                     await Swal.fire({
                         title: 'Success!',
                         text: 'Company information has been updated successfully.',
@@ -258,6 +280,7 @@ export default {
 
                     return formValues;
                 }
+
 
                 return null;
             } else {

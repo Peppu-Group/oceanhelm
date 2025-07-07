@@ -89,7 +89,7 @@
                             <tr v-for="log in paginatedLogs" :key="log.id">
                                 <td>{{ formatDate(log.timestamp) }}</td>
                                 <td>
-                                <div>{{ log.user_name }}</div>
+                                    <div>{{ log.user_name }}</div>
                                     <small style="color: gray">{{ log.email }}</small>
                                 </td>
 
@@ -98,7 +98,13 @@
                                         {{ log.action }}
                                     </span>
                                 </td>
-                                <td>{{ log.details.status }}</td>
+                                <td>
+                                    {{ log.details.status }}
+                                    <div v-for="(change, key) in log.details.information" :key="key">
+                                        <strong>{{ key }}: </strong><small style="color: gray">{{ change.from }} → {{
+                                            change.to }}</small>
+                                    </div>
+                                </td>
                                 <td>{{ log.table_name }}</td>
                                 <td>
                                     <span class="activity-badge"
@@ -256,7 +262,6 @@ export default {
         this.logs = await getActivityLogs();
         this.filterLogs();
 
-        console.log(this.logs)
     }
 }
 </script>
@@ -269,17 +274,17 @@ export default {
 }
 
 #content {
-  width: 100%;
-  min-height: 100vh;
-  transition: all 0.3s;
-  position: absolute;
-  padding: 20px;
-  padding-left: 40px;
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    padding: 20px;
+    padding-left: 40px;
 }
 
 #content.active {
-  margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
 }
 
 .header {

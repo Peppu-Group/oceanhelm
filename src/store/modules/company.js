@@ -63,7 +63,8 @@ export default {
             }
         },
 
-        async updateCompanyInfo({ commit, rootState }, Info) {
+        async updateCompanyInfo({ commit, rootState }, {formValues, changedFields}) {
+            const Info = formValues;
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
@@ -101,7 +102,7 @@ export default {
                         id: profile.company_id,
                         action: 'update',
                         table: 'companies',
-                        details: { status: `Edited company information`, information: updatePayload }
+                        details: { status: `Edited company information`, information: changedFields }
                     });
                     commit('SET_COMPANY', { companyData, vessel });
                 }
