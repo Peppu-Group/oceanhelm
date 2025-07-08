@@ -1,5 +1,6 @@
 import supabase from '../../supabase';
 import axios from 'axios';
+import { logActivity } from '@/helpers/activityLogger';
 
 function errorMessage(error) {
   Swal.fire({
@@ -37,7 +38,7 @@ export default {
       state.crewMembers = state.crewMembers.filter(m => m.name !== id);
       localStorage.setItem('crew', JSON.stringify(state.crewMembers));
     },
-    UPDATE_CREW_MEMBER(state, {updatedMember, companyInfo}) {
+    UPDATE_CREW_MEMBER(state, { updatedMember, companyInfo }) {
       const index = state.crewMembers.findIndex(m => m.id === updatedMember.id);
       if (index !== -1) {
         // Update the crew member in place
@@ -45,11 +46,11 @@ export default {
           ...state.crewMembers[index],
           ...updatedMember
         });
-    
+
         try {
           const existingMember = state.crewMembers.find(m => m.name === updatedMember.name);
           const crew = { ...existingMember, ...updatedMember };
-    
+
           let notificationData = {
             companyName: companyInfo.company.name,
             name: crew.name,
@@ -63,11 +64,11 @@ export default {
             operations_phone: companyInfo.company.phoneNumber
           };
 
-    
+
           let last_shift = localStorage.getItem("last_shift");
           if (updatedMember.nextShift && last_shift != updatedMember.nextShift) {
             axios.post('https://proctoredserver.peppubuild.com/notification', notificationData)
-            .then(response => {
+              .then(response => {
                 console.log('Success:', response.data);
               })
               .catch(error => {
@@ -119,6 +120,12 @@ export default {
             // tell user about error.
             errorMessage(error)
           } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'add',
+              table: 'crew',
+              details: { status: `Added a new crew to database `, information: { name: member.name, email: member.email, role: member.role } }
+            });
             commit('ADD_CREW', member);
           }
         }
@@ -132,42 +139,86 @@ export default {
       commit('UPDATE_CREW', updatedMember);
     },
     async deleteCrew({ commit }, id) {
-      const { data, error } = await supabase
-        .from('crew')
-        .delete()
-        .eq('name', id);
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (error) {
-        errorMessage(error)
-      } else {
-        commit('DELETE_CREW', id);
+      if (session) {
+        const user = session.user;
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          const { data, error } = await supabase
+            .from('crew')
+            .delete()
+            .eq('name', id);
+
+          if (error) {
+            errorMessage(error)
+          } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'delete',
+              table: 'crew',
+              details: { status: `Deleted a crew with name: ${id} ` }
+            });
+            commit('DELETE_CREW', id);
+          }
+        }
       }
     },
     async updateCrewMember({ commit, state, rootState }, updatedMember) {
-      // Build payload safely
-      const updatePayload = {
-        status: updatedMember.status,
-        next_shift: updatedMember.nextShift,
-        on_board: updatedMember.onBoard,
-      };
+      const { data: { session } } = await supabase.auth.getSession();
 
-      // Only add 'vessel' if it's defined and not null
-      if (updatedMember.vessel !== undefined && updatedMember.vessel !== null) {
-        updatePayload.vessel = updatedMember.vessel;
-      }
-      // Update in Supabase
-      const { data, error } = await supabase
-        .from('crew')
-        .update(updatePayload)
-        .eq('name', updatedMember.name)
+      if (session) {
 
-      if (error) {
-        errorMessage(error)
-        return;
-      } else {
-        const companyInfo = rootState.company; 
-        commit('UPDATE_CREW_MEMBER', {updatedMember, companyInfo});
-        localStorage.setItem('crew', JSON.stringify(state.crewMembers));
+        const user = session.user;
+        const { data: profile, error: Err } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
+
+        if (Err) {
+          console.error('Error fetching profile:', Err);
+        } else {
+
+          // Build payload safely
+          const updatePayload = {
+            status: updatedMember.status,
+            next_shift: updatedMember.nextShift,
+            on_board: updatedMember.onBoard,
+          };
+
+          // Only add 'vessel' if it's defined and not null
+          if (updatedMember.vessel !== undefined && updatedMember.vessel !== null) {
+            updatePayload.vessel = updatedMember.vessel;
+          }
+          // Update in Supabase
+          const { data, error } = await supabase
+            .from('crew')
+            .update(updatePayload)
+            .eq('name', updatedMember.name)
+
+          if (error) {
+            errorMessage(error)
+            return;
+          } else {
+            const companyInfo = rootState.company;
+            await logActivity({
+              id: profile.company_id,
+              action: 'update',
+              table: 'crew',
+              details: { status: `Crew: ${updatedMember.name} was assigned a new shift`, information: { ...updatePayload} }
+            });
+            commit('UPDATE_CREW_MEMBER', { updatedMember, companyInfo });
+            localStorage.setItem('crew', JSON.stringify(state.crewMembers));
+          }
+        }
       }
     },
     async fetchCrew({ commit }) {

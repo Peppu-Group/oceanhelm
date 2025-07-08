@@ -82,7 +82,6 @@
                                 <th>Action</th>
                                 <th>Details</th>
                                 <th>Section</th>
-                                <th>Vessel</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,16 +101,10 @@
                                     {{ log.details.status }}
                                     <div v-for="(change, key) in log.details.information" :key="key">
                                         <strong>{{ key }}: </strong><small style="color: gray">{{ change.from }} → {{
-                                            change.to }}</small>
+                                            change.to || change }}</small>
                                     </div>
                                 </td>
                                 <td>{{ log.table_name }}</td>
-                                <td>
-                                    <span class="activity-badge"
-                                        :class="log.status === 'success' ? 'badge-login' : 'badge-delete'">
-                                        {{ log.status }}
-                                    </span>
-                                </td>
                             </tr>
                         </tbody>
                     </table>
