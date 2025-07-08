@@ -1,5 +1,6 @@
 import supabase from '../../supabase';
 import axios from 'axios';
+import { logActivity } from '@/helpers/activityLogger';
 
 function errorMessage(error) {
   Swal.fire({
@@ -36,7 +37,7 @@ export default {
 
         console.log(companyInfo)
         console.log(rootState.company)
-  
+
         let notificationData = {
           companyName: companyInfo.name,
           name: task.assignedTo,
@@ -50,14 +51,14 @@ export default {
           operations_phone: companyInfo.phoneNumber
         };
 
-  
-          axios.post('https://proctoredserver.peppubuild.com/notification', notificationData)
-            .then(response => {
-              console.log('Success:', response.data);
-            })
-            .catch(error => {
-              console.error('Error sending notification:', error.response?.data || error.message);
-            });
+
+        axios.post('https://proctoredserver.peppubuild.com/notification', notificationData)
+          .then(response => {
+            console.log('Success:', response.data);
+          })
+          .catch(error => {
+            console.error('Error sending notification:', error.response?.data || error.message);
+          });
 
       } catch (error) {
         console.error('Try block failed:', error);
@@ -128,7 +129,7 @@ export default {
                 component: task.component,
                 estimated_hours: task.estimatedHours,
                 assigned_to: task.assignedTo,
-                recurrence:task.recurrence,
+                recurrence: task.recurrence,
                 last_performed: task.lastPerformed,
                 next_due: task.nextDue,
                 reminder_days: task.reminderDays,
@@ -148,6 +149,17 @@ export default {
             // tell user about error.
             errorMessage(error)
           } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'add',
+              table: 'maintenance',
+              details: {
+                status: `Added a new task for maintenance`, information: {
+                  task_name: task.taskName,
+                  description: task.description, vessel: vesselId
+                }
+              }
+            });
             commit('ADD_TASK', { vesselId, task, rootState });
           }
         }
@@ -159,26 +171,52 @@ export default {
       commit('DELETE_TASK', { vesselId, taskId });
     },
     async updateTask({ commit }, { vesselId, tasks, updateTask }) {
-      // Build payload safely
-      const updatePayload = {
-        checklist_progress: updateTask.checklistProgress,
-        status: updateTask.status
-      };
+      const { data: { session } } = await supabase.auth.getSession();
 
-      // Update in Supabase. we need a method to compare vesselId and component.
-      const { data, error } = await supabase
-        .from('tasks')
-        .update(updatePayload)
-        .eq('vessel', vesselId)
-        .eq('component', updateTask.component);
+      if (session) {
+        const user = session.user;
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
 
-      if (error) {
-        errorMessage(error)
-        return;
-      } else {
-        commit('SET_TASKS', { vesselId, tasks });
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          // Build payload safely
+          const updatePayload = {
+            checklist_progress: updateTask.checklistProgress,
+            status: updateTask.status
+          };
+
+          // Update in Supabase. we need a method to compare vesselId and component.
+          const { data, error } = await supabase
+            .from('tasks')
+            .update(updatePayload)
+            .eq('vessel', vesselId)
+            .eq('component', updateTask.component);
+
+          if (error) {
+            errorMessage(error)
+            return;
+          } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'update',
+              table: 'maintenance',
+              details: {
+                status: `Ticked tasks for maintenance`, information: {
+                  vessel: vesselId,
+                  component: updateTask.component,
+                  status: updateTask.status
+                }
+              }
+            });
+            commit('SET_TASKS', { vesselId, tasks });
+          }
+        }
       }
-
     },
   },
   getters: {
