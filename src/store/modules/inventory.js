@@ -1,4 +1,5 @@
 import supabase from '../../supabase';
+import { logActivity } from '@/helpers/activityLogger';
 
 function errorMessage(error) {
     Swal.fire({
@@ -105,7 +106,12 @@ export default {
                             minStock: inventory.minStock,
                             active: true
                         };
-
+                        await logActivity({
+                            id: profile.company_id,
+                            action: 'add',
+                            table: 'inventory',
+                            details: { status: `Added a new item to inventory`, information: { ...transformedInventory } }
+                        });
                         commit('ADD_INVENTORY', transformedInventory);
                         Swal.fire({
                             title: 'Success!',
@@ -123,42 +129,71 @@ export default {
         },
 
         async updateInventory({ commit, state }, payload) {
-            const { id, location, vessel, stockData } = payload;
-            const index = state.inventory.findIndex(item =>
-                item.id === id &&
-                item.location === location &&
-                item.vessel === vessel
-            );
+            const { data: { session } } = await supabase.auth.getSession();
 
-            if (index !== -1) {
-                let actionType = state.inventory[index].actionType || [];
-                const updatedActionType = [...(actionType)];
-                updatedActionType.push({
-                    action: payload.actionType.action,
-                    quantity: payload.actionType.quantity,
-                    value: stockData.value,
-                    date: new Date().toISOString()
-                });
-
-                const { data, error } = await supabase
-                    .from('inventory')
-                    .update({
-                        value: payload.stockData.value,
-                        currentstock: payload.stockData.currentStock,
-                        status: payload.stockData.status,
-                        lastupdated: new Date().toISOString(),
-                        actionType: updatedActionType,
-                    })
-                    .match({
-                        itemId: payload.id,
-                        location: payload.location,
-                        vessel: payload.vessel
-                    });
+            if (session) {
+                const user = session.user;
+                const { data: profile, error } = await supabase
+                    .from('profiles')
+                    .select('company_id')
+                    .eq('id', user.id)
+                    .single();
 
                 if (error) {
-                    console.error('Update failed:', error.message);
+                    console.error('Error fetching profile:', error);
                 } else {
-                    commit('UPDATE_INVENTORY_ITEM', payload);
+                    const { id, location, vessel, stockData } = payload;
+                    const index = state.inventory.findIndex(item =>
+                        item.id === id &&
+                        item.location === location &&
+                        item.vessel === vessel
+                    );
+
+                    if (index !== -1) {
+                        let actionType = state.inventory[index].actionType || [];
+                        const updatedActionType = [...(actionType)];
+                        updatedActionType.push({
+                            action: payload.actionType.action,
+                            quantity: payload.actionType.quantity,
+                            value: stockData.value,
+                            date: new Date().toISOString()
+                        });
+
+                        const { data, error } = await supabase
+                            .from('inventory')
+                            .update({
+                                value: payload.stockData.value,
+                                currentstock: payload.stockData.currentStock,
+                                status: payload.stockData.status,
+                                lastupdated: new Date().toISOString(),
+                                actionType: updatedActionType,
+                            })
+                            .match({
+                                itemId: payload.id,
+                                location: payload.location,
+                                vessel: payload.vessel
+                            });
+
+                        if (error) {
+                            console.error('Update failed:', error.message);
+                        } else {
+                            await logActivity({
+                                id: profile.company_id,
+                                action: 'update',
+                                table: 'inventory',
+                                details: {
+                                    status: `Updated item in inventory`, information: {
+                                        value: payload.stockData.value,
+                                        currentstock: payload.stockData.currentStock,
+                                        id: payload.id,
+                                        location: payload.location,
+                                        vessel: payload.vessel,
+                                    }
+                                }
+                            });
+                            commit('UPDATE_INVENTORY_ITEM', payload);
+                        }
+                    }
                 }
             }
         },
