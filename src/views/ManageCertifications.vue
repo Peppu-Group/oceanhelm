@@ -88,7 +88,10 @@
 
                             <div class="modal-buttons">
                                 <button type="button" @click="closeModal" class="btn-cancel">Cancel</button>
-                                <button type="submit" class="btn-add">Add Certificate</button>
+                                <button type="submit" class="btn-add" :disabled="saving">
+                                    {{ saving ? 'Saving...' : 'Add Certificate' }}
+                                </button>
+
                             </div>
                         </form>
                     </div>
@@ -100,6 +103,8 @@
 
 <script>
 import Sidebar from '../components/Sidebar.vue';
+import supabase from '../supabase';
+
 
 export default {
     name: 'ManageCertifications',
@@ -109,6 +114,8 @@ export default {
         return {
             showAddModal: false,
             certifications: [],
+            saving: false,
+            imgFile: '',
             newCert: {
                 name: '',
                 expiry_date: '',
@@ -159,41 +166,107 @@ export default {
             });
         },
 
-        addCertification() {
+        generateUUIDv4() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        },
+        async addCertification() {
             if (this.newCert.name && this.newCert.expiry_date) {
+                this.saving = true;
+                const file = this.imgFile;
                 // Set default image if none provided
                 if (!this.newCert.image) {
-                    this.newCert.image = `https://via.placeholder.com/150x100/007bff/ffffff?text=${encodeURIComponent(this.newCert.name.substring(0, 10))}`;
+                    Swal.fire({
+                        title: "Missing info",
+                        text: `Please add image proof`,
+                        icon: "error"
+                    });
+                    this.saving = false;
+                    return;
                 }
 
-                this.certifications.push({
-                    name: this.newCert.name,
-                    expiry_date: this.newCert.expiry_date,
-                    image: this.newCert.image
-                });
+                let cert_id = this.generateUUIDv4();
 
-                const updatedCerts = this.certifications.map(cert => ({
-                    name: cert.name,
-                    expiry_date: cert.expiry_date,
-                }));
+                const { data, error } = await supabase.storage
+                    .from('company-files')
+                    .upload(`certifications/${cert_id}.png`, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
 
-                // update supabase
-                this.updateVesselCert(updatedCerts);
+                if (data) {
+                    const filePath = data.path;
 
-                this.closeModal();
+                    const { data: publicUrlData, error: urlError } = supabase
+                        .storage
+                        .from('company-files')
+                        .getPublicUrl(filePath);
+
+                    if (urlError) {
+                        console.error('Failed to get public URL', urlError);
+                        return;
+                    }
+
+                    const publicUrl = publicUrlData.publicUrl;
+
+                    this.certifications.push({
+                        id: cert_id,
+                        name: this.newCert.name,
+                        expiry_date: this.newCert.expiry_date,
+                        image: this.newCert.image
+                    });
+                    // add the public URL to cert.
+                    const updatedCerts = this.certifications.map(cert => ({
+                        id: cert_id,
+                        name: cert.name,
+                        expiry_date: cert.expiry_date,
+                        image: publicUrl
+                    }));
+
+                    // update supabase
+                    this.updateVesselCert(updatedCerts);
+
+                    this.closeModal();
+                }
             }
         },
 
-        removeCertification(index) {
-            if (confirm('Are you sure you want to remove this certification?')) {
-                this.certifications.splice(index, 1);
-                // update supabase
-                this.updateVesselCert(this.certifications);
-            }
+        async removeCertification(index) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You're about to delete your vessel's certification",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    let cert_id = this.certifications[index].id;
+                    const filePath = `certifications/${cert_id}.png`;
+
+                    const { data, error: deleteError } = await supabase
+                        .storage
+                        .from('company-files')
+                        .remove([filePath]);
+
+                    if (deleteError) {
+                        console.error('Error deleting file:', deleteError);
+                    } else {
+                        this.certifications.splice(index, 1);
+                        // update supabase
+                        this.updateVesselCert(this.certifications);
+                    }
+                }
+            })
         },
 
         handleImageUpload(event) {
             const file = event.target.files[0];
+            this.imgFile = file;
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -205,6 +278,7 @@ export default {
 
         closeModal() {
             this.showAddModal = false;
+            this.saving = false;
             this.newCert = {
                 name: '',
                 expiry_date: '',
@@ -434,6 +508,11 @@ export default {
     cursor: pointer;
     font-weight: 500;
     transition: all 0.3s ease;
+}
+
+.btn-add:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-add:hover {
