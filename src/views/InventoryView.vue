@@ -10,73 +10,6 @@
     <!-- Sidebar -->
     <Sidebar />
     <div id="content" class="container">
-        <!-- Header -->
-        <div class="header">
-            <div>
-                <h1>
-                    MarineTech Inventory Management
-                </h1>
-                <div class="header-stats">
-                    <div class="stat-card">
-                        <div class="stat-value">{{ totalItems }}</div>
-                        <div class="stat-label">Total Items</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">{{ lowStockCount }}</div>
-                        <div class="stat-label">Low Stock</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">₦{{ totalValue.toLocaleString() }}</div>
-                        <div class="stat-label">Total Value</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Low Stock Alerts -->
-        <div v-if="lowStockItems.length > 0" class="low-stock-alerts">
-            <div class="alert-header">
-                <i class="fas fa-exclamation-triangle"></i>
-                Low Stock Alerts ({{ lowStockItems.length }} items)
-            </div>
-            <ul class="alert-list">
-                <li v-for="item in lowStockItems" :key="item.id">
-                    <strong>{{ item.itemName }}</strong> - {{ item.vessel }} ({{ item.currentStock }}/{{ item.minStock }} {{
-                        item.unit }})
-                </li>
-            </ul>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <div class="controls-row">
-                <div class="search-box">
-                    <input type="text" placeholder="Search items, vessels, or categories..." v-model="searchTerm">
-                    <i class="fas fa-search"></i>
-                </div>
-                <select v-model="selectedVessel" class="filter-select">
-                    <option value="">All Vessels</option>
-                    <option v-for="vessel in vessels" :key="vessel" :value="vessel">{{ vessel.name }}</option>
-                </select>
-                <select v-model="selectedCategory" class="filter-select">
-                    <option value="">All Categories</option>
-                    <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-                </select>
-                <button class="btn btn-primary" @click="addNewItem">
-                    <i class="fas fa-plus"></i>
-                    Add Item
-                </button>
-                <button class="btn btn-secondary" @click="exportData">
-                    <i class="fas fa-download"></i>
-                    Export
-                </button>
-                <button class="btn btn-secondary" @click="importData">
-                    <i class="fas fa-upload"></i>
-                    Import
-                </button>
-            </div>
-        </div>
-
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab" :class="{ active: selectedTab === 'overview' }" @click="selectedTab = 'overview'">
@@ -95,6 +28,72 @@
 
         <!-- Inventory Table -->
         <div class="inventory-table" v-if="selectedTab === 'inventory'">
+            <!-- Header -->
+            <div class="header">
+                <div>
+                    <h1>
+                        MarineTech Inventory Management
+                    </h1>
+                    <div class="header-stats">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ totalItems }}</div>
+                            <div class="stat-label">Total Items</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ lowStockCount }}</div>
+                            <div class="stat-label">Low Stock</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">₦{{ totalValue.toLocaleString() }}</div>
+                            <div class="stat-label">Total Value</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Stock Alerts -->
+            <div v-if="lowStockItems.length > 0" class="low-stock-alerts">
+                <div class="alert-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Low Stock Alerts ({{ lowStockItems.length }} items)
+                </div>
+                <ul class="alert-list">
+                    <li v-for="item in lowStockItems" :key="item.id">
+                        <strong>{{ item.itemName }}</strong> - {{ item.vessel }} ({{ item.currentStock }}/{{ item.minStock
+                        }} {{ item.unit }})
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="controls-row">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search items, vessels, or categories..." v-model="searchTerm">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select v-model="selectedVessel" class="filter-select">
+                        <option value="">All Vessels</option>
+                        <option v-for="vessel in vessels" :key="vessel" :value="vessel">{{ vessel.name }}</option>
+                    </select>
+                    <select v-model="selectedCategory" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+                    </select>
+                    <button class="btn btn-primary" @click="addNewItem">
+                        <i class="fas fa-plus"></i>
+                        Add Item
+                    </button>
+                    <button class="btn btn-secondary" @click="exportData">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                    <button class="btn btn-secondary" @click="importData">
+                        <i class="fas fa-upload"></i>
+                        Import
+                    </button>
+                </div>
+            </div>
             <div class="table-responsive item-row">
                 <table class="table">
                     <thead>
@@ -260,8 +259,24 @@
             <h3>No items found</h3>
             <p>Try adjusting your search or filters</p>
         </div>
-        <div v-if="showModal && vesselInventory.length > 0 && this.selectedTab == 'vessels'"
-            class="table-responsive item-row">
+        <div v-if="showModal && vesselInventory.length > 0 && this.selectedTab == 'vessels'" class="table-responsive">
+            <!-- Controls -->
+            <div class="controls">
+                <div class="controls-row">
+                    <button class="btn btn-primary" @click="addNewItem">
+                        <i class="fas fa-plus"></i>
+                        Add Item
+                    </button>
+                    <button class="btn btn-secondary" @click="exportData">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                    <button class="btn btn-secondary" @click="importData">
+                        <i class="fas fa-upload"></i>
+                        Import
+                    </button>
+                </div>
+            </div>
             <div class="table-responsive item-row">
                 <table class="table">
                     <thead>
@@ -411,7 +426,7 @@ export default {
 
             // Vessel filter
             if (this.selectedVessel) {
-                filtered = filtered.filter(item => item.vessel === this.selectedVessel);
+                filtered = filtered.filter(item => item.vessel === this.selectedVessel.name);
             }
 
             // Category filter
