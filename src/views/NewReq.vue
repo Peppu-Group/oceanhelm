@@ -31,7 +31,8 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Requestor Name *</label>
-              <input type="text" v-model="form.requestor" required />
+              <input type="text" :value="this.userProfile.full_name" readonly required
+                class="form-control" />
             </div>
             <div class="form-group">
               <label>Department *</label>
@@ -277,23 +278,23 @@
               <h3>Vendor Information</h3>
               <div class="info-row">
                 <span class="info-label">Company:</span>
-                <span class="info-value">{{ vendorInfo.company || poDetails.vendorInfo.company}} </span>
+                <span class="info-value">{{ vendorInfo.company || poDetails.vendorInfo.company }} </span>
               </div>
               <div class="info-row">
                 <span class="info-label">Contact:</span>
-                <span class="info-value">{{ vendorInfo.contact || poDetails.vendorInfo.contact}}</span>
+                <span class="info-value">{{ vendorInfo.contact || poDetails.vendorInfo.contact }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Email:</span>
-                <span class="info-value">{{ vendorInfo.email || poDetails.vendorInfo.email}}</span>
+                <span class="info-value">{{ vendorInfo.email || poDetails.vendorInfo.email }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Phone:</span>
-                <span class="info-value">{{ vendorInfo.phone || poDetails.vendorInfo.phone}}</span>
+                <span class="info-value">{{ vendorInfo.phone || poDetails.vendorInfo.phone }}</span>
               </div>
               <div class="info-row">
                 <span class="info-label">Address:</span>
-                <span class="info-value">{{ vendorInfo.address ||  poDetails.vendorInfo.address }}</span>
+                <span class="info-value">{{ vendorInfo.address || poDetails.vendorInfo.address }}</span>
               </div>
             </div>
 
@@ -469,7 +470,7 @@
 <script>
 import Sidebar from '../components/Sidebar.vue';
 import html2pdf from 'html2pdf.js';
-
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'NewReq',
@@ -477,18 +478,18 @@ export default {
 
   data() {
     return {
-      userRole: 'purchasing', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing'
+      userRole: '', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing', 'captain'
 
       isPrinting: false,
       // Tabs with visibility rules
       tabs: [
         { name: 'new-requisition', label: 'New Requisition', roles: ['staff'] },
         { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff'] },
-        { name: 'all-requisitions', label: 'All Requisitions', roles: ['staff', 'supervisor', 'owner', 'purchasing'] },
-        { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor'] },
+        { name: 'all-requisitions', label: 'All Requisitions', roles: ['staff', 'supervisor', 'captain', 'owner', 'purchasing'] },
+        { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor', 'captain'] },
         { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchasing'] },
         { name: 'receiving', label: 'Receiving', roles: ['purchasing'] },
-        { name: 'workflow', label: 'Workflow Guide', roles: ['staff', 'supervisor', 'owner', 'purchasing'] } // visible to all
+        { name: 'workflow', label: 'Workflow Guide', roles: ['staff', 'supervisor', 'owner', 'purchasing', 'captain'] } // visible to all
       ],
       activeTab: 'workflow',
 
@@ -553,6 +554,7 @@ export default {
   },
 
   computed: {
+    ...mapGetters('user', ['userProfile', 'userRoleDescription']),
     visibleTabs() {
       return this.tabs.filter(tab => tab.roles.includes(this.userRole))
     },
@@ -586,6 +588,7 @@ export default {
   },
 
   mounted() {
+    this.userRole = this.userProfile.role;
     // fetch requisitions
     this.$store.dispatch('requisitions/fetchRequisitions');
     // fetch vessels.
@@ -999,7 +1002,7 @@ export default {
         icon: 'warning'
       }).then((result) => {
         if (result.isConfirmed) {
-          const updatedRequisition = { ...requisition, status: 'declined', declinedBy: 'Captain John Doe', rejectionReason: result.value };
+          const updatedRequisition = { ...requisition, status: 'declined', declinedBy: this.userProfile.role, rejectionReason: result.value };
           this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
             Swal.fire({
               title: "Request Declined",
@@ -1031,7 +1034,7 @@ export default {
         icon: 'question'
       }).then((result) => {
         if (result.isConfirmed) {
-          const updatedRequisition = { ...requisition, status: 'info-requested', infoRequestedBy: 'Captain John Doe', requestedInfo: result.value };
+          const updatedRequisition = { ...requisition, status: 'info-requested', infoRequestedBy: this.userProfile.role, requestedInfo: result.value };
           this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
             Swal.fire({
               title: "Info Request Sent",
@@ -1056,7 +1059,7 @@ export default {
     collectFormData(status) {
       return {
         id: 'REQ-' + Date.now(),
-        requestor: this.form.requestor,
+        requestor: this.userProfile.full_name,
         department: this.form.department,
         project: this.form.project,
         neededDate: this.form.neededDate,
