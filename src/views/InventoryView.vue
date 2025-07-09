@@ -567,10 +567,6 @@ export default {
                         <input class="custom-input" type="number" id="unitPrice" placeholder="Enter unit price" step="0.01" min="0" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="supplier">Supplier</label>
-                        <input class="custom-input" type="text" id="supplier" placeholder="Enter supplier name">
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="dateReceived">Date Received</label>
                         <input class="custom-input" type="date" id="dateReceived">
                     </div>
@@ -587,7 +583,6 @@ export default {
                 preConfirm: () => {
                     const quantityReceived = document.getElementById('quantityReceived').value;
                     const unitPrice = document.getElementById('unitPrice').value;
-                    const supplier = document.getElementById('supplier').value;
                     const dateReceived = document.getElementById('dateReceived').value;
 
                     if (!quantityReceived || quantityReceived <= 0) {
@@ -630,10 +625,6 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity removed" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="supplier">Handler</label>
-                        <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="dateReceived">Date Received</label>
                         <input class="custom-input" type="date" id="dateReceived">
                     </div>
@@ -649,7 +640,6 @@ export default {
                 },
                 preConfirm: () => {
                     const quantityReceived = document.getElementById('quantityReceived').value;
-                    const supplier = document.getElementById('supplier').value;
                     const dateReceived = document.getElementById('dateReceived').value;
 
                     if (!quantityReceived || quantityReceived <= 0) {
@@ -740,10 +730,6 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity to transfer" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="supplier">Handler</label>
-                        <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="location">Location</label>
                         <select id="location" required>
                             <option value="">-- Select Location --</option>
@@ -775,7 +761,6 @@ export default {
                     const quantityReceived = document.getElementById('quantityReceived').value;
                     const location = document.getElementById('location').value;
                     const vessel = document.getElementById('vessel').value;
-                    const supplier = document.getElementById('supplier').value;
                     const dateReceived = document.getElementById('dateReceived').value;
 
                     if (!quantityReceived || quantityReceived <= 0) {
@@ -818,10 +803,6 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="supplier">Handler</label>
-                        <input class="custom-input" type="text" id="supplier" placeholder="Enter handler/approver's name">
-                    </div>
-                    <div class="form-group">
                         <label class="custom-input-label" for="adjustmentType">Adjustment Type</label>
                         <select id="category" required>
                             <option value="increase">Increase</option>
@@ -844,7 +825,6 @@ export default {
                 },
                 preConfirm: () => {
                     const quantityReceived = document.getElementById('quantityReceived').value;
-                    const supplier = document.getElementById('supplier').value;
                     const dateReceived = document.getElementById('dateReceived').value;
                     const adjustmentType = document.getElementById('category').value;
                     const unitPrice = this.getUnitPriceForItem(item.id);

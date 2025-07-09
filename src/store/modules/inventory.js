@@ -154,6 +154,7 @@ export default {
                         const updatedActionType = [...(actionType)];
                         updatedActionType.push({
                             action: payload.actionType.action,
+                            receiver: user.user_metadata.fullName,
                             quantity: payload.actionType.quantity,
                             value: stockData.value,
                             date: new Date().toISOString()
