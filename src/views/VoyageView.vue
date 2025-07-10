@@ -10,33 +10,35 @@
     <!-- Sidebar -->
     <Sidebar />
     <div id="content" class="container">
-        <!-- Vessels Header -->
+        <!-- Header -->
         <div class="header">
             <div>
                 <h1><i class="fas fa-ship"></i>MarineTech Voyage Management System</h1>
-                <!-- Tabs -->
-                <div class="tabs">
-                    <button class="tab" :class="{ active: selectedTab === 'ongoing' }" @click="selectedTab = 'ongoing'">
-                        <i class="fas fa-chart-bar"></i>
-                        Ongoing Voyage
-                    </button>
-                    <button class="tab" :class="{ active: selectedTab === 'plan' }" @click="selectedTab = 'plan'">
-                        <i class="fas fa-ship"></i>
-                        Planned Voyage
-                    </button>
-                    <button class="tab" :class="{ active: selectedTab === 'past' }" @click="selectedTab = 'past'">
-                        <i class="fas fa-ship"></i>
-                        Past Voyage
-                    </button>
-                </div>
             </div>
             <div class="header-actions">
-                <button class="btn btn-secondary" @click="generateFleetReport">
+                <button class="btn btn-secondary">
                     <i class="fas fa-file-alt"></i>
                     Fleet Report
-                </button> 
+                </button>
             </div>
         </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="ongoing">
+                <i class="fas fa-chart-bar"></i>
+                Ongoing Voyage
+            </button>
+            <button class="tab" data-tab="plan">
+                <i class="fas fa-ship"></i>
+                Planned Voyage
+            </button>
+            <button class="tab" data-tab="past">
+                <i class="fas fa-history"></i>
+                Past Voyage
+            </button>
+        </div>
+
         <!-- Controls -->
         <div class="controls">
             <div class="controls-row">
@@ -59,80 +61,148 @@
             </div>
         </div>
         <!-- Ongoing Voyage Table -->
-        <div class="inventory-table" v-if="selectedTab === 'ongoing'">
-            <div class="table-responsive item-row">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>S/N</th>
-                            <th>Date</th>
-                            <th>Purpose of Trip</th>
-                            <th>Vessel</th>
-                            <th>Port of Origin</th>
-                            <th>Port of Call</th>
-                            <th>Start Time</th>
-                            <th>ETA</th>
-                            <th>End Time</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in filteredVoyage" :key="item.id">
-                            <td><strong>{{ item.id }}</strong></td>
-                            <td>
-                                <i class="fas fa-calendar"></i>
-                                {{ item.date }}
-                            </td>
-                            <td>{{ item.purpose }}</td>
-                            <td>{{ item.vessel }}</td>
-                            <td>
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ item.origin }}
-                            </td>
-                            <td>
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ item.call }}
-                            </td>
-                            <td>
-                                <i class="fa-solid fa-clock"></i>
-                                {{ item.start }}
-                            </td>
-                            <td>
-                                <i class="fa-solid fa-clock"></i>
-                                {{ item.eta }}
-                            </td>
-                            <td>
-                                <i class="fa-solid fa-clock"></i>
-                                {{ item.end }}
-                            </td>
-                            <td>
-                                <span class="status-badge">
-                                    {{ item.status }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Map Section -->
+                <div class="map-container" id="mapContainer">
+                    <div>
+                        <i class="fas fa-map-marked-alt" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                        <div>Interactive Map View</div>
+                        <div style="font-size: 12px; margin-top: 5px; opacity: 0.7;">Vessel tracking and route visualization
+                        </div>
+                    </div>
+                </div>
+                <div class="inventory-table" v-if="selectedTab === 'ongoing'">
+                    <div class="table-responsive item-row">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>S/N</th>
+                                    <th>Date</th>
+                                    <th>Purpose of Trip</th>
+                                    <th>Vessel</th>
+                                    <th>Port of Origin</th>
+                                    <th>Port of Call</th>
+                                    <th>Start Time</th>
+                                    <th>ETA</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in filteredVoyage" :key="item.id">
+                                    <td><strong>{{ item.id }}</strong></td>
+                                    <td>
+                                        <i class="fas fa-calendar"></i>
+                                        {{ item.date }}
+                                    </td>
+                                    <td>{{ item.purpose }}</td>
+                                    <td>{{ item.vessel }}</td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ item.origin }}
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ item.call }}
+                                    </td>
+                                    <td>
+                                        <i class="fa-solid fa-clock"></i>
+                                        {{ item.start }}
+                                    </td>
+                                    <td>
+                                        <i class="fa-solid fa-clock"></i>
+                                        {{ item.eta }}
+                                    </td>
+                                    <td>
+                                        <i class="fa-solid fa-clock"></i>
+                                        {{ item.end }}
+                                    </td>
+                                    <td>
+                                        <span class="status-badge">
+                                            {{ item.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-            <div v-if="filteredVoyage.length === 0" class="empty-state">
-                <i class="fas fa-box-open"></i>
-                <h3>No voyage found</h3>
-                <p>Try adjusting your search or filters</p>
-            </div>
+                    <div v-if="filteredVoyage.length === 0" class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No voyage found</h3>
+                        <p>Try adjusting your search or filters</p>
+                    </div>
 
-            <!-- Pagination -->
-            <div class="pagination" v-if="filteredVoyage.length > 0">
-                <button @click="prevPage" :disabled="currentPage === 1">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button v-for="page in totalPages" :key="page" @click="currentPage = page"
-                    :class="{ active: currentPage === page }">
-                    {{ page }}
-                </button>
-                <button @click="nextPage" :disabled="currentPage === totalPages">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                    <!-- Pagination -->
+                    <div class="pagination" v-if="filteredVoyage.length > 0">
+                        <button @click="prevPage" :disabled="currentPage === 1">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button v-for="page in totalPages" :key="page" @click="currentPage = page"
+                            :class="{ active: currentPage === page }">
+                            {{ page }}
+                        </button>
+                        <button @click="nextPage" :disabled="currentPage === totalPages">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Fleet Section -->
+            <div class="fleet-section">
+                <div class="fleet-header">
+                    <i class="fas fa-anchor"></i>
+                    My Fleet
+                </div>
+                <div class="fleet-list">
+                    <div class="fleet-item">
+                        <div class="fleet-vessel">
+                            <div class="vessel-icon">
+                                <i class="fas fa-ship"></i>
+                            </div>
+                            <div class="vessel-info">
+                                <div class="vessel-name">MV Ohafia</div>
+                                <div class="vessel-route">Port → Onni</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fleet-item">
+                        <div class="fleet-vessel">
+                            <div class="vessel-icon">
+                                <i class="fas fa-ship"></i>
+                            </div>
+                            <div class="vessel-info">
+                                <div class="vessel-name">MV Bonnyat</div>
+                                <div class="vessel-route">Port → On transport</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fleet-item">
+                        <div class="fleet-vessel">
+                            <div class="vessel-icon">
+                                <i class="fas fa-ship"></i>
+                            </div>
+                            <div class="vessel-info">
+                                <div class="vessel-name">MV Ugo</div>
+                                <div class="vessel-route">Port → Bayfield</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fleet-item">
+                        <div class="fleet-vessel">
+                            <div class="vessel-icon">
+                                <i class="fas fa-ship"></i>
+                            </div>
+                            <div class="vessel-info">
+                                <div class="vessel-name">MV Virginia</div>
+                                <div class="vessel-route">Port → Inactive</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -245,8 +315,10 @@ body {
     border-radius: 12px;
     margin-bottom: 30px;
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .header h1 {
@@ -257,28 +329,16 @@ body {
     gap: 12px;
 }
 
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .header-stats {
     display: flex;
     gap: 20px;
     margin-top: 10px;
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px 15px;
-    border-radius: 8px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.stat-card .stat-value {
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.stat-card .stat-label {
-    font-size: 12px;
-    opacity: 0.9;
 }
 
 .controls {
@@ -365,11 +425,12 @@ body {
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 20px;
+    display: flex;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tab {
-    flex: 1;
+    flex: 4;
     padding: 15px 20px;
     text-align: center;
     cursor: pointer;
@@ -378,6 +439,9 @@ body {
     background: transparent;
     font-size: 14px;
     font-weight: 500;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .tab.active {
@@ -388,6 +452,7 @@ body {
 .tab:hover:not(.active) {
     background: #f3f4f6;
 }
+
 
 .inventory-table {
     background: white;
@@ -418,64 +483,6 @@ body {
     background: #f9fafb;
 }
 
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-in-stock {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.status-low-stock {
-    background: #fed7aa;
-    color: #9a3412;
-}
-
-.status-out-of-stock {
-    background: #fecaca;
-    color: #991b1b;
-}
-
-.status-critical {
-    background: #ddd6fe;
-    color: #5b21b6;
-}
-
-.stock-level {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.stock-bar {
-    width: 80px;
-    height: 6px;
-    background: #e5e7eb;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.stock-fill {
-    height: 100%;
-    transition: width 0.3s ease;
-}
-
-.stock-good {
-    background: #10b981;
-}
-
-.stock-warning {
-    background: #f59e0b;
-}
-
-.stock-danger {
-    background: #ef4444;
-}
-
 .action-btns {
     display: flex;
     gap: 8px;
@@ -492,21 +499,6 @@ body {
 
 .action-btn:hover {
     transform: translateY(-1px);
-}
-
-.btn-edit {
-    background: #3b82f6;
-    color: white;
-}
-
-.btn-view {
-    background: #6b7280;
-    color: white;
-}
-
-.btn-delete {
-    background: #ef4444;
-    color: white;
 }
 
 .empty-state {
@@ -548,51 +540,6 @@ body {
     border-color: var(--dashprimary-color);
 }
 
-.low-stock-alerts {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-
-.alert-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    color: #991b1b;
-    font-weight: 600;
-}
-
-.alert-list {
-    list-style: none;
-    color: #7f1d1d;
-}
-
-.alert-list li {
-    padding: 5px 0;
-    font-size: 14px;
-}
-
-@media (max-width: 768px) {
-    .controls-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-box {
-        min-width: auto;
-    }
-
-    .header-stats {
-        justify-content: center;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-    }
-}
 
 #content.active {
     margin-left: var(--sidebar-width);
@@ -629,19 +576,6 @@ body {
 .vessel-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 20px rgba(0, 105, 192, 0.2);
-}
-
-.vessel-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    height: 50px;
-    background-color: #e3f2fd;
-    border-radius: 10px;
-    color: var(--accent-color);
-    font-size: 24px;
-    margin-right: 15px;
 }
 
 /* Header Actions */
@@ -695,75 +629,11 @@ body {
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(15, 23, 42, 0.1));
 }
 
-.vessel-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-    background: linear-gradient(135deg, var(--dashprimary-color), #1e40af);
-    border-radius: 10px;
-    color: white;
-    font-size: 20px;
-}
-
-.vessel-status {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.vessel-status.active {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.vessel-status.maintenance {
-    background: #fed7aa;
-    color: #9a3412;
-}
-
-.vessel-status.inactive {
-    background: #fecaca;
-    color: #991b1b;
-}
-
-.vessel-info {
-    padding: 15px 20px;
-}
-
 .vessel-name {
     font-size: 20px;
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 5px;
-}
-
-.vessel-reg {
-    color: #6b7280;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-
-.vessel-stats {
-    display: flex;
-    gap: 20px;
-}
-
-.vessel-stat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #4b5563;
-}
-
-.vessel-stat i {
-    color: var(--dashprimary-color);
-    font-size: 16px;
 }
 
 .vessel-actions {
@@ -806,10 +676,167 @@ body {
     .header-actions {
         justify-content: center;
     }
+}
 
-    .vessel-stats {
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.main-content {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fleet-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fleet-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.fleet-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.fleet-item:last-child {
+    border-bottom: none;
+}
+
+.fleet-vessel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vessel-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--dashprimary-color), #1e40af);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+}
+
+.vessel-info {
+    flex: 1;
+}
+
+.vessel-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.vessel-route {
+    color: #6b7280;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.map-container {
+    height: 400px;
+    background: #f8fafc;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    border: 2px dashed #cbd5e1;
+    color: #64748b;
+    font-size: 16px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-delayed {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.status-ongoing {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+@media (max-width: 1024px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fleet-section {
+        order: -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .controls-row {
         flex-direction: column;
-        gap: 10px;
+        align-items: stretch;
+    }
+
+    .search-box {
+        min-width: auto;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions {
+        justify-content: center;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab {
+        justify-content: flex-start;
     }
 }
 </style>
