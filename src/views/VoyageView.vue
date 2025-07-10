@@ -25,15 +25,17 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab active" data-tab="ongoing">
+            <button class="tab" :class="{ active: selectedTab === 'ongoing' }" @click="selectedTab = 'ongoing'">
                 <i class="fas fa-chart-bar"></i>
                 Ongoing Voyage
             </button>
-            <button class="tab" data-tab="plan">
+
+            <button class="tab" :class="{ active: selectedTab === 'delayed' }" @click="selectedTab = 'delayed'">
                 <i class="fas fa-ship"></i>
-                Planned Voyage
+                Delayed Voyage
             </button>
-            <button class="tab" data-tab="past">
+
+            <button class="tab" :class="{ active: selectedTab === 'completed' }" @click="selectedTab = 'completed'">
                 <i class="fas fa-history"></i>
                 Past Voyage
             </button>
@@ -74,7 +76,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="inventory-table" v-if="selectedTab === 'ongoing'">
+                <div class="inventory-table">
                     <div class="table-responsive item-row">
                         <table class="table">
                             <thead>
@@ -121,7 +123,7 @@
                                         {{ item.end }}
                                     </td>
                                     <td>
-                                        <span class="status-badge">
+                                        <span :class="['status-badge', getBadgeClass(item.status)]">
                                             {{ item.status }}
                                         </span>
                                     </td>
@@ -224,7 +226,7 @@ export default {
             selectedPort: '',
             currentPage: 1,
             itemsPerPage: 10,
-            filteredVoyage: [
+            voyages: [
                 {
                     id: 1,
                     date: '2025-07-01',
@@ -266,8 +268,12 @@ export default {
     },
     computed: {
         totalPages() {
-            return Math.ceil(this.filteredVoyage.length / this.itemsPerPage);
+            return Math.ceil(this.voyages.length / this.itemsPerPage);
         },
+        filteredVoyage() {
+            console.log(this.selectedTab)
+            return this.voyages.filter(v => v.status.toLowerCase() === this.selectedTab.toLowerCase());
+        }
     },
     mounted() {
         // fetch vessels.
@@ -284,6 +290,16 @@ export default {
                 this.currentPage++;
             }
         },
+        getBadgeClass(action) {
+            if (!action) return '';
+            action = action.toLowerCase().trim(); // Normalize input
+            const classes = {
+                'completed': 'status-completed',
+                'delayed': 'status-delayed',
+                'ongoing': 'status-ongoing'
+            };
+            return classes[action] || '';
+        }
     }
 
 }
