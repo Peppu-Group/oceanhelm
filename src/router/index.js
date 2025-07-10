@@ -10,6 +10,7 @@ import CrewSingleView from '../views/CrewSingleView.vue'
 import MaintenanceRoute from '../views/MaintenanceRoute.vue'
 import CrewRoute from '../views/CrewRoute.vue'
 import InventoryView from '../views/InventoryView.vue'
+import VoyageView from '../views/VoyageView.vue'
 import LoginView from '../views/LoginView.vue'
 import RedirectView from '../views/RedirectView.vue'
 import SubRedirect from '../views/SubRedirect.vue'
@@ -71,6 +72,12 @@ const router = createRouter({
       path: '/app/inventory',
       name: 'inventory',
       component: InventoryView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/app/voyage',
+      name: 'voyage',
+      component: VoyageView,
       meta: { requiresAuth: true }
     },
     {

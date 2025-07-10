@@ -34,7 +34,7 @@
                     Processing</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="fas fa-ship"></i> Voyage
+                <a href="/app/voyage"><i class="fas fa-ship"></i> Voyage
                     Manager</a>
             </li>
             <li>
