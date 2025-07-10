@@ -10,46 +10,49 @@
     <!-- Sidebar -->
     <Sidebar />
     <div id="content" class="container">
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab" :class="{ active: selectedTab === 'overview' }" @click="selectedTab = 'overview'">
-                <i class="fas fa-chart-bar"></i>
-                Overview
-            </button>
-            <button class="tab" :class="{ active: selectedTab === 'inventory' }" @click="selectedTab = 'inventory'">
-                <i class="fas fa-boxes"></i>
-                Inventory
-            </button>
-            <button class="tab" :class="{ active: selectedTab === 'vessels' }" @click="selectedTab = 'vessels'">
-                <i class="fas fa-ship"></i>
-                Vessels
-            </button>
-        </div>
-
-        <!-- Inventory Table -->
-        <div class="inventory-table" v-if="selectedTab === 'inventory'">
-            <!-- Header -->
-            <div class="header">
-                <div>
-                    <h1>
-                        MarineTech Inventory Management
-                    </h1>
-                    <div class="header-stats">
-                        <div class="stat-card">
-                            <div class="stat-value">{{ totalItems }}</div>
-                            <div class="stat-label">Total Items</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">{{ lowStockCount }}</div>
-                            <div class="stat-label">Low Stock</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">₦{{ totalValue.toLocaleString() }}</div>
-                            <div class="stat-label">Total Value</div>
-                        </div>
+        <!-- Vessels Header -->
+        <div class="header">
+            <div>
+                <h1><i class="fas fa-ship"></i>MarineTech Inventory Management</h1>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ vessels.length }}</div>
+                        <div class="stat-label">Total Vessels</div>
+                    </div>
+                    <div class="stat-card" v-if="selectedTab === 'inventory'">
+                        <div class="stat-value">{{ totalItems }}</div>
+                        <div class="stat-label">Total Items</div>
+                    </div>
+                    <div class="stat-card" v-if="selectedTab === 'inventory'">
+                        <div class="stat-value">{{ lowStockCount }}</div>
+                        <div class="stat-label">Low Stock</div>
+                    </div>
+                    <div class="stat-card" v-if="selectedTab === 'inventory'">
+                        <div class="stat-value">₦{{ totalValue.toLocaleString() }}</div>
+                        <div class="stat-label">Total Value</div>
                     </div>
                 </div>
             </div>
+            <div class="header-actions">
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab" :class="{ active: selectedTab === 'overview' }" @click="selectedTab = 'overview'">
+                        <i class="fas fa-chart-bar"></i>
+                        Overview
+                    </button>
+                    <button class="tab" :class="{ active: selectedTab === 'inventory' }" @click="selectedTab = 'inventory'">
+                        <i class="fas fa-boxes"></i>
+                        Inventory
+                    </button>
+                    <button class="tab" :class="{ active: selectedTab === 'vessels' }" @click="selectedTab = 'vessels'">
+                        <i class="fas fa-ship"></i>
+                        Vessels
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Inventory Table -->
+        <div class="inventory-table" v-if="selectedTab === 'inventory'">
 
             <!-- Low Stock Alerts -->
             <div v-if="lowStockItems.length > 0" class="low-stock-alerts">
@@ -229,24 +232,31 @@
 
         <!-- Vessels Tab Content -->
         <div v-if="selectedTab === 'vessels'" class="inventory-table">
-            <div class="row">
-                <div class="col-lg-6" v-for="vessel in vessels">
-                    <div class="vessel-card" @click="inventoryVessel(vessel.name)">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="vessel-icon left">
-                                <i class="fas fa-ship"></i>
+            <!-- Vessels Grid -->
+            <div class="vessels-grid">
+                <div class="vessel-card" v-for="vessel in vessels" :key="vessel.id" @click="inventoryVessel(vessel.name)">
+                    <div class="vessel-header">
+                        <div class="vessel-icon">
+                            <i class="fas fa-ship"></i>
+                        </div>
+                        <div class="vessel-status">
+                            {{ vessel.status || 'Active' }}
+                        </div>
+                    </div>
+                    <div class="vessel-info">
+                        <h3 class="vessel-name">{{ vessel.name }}</h3>
+                        <p class="vessel-reg">{{ vessel.registrationNumber }}</p>
+                        <div class="vessel-stats">
+                            <div class="vessel-stat">
+                                <i class="fas fa-boxes"></i>
+                                <span>{{getVesselItemCount(vessel.name)}} Inventory Items</span>
                             </div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h5 class="card-title mb-0">{{ vessel.name }}</h5>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6">
-                                        <small class="text-muted">Registration #:</small>
-                                        <p class="mb-0">{{ vessel.registrationNumber }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
+                    <div class="vessel-actions">
+                        <div class="vessel-btn" title="Edit Vessel">
+                            {{ getVesselLowStockCount(vessel.name) }}
+                            <i class="fas fa-exclamation-triangle"></i>
                         </div>
                     </div>
                 </div>
@@ -507,6 +517,15 @@ export default {
         inventoryVessel(vesselName) {
             this.selectedVessel = vesselName;
             this.showModal = true;
+        },
+        getVesselLowStockCount(vesselName) {
+            return this.inventoryData.filter(item =>
+                item.vessel === vesselName &&
+                item.currentStock <= item.minStock
+            ).length;
+        },
+        getVesselItemCount(vesselName) {
+            return this.inventoryData.filter(item => item.vessel === vesselName).length;
         },
         getStatusClass(status) {
             switch (status) {
@@ -1645,7 +1664,6 @@ body {
 }
 
 .tabs {
-    display: flex;
     background: white;
     border-radius: 12px;
     overflow: hidden;
@@ -1927,5 +1945,174 @@ body {
     color: var(--accent-color);
     font-size: 24px;
     margin-right: 15px;
+}
+
+/* Header Actions */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-actions .btn {
+    white-space: nowrap;
+}
+
+/* Vessels Grid */
+.vessels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.vessel-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    border-left: 4px solid var(--dashprimary-color);
+    position: relative;
+}
+
+.vessel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.vessel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px 10px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(15, 23, 42, 0.1));
+}
+
+.vessel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--dashprimary-color), #1e40af);
+    border-radius: 10px;
+    color: white;
+    font-size: 20px;
+}
+
+.vessel-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vessel-status.active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.vessel-status.maintenance {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.vessel-status.inactive {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+.vessel-info {
+    padding: 15px 20px;
+}
+
+.vessel-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 5px;
+}
+
+.vessel-reg {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.vessel-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.vessel-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.vessel-stat i {
+    color: var(--dashprimary-color);
+    font-size: 16px;
+}
+
+.vessel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.vessel-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: red;
+    color: white;
+}
+
+.vessel-btn:hover {
+    background: var(--dashprimary-color);
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vessels-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .header-actions {
+        justify-content: center;
+    }
+
+    .vessel-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
 </style>
