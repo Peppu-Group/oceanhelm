@@ -30,7 +30,8 @@
                 Ongoing Voyage
             </button>
 
-            <button class="tab" :class="{ active: selectedTab === 'awaiting-approval' }" @click="selectedTab = 'awaiting-approval'">
+            <button class="tab" :class="{ active: selectedTab === 'awaiting-approval' }"
+                @click="selectedTab = 'awaiting-approval'">
                 <i class="fas fa-ship"></i>
                 Planned Voyage
             </button>
@@ -38,6 +39,11 @@
             <button class="tab" :class="{ active: selectedTab === 'completed' }" @click="selectedTab = 'completed'">
                 <i class="fas fa-history"></i>
                 Past Voyage
+            </button>
+
+            <button class="tab" :class="{ active: selectedTab === 'dashboard' }" @click="selectedTab = 'dashboard'">
+                <i class="fa-solid fa-bell"></i>
+                Approval Dashboard
             </button>
         </div>
 
@@ -63,8 +69,8 @@
             </div>
         </div>
 
-         <!-- Modal Overlay -->
-         <div v-if="showModal" class="modal-overlay" @click="closeModal">
+        <!-- Modal Overlay -->
+        <div v-if="showModal" class="modal-overlay" @click="closeModal">
             <div class="modals" @click.stop>
                 <div class="modal-header">
                     <h2 class="modal-title">
@@ -75,7 +81,7 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
+
                 <div class="modal-body">
                     <form @submit.prevent="submitVoyage">
                         <div class="form-grid">
@@ -85,12 +91,8 @@
                                     <i class="fas fa-ship"></i>
                                     Vessel <span class="required">*</span>
                                 </label>
-                                <select 
-                                    v-model="voyageForm.vessel" 
-                                    class="form-select"
-                                    :class="{ error: errors.vessel }"
-                                    required
-                                >
+                                <select v-model="voyageForm.vessel" class="form-select" :class="{ error: errors.vessel }"
+                                    required>
                                     <option value="">Select Vessel</option>
                                     <option value="MV Legacy">MV Legacy</option>
                                     <option value="MV Ohafia">MV Ohafia</option>
@@ -108,14 +110,8 @@
                                     <i class="fas fa-user"></i>
                                     Requested By <span class="required">*</span>
                                 </label>
-                                <input 
-                                    type="text" 
-                                    v-model="voyageForm.requestedBy" 
-                                    class="form-input"
-                                    :class="{ error: errors.requestedBy }"
-                                    placeholder="Enter requester name"
-                                    required
-                                >
+                                <input type="text" v-model="voyageForm.requestedBy" class="form-input"
+                                    :class="{ error: errors.requestedBy }" placeholder="Enter requester name" required>
                                 <span v-if="errors.requestedBy" class="error-message">{{ errors.requestedBy }}</span>
                             </div>
 
@@ -125,12 +121,8 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                     Port of Origin <span class="required">*</span>
                                 </label>
-                                <select 
-                                    v-model="voyageForm.origin" 
-                                    class="form-select"
-                                    :class="{ error: errors.origin }"
-                                    required
-                                >
+                                <select v-model="voyageForm.origin" class="form-select" :class="{ error: errors.origin }"
+                                    required>
                                     <option value="">Select Origin Port</option>
                                     <option value="Lagos Port">Lagos Port</option>
                                     <option value="Port Harcourt">Port Harcourt</option>
@@ -149,12 +141,8 @@
                                     <i class="fas fa-map-marker-alt"></i>
                                     Port of Call <span class="required">*</span>
                                 </label>
-                                <select 
-                                    v-model="voyageForm.call" 
-                                    class="form-select"
-                                    :class="{ error: errors.call }"
-                                    required
-                                >
+                                <select v-model="voyageForm.call" class="form-select" :class="{ error: errors.call }"
+                                    required>
                                     <option value="">Select Destination Port</option>
                                     <option value="Lagos Port">Lagos Port</option>
                                     <option value="Port Harcourt">Port Harcourt</option>
@@ -173,13 +161,8 @@
                                     <i class="fas fa-clock"></i>
                                     Proposed Start Date & Time <span class="required">*</span>
                                 </label>
-                                <input 
-                                    type="datetime-local" 
-                                    v-model="voyageForm.start" 
-                                    class="form-input"
-                                    :class="{ error: errors.start }"
-                                    required
-                                >
+                                <input type="datetime-local" v-model="voyageForm.start" class="form-input"
+                                    :class="{ error: errors.start }" required>
                                 <span v-if="errors.start" class="error-message">{{ errors.start }}</span>
                             </div>
 
@@ -189,14 +172,8 @@
                                     <i class="fas fa-hourglass-half"></i>
                                     Estimated Duration (hours)
                                 </label>
-                                <input 
-                                    type="number" 
-                                    v-model="voyageForm.estimatedDuration" 
-                                    class="form-input"
-                                    placeholder="Enter duration in hours"
-                                    min="1"
-                                    step="0.5"
-                                >
+                                <input type="number" v-model="voyageForm.estimatedDuration" class="form-input"
+                                    placeholder="Enter duration in hours" min="1" step="0.5">
                             </div>
 
                             <!-- Purpose of Trip -->
@@ -205,13 +182,9 @@
                                     <i class="fas fa-clipboard-list"></i>
                                     Purpose of Trip <span class="required">*</span>
                                 </label>
-                                <textarea 
-                                    v-model="voyageForm.purpose" 
-                                    class="form-textarea"
-                                    :class="{ error: errors.purpose }"
-                                    placeholder="Describe the purpose of this voyage..."
-                                    required
-                                ></textarea>
+                                <textarea v-model="voyageForm.purpose" class="form-textarea"
+                                    :class="{ error: errors.purpose }" placeholder="Describe the purpose of this voyage..."
+                                    required></textarea>
                                 <span v-if="errors.purpose" class="error-message">{{ errors.purpose }}</span>
                             </div>
 
@@ -221,16 +194,13 @@
                                     <i class="fas fa-sticky-note"></i>
                                     Additional Notes
                                 </label>
-                                <textarea 
-                                    v-model="voyageForm.additionalNotes" 
-                                    class="form-textarea"
-                                    placeholder="Any additional information or special requirements..."
-                                ></textarea>
+                                <textarea v-model="voyageForm.additionalNotes" class="form-textarea"
+                                    placeholder="Any additional information or special requirements..."></textarea>
                             </div>
                         </div>
                     </form>
                 </div>
-                
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @click="closeModal">
                         <i class="fas fa-times"></i>
@@ -243,7 +213,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Ongoing Voyage Table -->
         <!-- Content Grid -->
         <div class="content-grid">
@@ -258,7 +228,45 @@
                         </div>
                     </div>
                 </div>
-                <div class="inventory-table">
+
+                <div v-if="filteredVoyage.length > 0 && selectedTab === 'dashboard'" class="empty-state">
+                    <!-- Vessels Grid -->
+                    <div class="vessels-grid">
+                        <div class="vessel-card" v-for="item in filteredVoyage" :key="item.id">
+                            <div class="vessel-header">
+                                <div class="vessel-icon">
+                                    <i class="fas fa-ship"></i>
+                                </div>
+                                <div class="vessel-status">
+                                    Awaiting-approval
+                                </div>
+                            </div>
+                            <div class="vessel-info">
+                                <h3 class="vessel-name">Vessel Name: {{ item.vessel }}</h3>
+                                <p class="vessel-reg">{{ item.origin }}</p>
+                                <p class="vessel-reg">{{ item.call }}</p>
+                                <div class="vessel-stats">
+                                    <div class="vessel-stat">
+                                        <i class="fas fa-boxes"></i>
+                                        <span>{{ item.purpose }} Purpose </span>
+                                    </div>
+                                    <div class="vessel-stat">
+                                        <i class="fas fa-clock"></i>
+                                        <span>{{ item.start }} Start Time </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vessel-actions">
+                                <button class="vessel-btn" @click.stop="approveVoyage(item.id)" title="Approve Voyage">
+                                    <i class="fas fa-edit"></i>
+                                    Approve Voyage
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-table" v-if="selectedTab !== 'dashboard'">
                     <div class="table-responsive item-row">
                         <table class="table">
                             <thead>
@@ -314,10 +322,15 @@
                         </table>
                     </div>
 
-                    <div v-if="filteredVoyage.length === 0" class="empty-state">
+                    <div v-if="filteredVoyage.length === 0 && selectedTab !== 'dashboard'" class="empty-state">
                         <i class="fas fa-box-open"></i>
                         <h3>No voyage found</h3>
                         <p>Try adjusting your search or filters</p>
+                    </div>
+
+                    <div v-if="filteredVoyage.length === 0 && selectedTab === 'dashboard'" class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No Voyage Awaiting Approval</h3>
                     </div>
 
                     <!-- Pagination -->
@@ -481,8 +494,12 @@ export default {
                 );
             }
 
-            if (this.selectedTab) {
+            if (this.selectedTab && this.selectedTab !== 'dashboard') {
                 filtered = filtered.filter(v => v.status.toLowerCase() === this.selectedTab.toLowerCase());
+            }
+
+            if (this.selectedTab === 'dashboard') {
+                filtered = filtered.filter(v => v.status.toLowerCase() === 'awaiting-approval');
             }
 
             return filtered;
@@ -1161,208 +1178,209 @@ body {
 
 /* Modal Styles */
 .modal-overlay {
-            position: fixed !important;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex !important;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999 !important;
-            backdrop-filter: blur(4px);
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999 !important;
+    backdrop-filter: blur(4px);
 
-        }
+}
 
-        .modals {
-            background: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            animation: modalSlideIn 0.3s ease-out;
-        }
+.modals {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease-out;
+}
 
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
 
-        .modal-header {
-            background: linear-gradient(135deg, var(--dashprimary-color), #0f172a);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+.modal-header {
+    background: linear-gradient(135deg, var(--dashprimary-color), #0f172a);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
-            transition: background 0.3s ease;
-        }
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
 
-        .modal-body {
-            padding: 30px;
-        }
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
+.modal-body {
+    padding: 30px;
+}
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
 
-        .form-label {
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
 
-        .form-input,
-        .form-select,
-        .form-textarea {
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+.form-input,
+.form-select,
+.form-textarea {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
 
-        .form-textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
 
-        .modal-footer {
-            padding: 20px 30px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
 
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-        }
+.modal-footer {
+    padding: 20px 30px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
 
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
 
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
 
-        .required {
-            color: #ef4444;
-        }
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
 
-        .demo-section {
-            background: #f8fafc;
-            border: 2px dashed #d1d5db;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+.required {
+    color: #ef4444;
+}
 
-        .demo-section h3 {
-            color: #374151;
-            margin-bottom: 10px;
-        }
+.demo-section {
+    background: #f8fafc;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-        .demo-section p {
-            color: #6b7280;
-            margin-bottom: 15px;
-        }
+.demo-section h3 {
+    color: #374151;
+    margin-bottom: 10px;
+}
 
-        /* Form validation styles */
-        .form-input.error,
-        .form-select.error,
-        .form-textarea.error {
-            border-color: #ef4444;
-        }
+.demo-section p {
+    color: #6b7280;
+    margin-bottom: 15px;
+}
 
-        .error-message {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 5px;
-        }
+/* Form validation styles */
+.form-input.error,
+.form-select.error,
+.form-textarea.error {
+    border-color: #ef4444;
+}
 
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .modals {
-                width: 95%;
-                margin: 10px;
-            }
-            
-            .modal-body {
-                padding: 20px;
-            }
-            
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-footer {
-                flex-direction: column;
-            }
-        }
+.error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .modals {
+        width: 95%;
+        margin: 10px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+    }
+}
 </style>
