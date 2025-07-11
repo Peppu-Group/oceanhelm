@@ -271,8 +271,24 @@ export default {
             return Math.ceil(this.voyages.length / this.itemsPerPage);
         },
         filteredVoyage() {
-            console.log(this.selectedTab)
-            return this.voyages.filter(v => v.status.toLowerCase() === this.selectedTab.toLowerCase());
+            let filtered = this.voyages;
+            // Search filter
+            if (this.searchTerm) {
+                const search = this.searchTerm.toLowerCase();
+                filtered = filtered.filter(item =>
+                    item.purpose.toLowerCase().includes(search) ||
+                    item.vessel.toLowerCase().includes(search) ||
+                    item.origin.toLowerCase().includes(search) ||
+                    item.call.toLowerCase().includes(search) ||
+                    item.status.toLowerCase().includes(search) 
+                );
+            }
+
+            if (this.selectedTab) {
+                filtered = filtered.filter(v => v.status.toLowerCase() === this.selectedTab.toLowerCase());
+            }
+
+            return filtered;
         }
     },
     mounted() {
