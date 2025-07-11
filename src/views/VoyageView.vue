@@ -235,7 +235,6 @@
                         <div class="vessel-card" v-for="item in filteredVoyage" :key="item.id">
                             <div class="vessel-header">
                                 <div class="vessel-icon">
-                                    <i class="fas fa-ship"></i>
                                 </div>
                                 <div class="vessel-status">
                                     Awaiting-approval
@@ -243,23 +242,27 @@
                             </div>
                             <div class="vessel-info">
                                 <h3 class="vessel-name">Vessel Name: {{ item.vessel }}</h3>
+                                <h3 class="vessel-name">Port of Origin: </h3>
                                 <p class="vessel-reg">{{ item.origin }}</p>
+                                <h3 class="vessel-name">Port of Call: </h3>
                                 <p class="vessel-reg">{{ item.call }}</p>
                                 <div class="vessel-stats">
                                     <div class="vessel-stat">
-                                        <i class="fas fa-boxes"></i>
-                                        <span>{{ item.purpose }} Purpose </span>
+                                        <h3 class="vessel-name">Purpose: </h3><span>{{ item.purpose }} </span>
                                     </div>
                                     <div class="vessel-stat">
-                                        <i class="fas fa-clock"></i>
-                                        <span>{{ item.start }} Start Time </span>
+                                        <h3 class="vessel-name">Start Time: </h3><span>{{ item.start }} </span>
                                     </div>
                                 </div>
                             </div>
                             <div class="vessel-actions">
-                                <button class="vessel-btn" @click.stop="approveVoyage(item.id)" title="Approve Voyage">
-                                    <i class="fas fa-edit"></i>
+                                <button class="vessel-btn vessel-approve" @click.stop="approveVoyage(item.id)"
+                                    title="Approve Voyage">
                                     Approve Voyage
+                                </button>
+                                <button class="vessel-btn vessel-decline" @click.stop="declineVoyage(item.id)"
+                                    title="Decline Voyage">
+                                    Decline Voyage
                                 </button>
                             </div>
                         </div>
@@ -521,7 +524,6 @@ export default {
             }
         },
         getBadgeClass(action) {
-            console.log(action)
             if (!action) return '';
             action = action.toLowerCase().trim(); // Normalize input
             const classes = {
@@ -620,6 +622,38 @@ export default {
             // Close modal
             this.closeModal();
         },
+        approveVoyage(id) {
+            const voyage = this.voyages.find(v => v.id === id);
+            if (voyage) {
+                voyage.status = 'ongoing';
+
+                // Optional: show success feedback
+                Swal.fire({
+                    title: 'Voyage Approved',
+                    text: `Voyage for ${voyage.vessel} is now marked as ongoing.`,
+                    icon: 'success',
+                    confirmButtonColor: '#0d6efd'
+                });
+            } else {
+                console.warn(`Voyage with id ${id} not found.`);
+            }
+        },
+        declineVoyage(id) {
+            const index = this.voyages.findIndex(v => v.id === id);
+            if (index !== -1) {
+                const removedVoyage = this.voyages.splice(index, 1)[0];
+
+                // Optional: confirmation alert
+                Swal.fire({
+                    title: 'Voyage Rejected',
+                    text: `Voyage for ${removedVoyage.vessel} has been removed.`,
+                    icon: 'info',
+                    confirmButtonColor: '#d33'
+                });
+            } else {
+                console.warn(`Voyage with id ${id} not found.`);
+            }
+        }
     }
 
 }
@@ -988,8 +1022,15 @@ body {
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
-    background: red;
     color: white;
+}
+
+.vessel-decline {
+    background: red;
+}
+
+.vessel-approve {
+    background: green;
 }
 
 .vessel-btn:hover {
@@ -1382,5 +1423,4 @@ body {
     .modal-footer {
         flex-direction: column;
     }
-}
-</style>
+}</style>
