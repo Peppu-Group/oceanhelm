@@ -237,11 +237,25 @@ export default {
         updateVesselInfo(vessel) {
             return this.$store.dispatch('vessel/updateVessel', vessel);
         },
-        markInactive(vessel) {
-            if (this.grantAccess(vessel)) {
+        async markInactive(vessel) {
+            if (!this.grantAccess(vessel)) {
+                return this.rejectAccess();
+            }
+
+            const isCurrentlyActive = vessel.status === 'Active';
+            const confirmResult = await Swal.fire({
+                title: `Are you sure?`,
+                text: `You are about to mark this vessel as ${isCurrentlyActive ? 'Inactive' : 'Active'}.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: `Yes, mark ${isCurrentlyActive ? 'Inactive' : 'Active'}`,
+                cancelButtonText: 'Cancel'
+            });
+
+            if (confirmResult.isConfirmed) {
                 return this.$store.dispatch('vessel/markInactive', vessel.registrationNumber);
-            } else {
-                this.rejectAccess();
             }
         },
         handleNavigation(id, vname, vessel) {
@@ -263,7 +277,7 @@ export default {
             }
         },
         grantAccess(vessel) {
-            if (this.userProfile.role == 'owner' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
+            if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
                 return true
             }
         },
@@ -619,10 +633,10 @@ export default {
 
         rejectAccess() {
             Swal.fire({
-                    title: 'Unauthorized',
-                    text: 'You do not have the access to do this',
-                    icon: 'info'
-                });
+                title: 'Unauthorized',
+                text: 'You do not have the access to do this',
+                icon: 'info'
+            });
         },
 
         // Helper function to save vessel data (implement based on your backend)
