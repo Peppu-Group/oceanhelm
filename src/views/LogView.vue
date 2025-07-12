@@ -100,7 +100,7 @@
                                 <td>
                                     {{ log.details.status }}
                                     <div v-for="(change, key) in log.details.information" :key="key">
-                                        <strong>{{ key }}: </strong><small style="color: gray">{{ change.from }} → {{
+                                        <strong>{{ key }}: </strong><small style="color: gray">{{ change.from || change }} → {{
                                             change.to || change }}</small>
                                     </div>
                                 </td>
@@ -129,6 +129,7 @@
 
 <script>
 import Sidebar from '../components/Sidebar.vue';
+import { mapGetters } from 'vuex';
 import { getActivityLogs } from '@/helpers/activityLogger';
 
 export default {
@@ -146,6 +147,7 @@ export default {
         };
     },
     computed: {
+        ...mapGetters('user', ['userProfile', 'userRoleDescription']),
         totalActivities() {
             return this.logs.length;
         },
@@ -201,6 +203,11 @@ export default {
             );
             this.currentPage = 1;
         },
+        grantAccess() {
+            if (this.userProfile.role === 'owner') {
+                return true;
+            }
+        },
         formatDate(timestamp) {
             return new Date(timestamp).toLocaleString();
         },
@@ -235,14 +242,13 @@ export default {
             window.URL.revokeObjectURL(url);
         },
         generateCSV() {
-            const headers = ['Timestamp', 'User', 'Action', 'Resource', 'IP Address', 'Status'];
+            const headers = ['Timestamp', 'User', 'Action', 'Details', 'Section'];
             const rows = this.filteredLogs.map(log => [
                 this.formatDate(log.timestamp),
-                log.user,
+                log.user_name ,
                 log.action,
-                log.resource,
-                log.ipAddress,
-                log.status
+                log.details.status,
+                log.table_name
             ]);
 
             const csvContent = [headers, ...rows]
@@ -253,9 +259,12 @@ export default {
         }
     },
     async mounted() {
-        this.logs = await getActivityLogs();
-        this.filterLogs();
-
+        if (this.grantAccess()) {
+            this.logs = await getActivityLogs();
+            this.filterLogs();
+        } else {
+            this.$router.push({ path: `/app/dashboard` })
+        }
     }
 }
 </script>
