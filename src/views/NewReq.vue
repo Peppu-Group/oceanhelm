@@ -478,7 +478,7 @@ export default {
 
   data() {
     return {
-      userRole: '', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing', 'captain'
+      userRole: 'staff', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing', 'captain'
 
       isPrinting: false,
       // Tabs with visibility rules
@@ -579,8 +579,8 @@ export default {
       return this.$store.getters['requisitions/allRequisitions'];
     },
     myRequisitions() {
-      const userId = localStorage.getItem('user_id');
-      return this.requisitions.filter(req => req.user_id === userId);
+      const userId = localStorage.getItem('profile_id');
+      return this.requisitions.filter(req => req.profile_id == userId);
     },
     vessels() {
       return this.$store.getters['vessel/allVessels'];
@@ -588,7 +588,7 @@ export default {
   },
 
   mounted() {
-    this.userRole = this.userProfile.role;
+    // this.userRole = this.userProfile.role;
     // fetch requisitions
     this.$store.dispatch('requisitions/fetchRequisitions');
     // fetch vessels.

@@ -68,7 +68,6 @@ export default {
                     console.error('Error fetching profile:', error);
                 } else {
                     const companyId = profile.company_id;
-                    localStorage.setItem('profile_id', profile.id)
                     const { data, error } = await supabase
                         .from('requisitions')
                         .insert([
@@ -145,33 +144,52 @@ export default {
         },
 
         async updateVendor({ commit }, updateVendor) {
-                const updatedVendor = {
-                    vendorInfo: updateVendor,
-                };
+            const updatedVendor = {
+                vendorInfo: updateVendor,
+            };
 
-                const { error } = await supabase
-                    .from('requisitions')
-                    .update(updatedVendor)
-                    .eq('id', updateVendor.id);
+            const { error } = await supabase
+                .from('requisitions')
+                .update(updatedVendor)
+                .eq('id', updateVendor.id);
 
-                if (error) {
-                    errorMessage(error)
-                    reject(error); // Reject promise
-                }
-                console.log(updateVendor)
+            if (error) {
+                errorMessage(error)
+                reject(error); // Reject promise
+            }
+            console.log(updateVendor)
         },
 
         async fetchRequisitions({ commit }) {
-            const { data, error } = await supabase
-                .from('requisitions')
-                .select('*');
+            let userId = localStorage.getItem('profile_id');
+            if (!userId) {
+                const { data: { session } } = await supabase.auth.getSession();
 
-            if (error) {
-                console.error('Error fetching crew:', error.message);
-                return [];
+                if (session) {
+                    const user = session.user;
+                    const { data: profile, error } = await supabase
+                        .from('profiles')
+                        .select('id, company_id')
+                        .eq('id', user.id)
+                        .single();
+
+                    if (error) {
+                        console.error('Error fetching profile:', error);
+                    }
+                    userId = profile.id;
+                }
+                localStorage.setItem('profile_id', userId)
+                const { data, error } = await supabase
+                    .from('requisitions')
+                    .select('*');
+
+                if (error) {
+                    console.error('Error fetching crew:', error.message);
+                    return [];
+                }
+
+                commit('SET_REQUISITIONS', data);
             }
-
-            commit('SET_REQUISITIONS', data);
         },
     },
     getters: {
