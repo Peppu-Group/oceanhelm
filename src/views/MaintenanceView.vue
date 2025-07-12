@@ -75,7 +75,7 @@
             </section>
 
             <!-- Maintenance Schedule Form -->
-            <section :class="['form-section', { active: activeSection === 'schedule' }]"
+            <section :class="['form-section', { active: activeSection === 'schedule' && deepAccess() }]"
                 v-show="activeSection === 'schedule'">
                 <h2>📅 Maintenance Schedule</h2>
                 <form>
@@ -571,10 +571,10 @@ export default {
         }
     },
     async mounted() {
-            let id = this.$route.params.id;
-            let vesselInfo = this.vessels.find(v => v.registrationNumber === id);
-            this.vesselInfo = vesselInfo;
-            if (this.grantAccess(vesselInfo.name)) {
+        let id = this.$route.params.id;
+        let vesselInfo = this.vessels.find(v => v.registrationNumber === id);
+        this.vesselInfo = vesselInfo;
+        if (this.grantAccess(vesselInfo.name)) {
 
             if (vesselInfo) {
                 this.no = vesselInfo.registrationNumber;
@@ -608,8 +608,20 @@ export default {
     },
     methods: {
         grantAccess(vessel) {
-            if (this.userProfile.role == 'owner' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
+            if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
                 return true
+            }
+        },
+        deepAccess() {
+            if (this.userProfile.role === 'owner' || this.userProfile.role === 'captain') {
+                return true;
+            } else {
+                Swal.fire({
+                    title: 'Unauthorized',
+                    text: 'You do not have the access to do this',
+                    icon: 'info'
+                });
+                return false;
             }
         },
         deleteTask(taskId) {
@@ -665,23 +677,25 @@ export default {
                 });
         },
         showMaintenance(taskComponent) {
-            const tasks = this.tasks;
-            const task = tasks.find(t => t.component === taskComponent);
+            if (this.deepAccess()) {
+                const tasks = this.tasks;
+                const task = tasks.find(t => t.component === taskComponent);
 
-            if (task && task.checklistProgress) {
-                this.checklists = [...task.checklistProgress];
-            } else {
-                // Reset all checklist items to not completed
-                this.loadChecklist(taskComponent);
+                if (task && task.checklistProgress) {
+                    this.checklists = [...task.checklistProgress];
+                } else {
+                    // Reset all checklist items to not completed
+                    this.loadChecklist(taskComponent);
+                }
+
+                // Also update current task in localStorage (optional)
+                localStorage.setItem('currentTask', taskComponent);
+                this.currentTask = taskComponent;
+                // save the lastsection, to edit button text
+                this.lastSection = 'inventory';
+
+                this.activeSection = 'maintenance';
             }
-
-            // Also update current task in localStorage (optional)
-            localStorage.setItem('currentTask', taskComponent);
-            this.currentTask = taskComponent;
-            // save the lastsection, to edit button text
-            this.lastSection = 'inventory';
-
-            this.activeSection = 'maintenance';
         },
         printMaintenance(taskComponent) {
             const tasks = this.tasks;
@@ -702,7 +716,9 @@ export default {
             });
         },
         switchSchedule() {
-            this.activeSection = 'schedule';
+            if (this.deepAccess()) {
+                this.activeSection = 'schedule';
+            }
         },
         handleFiles(event) {
             this.imgText = event.target.files[0].name
