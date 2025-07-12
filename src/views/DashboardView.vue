@@ -25,10 +25,6 @@
                             <i v-else class="bi bi-building"></i>
 
                         </div>
-                        <label class="file-upload" v-if="this.userProfile.role == 'owner'">
-                            <i class="bi bi-upload"></i> Change Logo
-                            <input type="file" @change="handleLogoChange" accept="image/*" />
-                        </label>
                     </div>
                     <div class="col-md-10">
                         <h3>{{ company.name }}</h3>
@@ -68,7 +64,6 @@ export default {
     data() {
         return {
             previewLogo: null,
-            selectedLogoFile: null
         }
     },
     async mounted() {
@@ -104,54 +99,7 @@ export default {
         getVesselCount() {
             return this.company.vessels.length;
         },
-        async handleLogoChange(event) {
-            const file = event.target.files[0];
-            if (file) {
-                this.selectedLogoFile = file;
-                // Generate a temporary preview
-                this.previewLogo = URL.createObjectURL(file);
-                // You can now use this.selectedLogoFile in your Supabase upload
-                // Example: this.uploadLogoToSupabase(this.selectedLogoFile);
-                let companyId = localStorage.getItem('company_id');
-                const { data, error } = await supabase.storage
-                    .from('company-files')
-                    .upload(`logos/${companyId}.png`, file, {
-                        cacheControl: '3600',
-                        upsert: true
-                    });
-
-                if (data) {
-                    const filePath = data.path;
-
-                    const { data: publicUrlData, error: urlError } = supabase
-                        .storage
-                        .from('company-files')
-                        .getPublicUrl(filePath);
-
-                    if (urlError) {
-                        console.error('Failed to get public URL', urlError);
-                        return;
-                    }
-
-                    const publicUrl = publicUrlData.publicUrl;
-
-                    // Update the company's logo with the public URL
-                    const { error: updateError } = await supabase
-                        .from('companies')
-                        .update({ logo: publicUrl })
-                        .eq('id', companyId);
-
-                        // Show success message
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Image Uploaded!',
-                            text: 'Image update may take as much as 1 hour to update in your local system due to caching',
-                        });
-
-                    if (updateError) console.error('Update failed', error);
-                }
-            }
-        }
+        
     },
     components: { Sidebar, VesselList, DashHeader }
 }
@@ -300,39 +248,4 @@ export default {
     overflow: hidden;
 }
 
-.company-logo img {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.file-upload {
-    margin-top: 5px;
-    position: relative;
-    display: inline-block;
-    overflow: hidden;
-    cursor: pointer;
-    background-color: #005792;
-    /* Indigo */
-    color: white;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-}
-
-.file-upload:hover {
-    background-color: #00a8e8;
-    /* Darker indigo */
-}
-
-.file-upload input[type="file"] {
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
-    height: 100%;
-    width: 100%;
-}
 </style>

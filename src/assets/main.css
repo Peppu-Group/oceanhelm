@@ -583,3 +583,41 @@ Swal section
   overflow-x: auto;
   width: 100%;
 }
+
+/**File upload**/
+
+.company-logo img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.file-upload {
+  margin-top: 5px;
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #005792;
+  /* Indigo */
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.file-upload:hover {
+  background-color: #00a8e8;
+  /* Darker indigo */
+}
+
+.file-upload input[type="file"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  cursor: pointer;
+  height: 100%;
+  width: 100%;
+}
