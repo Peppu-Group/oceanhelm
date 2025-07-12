@@ -478,7 +478,7 @@ export default {
 
   data() {
     return {
-      userRole: 'staff', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing', 'captain'
+      userRole: '', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing', 'captain'
 
       isPrinting: false,
       // Tabs with visibility rules
@@ -588,7 +588,7 @@ export default {
   },
 
   mounted() {
-    // this.userRole = this.userProfile.role;
+    this.userRole = this.userProfile.role;
     // fetch requisitions
     this.$store.dispatch('requisitions/fetchRequisitions');
     // fetch vessels.
