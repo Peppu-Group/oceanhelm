@@ -129,7 +129,7 @@ router.beforeEach(async (to, from, next) => {
       return next('/login');
     }
 
-    const allowedRoles = ['owner', 'captain'];
+    const allowedRoles = ['owner', 'captain', 'staff'];
     const isAuthorizedRole = allowedRoles.includes(profile.role);
 
     // Restrict vessel-specific access
