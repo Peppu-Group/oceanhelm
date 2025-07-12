@@ -17,22 +17,29 @@
 }
 
 /**
-Swal section
+Swal section - Enhanced Beautiful Styling
 **/
+
 /* SweetAlert custom styling */
 .custom-swal-container {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .custom-swal-popup {
-  padding: 2rem;
-  border-radius: 15px;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .custom-swal-title {
   color: #349940;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  text-align: center;
 }
 
 .custom-swal-content {
@@ -42,47 +49,206 @@ Swal section
 .custom-input-label {
   text-align: left;
   display: block;
-  margin-bottom: 5px;
-  color: #1d3244;
-  font-weight: 500;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 600;
   font-size: 0.9rem;
 }
 
-.custom-input {
-  width: 100%;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  border: 1px solid #d1d9e6;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+.custom-input, .swal2-input {
+  width: 100% !important;
+  padding: 14px 16px !important;
+  margin-bottom: 20px !important;
+  border: 2px solid #e1e8ed !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+  background: #fafbfc !important;
+  box-sizing: border-box !important;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.custom-input::placeholder, .swal2-input::placeholder {
+  color: #8492a6;
+  font-weight: 400;
+}
+
+.custom-input:focus, .swal2-input:focus {
+  border-color: #349940 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(52, 153, 64, 0.1) !important;
+  background: white !important;
+  transform: translateY(-1px);
+}
+
+.swal2-select {
+  width: 100% !important;
+  padding: 14px 16px !important;
+  margin-bottom: 20px !important;
+  border: 2px solid #e1e8ed !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  background: #fafbfc !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-sizing: border-box !important;
+}
+
+.swal2-select:focus {
+  border-color: #349940 !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(52, 153, 64, 0.1) !important;
+  background: white !important;
+  transform: translateY(-1px);
+}
+
+.swal2-select option {
+  padding: 10px;
+  background: white;
+  color: #2c3e50;
+}
+
+.swal2-select[multiple] {
+  min-height: 120px !important;
+  padding: 10px !important;
+}
+
+.swal2-select[multiple] option {
   padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
+  margin: 2px 0;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.swal2-select[multiple] option:checked {
+  background: #349940;
+  color: white;
 }
 
 .form-group {
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.custom-input:focus {
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 14px 16px;
+  border: 2px solid #e1e8ed;
+  border-radius: 12px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  background: #fafbfc;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: #349940;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(98, 181, 229, 0.2);
+  box-shadow: 0 0 0 3px rgba(52, 153, 64, 0.1);
+  background: white;
+  transform: translateY(-1px);
 }
 
 .custom-textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+/* Conditional container styling */
+#vessel-container, #category-container {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 15px;
+  border: 1px solid #dee2e6;
+  padding: 20px;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+#vessel-container label, #category-container label {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: block;
+}
+
+#category-container p {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #349940;
+}
+
+/* Button styling */
+.swal2-confirm {
+  background: linear-gradient(135deg, #349940 0%, #2d7a37 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px 30px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 6px 20px rgba(52, 153, 64, 0.3) !important;
+}
+
+.swal2-confirm:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(52, 153, 64, 0.4) !important;
+}
+
+.swal2-cancel {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px 30px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3) !important;
+}
+
+.swal2-cancel:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4) !important;
+}
+
+/* Popup styling */
+.swal2-popup {
+  border-radius: 20px !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2.5rem !important;
+}
+
+.swal2-title {
+  color: #349940 !important;
+  font-weight: 700 !important;
+  font-size: 1.8rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .swal2-popup {
+    padding: 1.5rem !important;
+  }
+  
+  .custom-input, .swal2-input, .swal2-select {
+    padding: 12px 14px !important;
+    font-size: 0.95rem !important;
+  }
 }
 
 .swal2-confirm {

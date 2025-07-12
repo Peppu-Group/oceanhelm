@@ -62,36 +62,100 @@ export default {
 
                     const { value: formValues } = await Swal.fire({
                         title: 'Create New User',
-                        html:
-                            `<input id="swal-input-name" class="swal2-input" placeholder="Full Name">` +
-                            `<input id="swal-input-email" class="swal2-input" placeholder="Email Address">` +
-                            `<select id="swal-input-role" class="swal2-select">
-                            <option value="" disabled selected>Select Role</option>
-                            <option value="owner">Owner</option>
-                            <option value="captain">Captain</option>
-                            <option value="staff">Staff</option>
-                        </select>` +
-                            `<input id="swal-input-password" type="password" class="swal2-input" placeholder="Password">` +
-                            `<select id="swal-input-vessel" class="swal2-select">
-                            <option value="" disabled selected>Select Vessel</option>
-                            ${vesselOptions}
-                        </select>`,
+                        html: `
+                            <div>
+                            <input id="swal-input-name" class="custom-input swal2-input" placeholder="Full Name">
+                            <input id="swal-input-email" class="custom-input swal2-input" placeholder="Email Address">
+                            
+                            <select id="swal-input-role" class="swal2-select">
+                                <option value="" disabled selected>Select Role</option>
+                                <option value="owner">Owner</option>
+                                <option value="captain">Captain</option>
+                                <option value="staff">Staff</option>
+                            </select>
+
+                            <input id="swal-input-password" type="password" class="custom-input swal2-input" placeholder="Password">
+                            
+                            <div id="vessel-container" style="margin-top: 10px; display: none;">
+                                <label for="swal-input-vessel">Select Vessel</label>
+                                <select id="swal-input-vessel" class="swal2-select">
+                                <option value="" disabled selected>Select Vessel</option>
+                                ${vesselOptions}
+                                </select>
+                            </div>
+
+                            <div id="category-container" style="margin-top: 10px; display: none;">
+                                <label>Select Category</label>
+                                <div style="margin-top: 8px;">
+                                    <label><input type="checkbox" class="category-checkbox" value="controller"> Inventory Controller</label><br>
+                                    <label><input type="checkbox" class="category-checkbox" value="purchaser"> Purchaser</label><br>
+                                    <label><input type="checkbox" class="category-checkbox" value="requisitor"> Requisitor</label>
+                                </div>
+                                <p style="font-size: 11px; color: gray; margin-top: 5px;">
+                                    You can select multiple, but only one of "purchaser" or "requisitor".
+                                </p>
+                            </div>
+
+                            </div>
+                        `,
                         focusConfirm: false,
                         showCancelButton: true,
+                        confirmButtonText: 'Create User',
+                        cancelButtonText: 'Cancel',
+                        didOpen: () => {
+                            const roleInput = document.getElementById('swal-input-role');
+                            const vesselContainer = document.getElementById('vessel-container');
+                            const categoryContainer = document.getElementById('category-container');
+                            const categoryCheckboxes = () => Array.from(document.querySelectorAll('.category-checkbox'));
+
+                            roleInput.addEventListener('change', (e) => {
+                                const selectedRole = e.target.value;
+                                vesselContainer.style.display = selectedRole === 'captain' ? 'block' : 'none';
+                                categoryContainer.style.display = selectedRole === 'staff' ? 'block' : 'none';
+                            });
+
+                            // Prevent selecting both purchaser and requisitor
+                            categoryCheckboxes().forEach(checkbox => {
+                                checkbox.addEventListener('change', () => {
+                                    const selected = categoryCheckboxes().filter(cb => cb.checked).map(cb => cb.value);
+                                    if (selected.includes('purchaser') && selected.includes('requisitor')) {
+                                        Swal.showValidationMessage('You can’t select both Purchaser and Requisitor');
+                                    } else {
+                                        Swal.resetValidationMessage();
+                                    }
+                                });
+                            });
+                        },
                         preConfirm: () => {
-                            const name = document.getElementById('swal-input-name').value;
-                            const email = document.getElementById('swal-input-email').value;
+                            const name = document.getElementById('swal-input-name').value.trim();
+                            const email = document.getElementById('swal-input-email').value.trim();
                             const role = document.getElementById('swal-input-role').value;
                             const password = document.getElementById('swal-input-password').value;
-                            const vessel = document.getElementById('swal-input-vessel').value;
+                            const vessel = document.getElementById('swal-input-vessel')?.value;
 
-                            if (!name || !email || !role || !password || !vessel) {
-                                Swal.showValidationMessage('Please fill all fields');
+                            const categories = Array.from(document.querySelectorAll('.category-checkbox'))
+                                .filter(cb => cb.checked)
+                                .map(cb => cb.value);
+
+                            if (!name || !email || !role || !password) {
+                                Swal.showValidationMessage('Please fill all required fields');
                                 return false;
                             }
 
-                            return { name, email, role, password, vessel };
+                            if (role === 'captain' && (!vessel || vessel === '')) {
+                                Swal.showValidationMessage('Captains must select a vessel');
+                                return false;
+                            }
+
+                            if (categories.includes('purchaser') && categories.includes('requisitor')) {
+                                Swal.showValidationMessage('You can’t select both Purchaser and Requisitor');
+                                return false;
+                            }
+
+                            return { name, email, role, password, vessel, categories };
                         }
+
+
                     });
 
                     if (formValues) {
@@ -103,7 +167,8 @@ export default {
                                     fullName: formValues.name,
                                     company_id: this.userProfile.company_id,
                                     role: formValues.role,
-                                    vessel: formValues.vessel
+                                    vessel: formValues.vessel || null,
+                                    categories: formValues.categories || []
                                 },
                                 emailRedirectTo: 'https://marine.peppubuild.com/subredirect'
                             }

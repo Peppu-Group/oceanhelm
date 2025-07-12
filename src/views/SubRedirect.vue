@@ -44,7 +44,8 @@ export default {
                     full_name: user.user_metadata.fullName,
                     company_id: user.user_metadata.company_id,
                     role: user.user_metadata.role,
-                    vessel: user.user_metadata.vessel
+                    vessel: user.user_metadata.vessel,
+                    categories: user.user_metadata.categories
                 });
 
             // redirect dashboard
