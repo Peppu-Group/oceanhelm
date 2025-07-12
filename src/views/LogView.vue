@@ -184,10 +184,9 @@ export default {
             if (this.searchTerm) {
                 const term = this.searchTerm.toLowerCase();
                 filtered = filtered.filter(log =>
-                    log.user.toLowerCase().includes(term) ||
+                    log.user_name.toLowerCase().includes(term) ||
                     log.action.toLowerCase().includes(term) ||
-                    log.resource.toLowerCase().includes(term) ||
-                    log.ipAddress.includes(term)
+                    log.table_name.toLowerCase().includes(term)
                 );
             }
 
