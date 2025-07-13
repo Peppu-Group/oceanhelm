@@ -608,10 +608,7 @@ export default {
     },
     methods: {
         grantAccess(vessel) {
-            console.log(this.userProfile.role)
-            console.log(this.userProfile.vessel)
-            console.log(vessel.name)
-            if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel.name)) {
+            if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel)) {
                 return true
             }
         },
