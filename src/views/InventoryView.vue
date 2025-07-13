@@ -249,16 +249,18 @@
                         <div class="vessel-stats">
                             <div class="vessel-stat">
                                 <i class="fas fa-boxes"></i>
-                                <span>{{getVesselItemCount(vessel.name)}} Inventory Items</span>
+                                <span>{{ getVesselItemCount(vessel.name) }} Inventory Items</span>
                             </div>
                         </div>
                     </div>
                     <div class="vessel-actions">
-                        <div class="vessel-btn" title="Edit Vessel">
+                        <div class="vessel-btn" :class="getVesselLowStockCount(vessel.name) === 0 ? 'green-btn' : 'red-btn'"
+                            title="Edit Vessel">
                             {{ getVesselLowStockCount(vessel.name) }}
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -2079,19 +2081,21 @@ body {
 }
 
 .vessel-btn {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    background: red;
-    color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  color: white;
 }
 
-.vessel-btn:hover {
+.red-btn {
+  background: red;
+}
+
+.green-btn {
     background: var(--dashprimary-color);
-    transform: translateY(-1px);
 }
 
 /* Responsive Design */
