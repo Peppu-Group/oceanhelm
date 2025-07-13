@@ -487,7 +487,7 @@ export default {
         { name: 'all-requisitions', label: 'All Requisitions', roles: ['requisitor', 'supervisor', 'captain', 'owner', 'purchaser'] },
         { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor', 'captain'] },
         { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchaser'] },
-        { name: 'receiving', label: 'Receiving', roles: ['purchaser'] },
+        { name: 'receiving', label: 'Receiving', roles: ['requisitor'] },
         { name: 'workflow', label: 'Workflow Guide', roles: ['requisitor', 'supervisor', 'owner', 'purchaser', 'captain'] } // visible to all
       ],
       activeTab: 'workflow',
