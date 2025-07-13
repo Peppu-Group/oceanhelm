@@ -31,8 +31,7 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Requestor Name *</label>
-              <input type="text" :value="this.userProfile.full_name" readonly required
-                class="form-control" />
+              <input type="text" :value="this.userProfile.full_name" readonly required class="form-control" />
             </div>
             <div class="form-group">
               <label>Department *</label>
@@ -478,18 +477,18 @@ export default {
 
   data() {
     return {
-      userRole: '', // Possible values: 'staff', 'supervisor', 'owner', 'purchasing', 'captain'
+      userRole: '', // Possible values: 'requisitor', 'supervisor', 'owner', 'purchasing', 'captain'
 
       isPrinting: false,
       // Tabs with visibility rules
       tabs: [
-        { name: 'new-requisition', label: 'New Requisition', roles: ['staff'] },
-        { name: 'my-requisitions', label: 'My Requisitions', roles: ['staff'] },
-        { name: 'all-requisitions', label: 'All Requisitions', roles: ['staff', 'supervisor', 'captain', 'owner', 'purchasing'] },
+        { name: 'new-requisition', label: 'New Requisition', roles: ['requisitor'] },
+        { name: 'my-requisitions', label: 'My Requisitions', roles: ['requisitor'] },
+        { name: 'all-requisitions', label: 'All Requisitions', roles: ['requisitor', 'supervisor', 'captain', 'owner', 'purchaser'] },
         { name: 'approvals', label: 'Pending Approvals', roles: ['owner', 'supervisor', 'captain'] },
-        { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchasing'] },
-        { name: 'receiving', label: 'Receiving', roles: ['purchasing'] },
-        { name: 'workflow', label: 'Workflow Guide', roles: ['staff', 'supervisor', 'owner', 'purchasing', 'captain'] } // visible to all
+        { name: 'purchasing', label: 'Purchasing Queue', roles: ['purchaser'] },
+        { name: 'receiving', label: 'Receiving', roles: ['purchaser'] },
+        { name: 'workflow', label: 'Workflow Guide', roles: ['requisitor', 'supervisor', 'owner', 'purchaser', 'captain'] } // visible to all
       ],
       activeTab: 'workflow',
 
@@ -588,7 +587,19 @@ export default {
   },
 
   mounted() {
-    this.userRole = this.userProfile.role;
+    if (this.userProfile.role !== 'staff') {
+      this.userRole = this.userProfile.role;
+    } else {
+      const categories = this.userProfile.categories || [];
+
+      if (categories.includes('purchaser')) {
+        this.userRole = 'purchaser';
+      } else if (categories.includes('requisitor')) {
+        this.userRole = 'requisitor';
+      } else {
+        this.userRole = 'staff'; // optional fallback
+      }
+    }
     // fetch requisitions
     this.$store.dispatch('requisitions/fetchRequisitions');
     // fetch vessels.
