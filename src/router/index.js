@@ -124,31 +124,6 @@ router.beforeEach(async (to, from, next) => {
       await store.dispatch('user/fetchUserProfile');
     }
 
-    const profile = store.getters['user/userProfile'];
-    if (!profile) {
-      return next('/login');
-    }
-
-    const allowedRoles = ['owner', 'captain', 'staff'];
-    const isAuthorizedRole = allowedRoles.includes(profile.role);
-
-    // Restrict vessel-specific access
-    if (to.params.id && isAuthorizedRole) {
-      const vesselId = to.params.id;
-
-      // Block captains from accessing vessels they don't own
-      if (profile.role === 'captain' && vesselId !== profile.vessel) {
-        await Swal.fire({
-          title: "Route Protected!",
-          text: `You are logged in as a ${profile.role}, and you don't have access to this vessel's information.`,
-          icon: "warning",
-          confirmButtonText: "OK"
-        });
-
-        return next(false); // Cancel navigation
-      }
-    }
-
     next(); // All checks passed
   } else {
     next(); // Route doesn't require auth
