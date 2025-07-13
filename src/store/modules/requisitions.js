@@ -160,11 +160,11 @@ export default {
             console.log(updateVendor)
         },
 
-        async fetchRequisitions({ commit }) {
+        async fetchRequisitions({ commit }) {        
             let userId = localStorage.getItem('profile_id');
+        
             if (!userId) {
                 const { data: { session } } = await supabase.auth.getSession();
-
                 if (session) {
                     const user = session.user;
                     const { data: profile, error } = await supabase
@@ -172,25 +172,29 @@ export default {
                         .select('id, company_id')
                         .eq('id', user.id)
                         .single();
-
+        
                     if (error) {
                         console.error('Error fetching profile:', error);
+                        return;
                     }
+        
                     userId = profile.id;
+                    localStorage.setItem('profile_id', userId);
                 }
-                localStorage.setItem('profile_id', userId)
-                const { data, error } = await supabase
-                    .from('requisitions')
-                    .select('*');
-
-                if (error) {
-                    console.error('Error fetching crew:', error.message);
-                    return [];
-                }
-
-                commit('SET_REQUISITIONS', data);
             }
-        },
+        
+            const { data, error } = await supabase
+                .from('requisitions')
+                .select('*');
+        
+            if (error) {
+                console.error('Error fetching requisitions:', error.message);
+                return;
+            }
+        
+            commit('SET_REQUISITIONS', data);
+        }
+        
     },
     getters: {
         allRequisitions: state => state.requisitions

@@ -600,6 +600,7 @@ export default {
         this.userRole = 'staff'; // optional fallback
       }
     }
+    console.log(this.requisitions)
     // fetch requisitions
     this.$store.dispatch('requisitions/fetchRequisitions');
     // fetch vessels.
