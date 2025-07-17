@@ -8,7 +8,7 @@
             <li class="active">
                 <a href="/app/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
             </li>
-            <li>
+            <li v-if="this.userProfile.role == 'owner'">
                 <a href="/activity-log"><i class="bi bi-activity"></i> Activity Log</a>
             </li>
             <li>
@@ -65,7 +65,7 @@ export default {
         company() {
             return this.$store.getters['company/company'];
         },
-        ...mapGetters('user', ['userProfile']),
+        ...mapGetters('user', ['userProfile'])
     },
     async mounted() {
         // fetch users

@@ -147,7 +147,6 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('user', ['userProfile', 'userRoleDescription']),
         totalActivities() {
             return this.logs.length;
         },
@@ -202,11 +201,6 @@ export default {
             );
             this.currentPage = 1;
         },
-        grantAccess() {
-            if (this.userProfile.role === 'owner') {
-                return true;
-            }
-        },
         formatDate(timestamp) {
             return new Date(timestamp).toLocaleString();
         },
@@ -258,12 +252,8 @@ export default {
         }
     },
     async mounted() {
-        if (this.grantAccess()) {
             this.logs = await getActivityLogs();
             this.filterLogs();
-        } else {
-            this.$router.push({ path: `/app/dashboard` })
-        }
     }
 }
 </script>
