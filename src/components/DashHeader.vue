@@ -45,7 +45,7 @@ export default {
         addUser() {
             Swal.fire({
                 title: `Add Team Members.`,
-                text: 'Owners can add members of their team to MarineTech',
+                text: 'Admins can add members of their team to MarineTech',
                 icon: 'info',
                 showCancelButton: true,
                 confirmButtonText: 'Add New User',

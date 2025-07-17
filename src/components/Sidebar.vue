@@ -317,7 +317,7 @@ export default {
             } else {
                 Swal.fire({
                     title: "Route Protected!",
-                    text: `Only owners can edit company info, you don't have access`,
+                    text: `Only admins can edit company info, you don't have access`,
                     icon: "warning",
                     confirmButtonText: "OK"
                 });
