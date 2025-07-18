@@ -217,6 +217,9 @@ export default {
             return `status-${normalized}`;
         },
         confirmDelete(vessel) {
+            if (!this.grantAccess(vessel)) {
+                return this.rejectAccess();
+            }
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You're trying to delete a vessel, this action cannot be undone!",
@@ -412,99 +415,99 @@ export default {
 
                 // Create the form HTML
                 const formHtml = `
-    <div class="edit-vessel-form" style="text-align: left; max-height: 500px; overflow-y: auto;">
-      <div class="form-section">
-        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
-          Basic Information
-        </h4>
-        
-        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Name</label>
-            <input type="text" id="edit-vessel-name" value="${getValue(vessel.name)}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" readonly>
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">IMO Number</label>
-            <input type="text" id="edit-imo" value="${getValue(vessel.registrationNumber)}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" readonly>
-          </div>
-        </div>
+                    <div class="edit-vessel-form" style="text-align: left; max-height: 500px; overflow-y: auto;">
+                    <div class="form-section">
+                        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
+                        Basic Information
+                        </h4>
+                        
+                        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Name</label>
+                            <input type="text" id="edit-vessel-name" value="${getValue(vessel.name)}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" readonly>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">IMO Number</label>
+                            <input type="text" id="edit-imo" value="${getValue(vessel.registrationNumber)}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" readonly>
+                        </div>
+                        </div>
 
-        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Type</label>
-            <select id="edit-vessel-type" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-              <option value="">-- Select Vessel Type --</option>
-              <option value="cargo" ${vessel.type === 'Cargo Ship' ? 'selected' : ''}>Cargo Ship</option>
-              <option value="tanker" ${vessel.type === 'Tanker' ? 'selected' : ''}>Tanker</option>
-              <option value="passenger" ${vessel.type === 'Passenger Ship' ? 'selected' : ''}>Passenger Ship</option>
-              <option value="fishing" ${vessel.type === 'Fishing Vessel' ? 'selected' : ''}>Fishing Vessel</option>
-              <option value="offshore" ${vessel.type === 'Offshore Support' ? 'selected' : ''}>Offshore Support</option>
-              <option value="research" ${vessel.type === 'Research Vessel' ? 'selected' : ''}>Research Vessel</option>
-              <option value="other" ${vessel.type === 'Other' ? 'selected' : ''}>Other</option>
-            </select>
-          </div>
-        </div>
+                        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Vessel Type</label>
+                            <select id="edit-vessel-type" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                            <option value="">-- Select Vessel Type --</option>
+                            <option value="cargo" ${vessel.type === 'Cargo Ship' ? 'selected' : ''}>Cargo Ship</option>
+                            <option value="tanker" ${vessel.type === 'Tanker' ? 'selected' : ''}>Tanker</option>
+                            <option value="passenger" ${vessel.type === 'Passenger Ship' ? 'selected' : ''}>Passenger Ship</option>
+                            <option value="fishing" ${vessel.type === 'Fishing Vessel' ? 'selected' : ''}>Fishing Vessel</option>
+                            <option value="offshore" ${vessel.type === 'Offshore Support' ? 'selected' : ''}>Offshore Support</option>
+                            <option value="research" ${vessel.type === 'Research Vessel' ? 'selected' : ''}>Research Vessel</option>
+                            <option value="other" ${vessel.type === 'Other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                        </div>
 
-        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Year Built</label>
-            <input type="number" id="edit-year-built" value="${getValue(vessel.built)}" 
-                   min="1900" max="2025"
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Flag State</label>
-            <input type="text" id="edit-flag-state" value="${getValue(vessel.flag)}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-        </div>
-      </div>
+                        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Year Built</label>
+                            <input type="number" id="edit-year-built" value="${getValue(vessel.built)}" 
+                                min="1900" max="2025"
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Flag State</label>
+                            <input type="text" id="edit-flag-state" value="${getValue(vessel.flag)}" 
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        </div>
+                    </div>
 
-      <div class="form-section">
-        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
-          Vessel Specifications
-        </h4>
-        
-        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Length (m)</label>
-            <input type="number" id="edit-length" value="${getValue(vessel.length)}" 
-                   step="0.01"
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Beam (m)</label>
-            <input type="number" id="edit-beam" value="${getValue(vessel.beam)}" 
-                   step="0.01"
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Draft (m)</label>
-            <input type="number" id="edit-draft" value="${getValue(vessel.draft)}" 
-                   step="0.01"
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-        </div>
+                    <div class="form-section">
+                        <h4 style="color: #005792; margin-bottom: 15px; border-bottom: 2px solid #00a8e8; padding-bottom: 5px;">
+                        Vessel Specifications
+                        </h4>
+                        
+                        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Length (m)</label>
+                            <input type="number" id="edit-length" value="${getValue(vessel.length)}" 
+                                step="0.01"
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Beam (m)</label>
+                            <input type="number" id="edit-beam" value="${getValue(vessel.beam)}" 
+                                step="0.01"
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Draft (m)</label>
+                            <input type="number" id="edit-draft" value="${getValue(vessel.draft)}" 
+                                step="0.01"
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        </div>
 
-        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Gross Tonnage</label>
-            <input type="number" id="edit-gross-tonnage" value="${getValue(vessel.gross)}" 
-                   step="0.01"
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Net Tonnage</label>
-            <input type="number" id="edit-net-tonnage" value="${getValue(vessel.net)}" 
-                   step="0.01"
-                   style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+                        <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Gross Tonnage</label>
+                            <input type="number" id="edit-gross-tonnage" value="${getValue(vessel.gross)}" 
+                                step="0.01"
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #495057;">Net Tonnage</label>
+                            <input type="number" id="edit-net-tonnage" value="${getValue(vessel.net)}" 
+                                step="0.01"
+                                style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;">
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                `;
 
                 // Show the SweetAlert with the form
                 Swal.fire({
