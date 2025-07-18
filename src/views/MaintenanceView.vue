@@ -1,449 +1,458 @@
 <template>
-    <div class="container">
-        <header>
-            <h1>MarineTech</h1>
-        </header>
+    <div v-if="ready">
+        <div class="container">
+            <header>
+                <h1>MarineTech</h1>
+            </header>
 
-        <nav v-show="!showReport">
-            <button v-for="section in sections" :key="section.id" class="nav-btn"
-                :class="{ active: activeSection === section.id }" @click="handleSectionClick(section)">
-                {{ section.icon }} {{ section.name }}
-            </button>
-        </nav>
-        <div class="content" v-show="!showReport">
-            <!-- Dashboard Direct -->
-            <!-- Maintenance Tasks Form -->
-            <section :class="['form-section', { active: activeSection === 'maintenance' }]"
-                v-show="activeSection === 'maintenance'">
-                <h2>🛠️ Maintenance Tasks</h2>
-                <!-- Loading indicator -->
-                <div class="loading-container" v-if="isLoading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading checklist...</p>
-                </div>
-                <form v-if="!isLoading">
-                    <div class="container">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h1>Maintenance Checklist</h1>
-                            <button v-if="showAddTaskButton" class="btn btn-outline-custom" @click.prevent="addTask()">
-                                Manually Add Task
-                                <i class="fas fa-plus"></i>
+            <nav v-show="!showReport">
+                <button v-for="section in sections" :key="section.id" class="nav-btn"
+                    :class="{ active: activeSection === section.id }" @click="handleSectionClick(section)">
+                    {{ section.icon }} {{ section.name }}
+                </button>
+            </nav>
+            <div class="content" v-show="!showReport">
+                <!-- Dashboard Direct -->
+                <!-- Maintenance Tasks Form -->
+                <section :class="['form-section', { active: activeSection === 'maintenance' }]"
+                    v-show="activeSection === 'maintenance'">
+                    <h2>🛠️ Maintenance Tasks</h2>
+                    <!-- Loading indicator -->
+                    <div class="loading-container" v-if="isLoading">
+                        <div class="loading-spinner"></div>
+                        <p>Loading checklist...</p>
+                    </div>
+                    <form v-if="!isLoading">
+                        <div class="container">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h1>Maintenance Checklist</h1>
+                                <button v-if="showAddTaskButton" class="btn btn-outline-custom" @click.prevent="addTask()">
+                                    Manually Add Task
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+
+                            <div class="progress-container">
+                                <div class="progress-info">
+                                    Progress: {{ progress }}% ({{ completedCount.length }}/{{ checklists.length }})
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+                                </div>
+                            </div>
+
+                            <ul class="checklist">
+                                <li v-for="checklist in checklists" :key="checklist.id" class="checklist-item">
+                                    <div class="checkbox" :class="{ 'checked': checklist.completed }"
+                                        @click="toggleTask(checklist)">
+                                        <span v-if="checklist.completed">✓</span>
+                                    </div>
+                                    <span class="task-text" :class="{ 'completed': checklist.completed }"
+                                        @click="toggleTask(checklist)">
+                                        {{ checklist.text }}
+                                    </span>
+                                    <button v-if="showAddTaskButton" class="delete-btn" @click="deleteTask(checklist.id)"
+                                        title="Delete task">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3,6 5,6 21,6"></polyline>
+                                            <path
+                                                d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2">
+                                            </path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="status" v-if="completedCount === checklists.length">
+                                All tasks completed! ✅
+                            </div>
+
+                            <button class="reset-button" @click.prevent="resetTasks">{{ checklistButtonLabel }}</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Maintenance Schedule Form -->
+                <section :class="['form-section', { active: activeSection === 'schedule' && deepAccess() }]"
+                    v-show="activeSection === 'schedule'">
+                    <h2>📅 Maintenance Schedule</h2>
+                    <form>
+                        <div class="form-group">
+                            <label for="task-name">Task Name</label>
+                            <input type="text" id="task-name" v-model="form.taskName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-description">Description</label>
+                            <textarea id="task-description" v-model="form.description" required></textarea>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="maintenance-type">Maintenance Type</label>
+                                <select id="maintenance-type" v-model="form.maintenanceType" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="preventive">Preventive</option>
+                                    <option value="corrective">Corrective</option>
+                                    <option value="predictive">Predictive</option>
+                                    <option value="condition">Condition-Based</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="component">Component/System</label>
+                                <select id="component" v-model="form.component" required>
+                                    <option value="">-- Select Component --</option>
+                                    <option value="engine">Engine</option>
+                                    <option value="hull">Hull</option>
+                                    <option value="electronics">Electronics</option>
+                                    <option value="deck">Deck Machinery</option>
+                                    <option value="plumbing">Plumbing</option>
+                                    <option value="electrical">Electrical</option>
+                                    <option value="hvac">HVAC</option>
+                                    <option value="safety">Safety Systems</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <input v-if="form.component === 'Other'" type="text"
+                                    placeholder="Enter custom component/system" v-model="form.customComponent"
+                                    style="margin-top: 8px;">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="priority">Priority</label>
+                                <select id="priority" v-model="form.priority" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <input type="text" id="status" v-model="form.status" readonly>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="estimated-hours">Estimated Hours</label>
+                                <input type="number" id="estimated-hours" v-model="form.estimatedHours" min="0" step="0.5">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assigned-to">Assigned To</label>
+                            <select id="assigned-to" v-model="form.assignedTo">
+                                <option value="">-- Select Personnel --</option>
+                                <option v-for="member in getVesselCrew" :key="member.id"
+                                    :value="`${member.name} - ${member.role}`">
+                                    {{ member.name }} - {{ member.role }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="recurrence-type">Recurrence</label>
+                                <select id="recurrence-type" v-model="form.recurrence" required>
+                                    <option value="once">One-time</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="semi-annual">Semi-annually</option>
+                                    <option value="annual">Annually</option>
+                                    <option value="custom">Custom Interval</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="last-performed">Last Performed Date</label>
+                                <input type="date" id="last-performed" v-model="form.lastPerformed">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="next-due">Due Date</label>
+                                <input type="date" id="next-due" v-model="form.nextDue" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notifications</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notify-email" v-model="form.notifyEmail">
+                                    <label for="notify-email">Email Notification</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notify-sms" v-model="form.notifySms">
+                                    <label for="notify-sms">SMS Notification</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="notify-app" v-model="form.notifyApp">
+                                    <label for="notify-app">In-App Notification</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="reminder-days">Reminder (Days Before)</label>
+                                <select id="reminder-days" v-model="form.reminderDays">
+                                    <option value="1">1 day</option>
+                                    <option value="3">3 days</option>
+                                    <option value="7">1 week</option>
+                                    <option value="14">2 weeks</option>
+                                    <option value="30">1 month</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="schedule-notes">Notes</label>
+                            <textarea id="schedule-notes" v-model="form.notes"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Attachments</label>
+                            <div class="attachment-area">
+                                <p>{{ imgText }}</p>
+                                <input type="file" id="maintenance-files" class="file-input" @change="handleFiles" multiple>
+                                <label for="maintenance-files" class="file-label">Browse Files</label>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-primary" @click.prevent="saveSchedule"
+                                :disabled="isSaving">
+                                {{ isSaving ? 'Saving...' : 'Save Schedule' }}
                             </button>
                         </div>
+                    </form>
+                </section>
 
-                        <div class="progress-container">
-                            <div class="progress-info">
-                                Progress: {{ progress }}% ({{ completedCount.length }}/{{ checklists.length }})
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" :style="{ width: progress + '%' }"></div>
+                <!-- Inventory Form -->
+                <section :class="['form-section', { active: activeSection === 'inventory' }]"
+                    v-show="activeSection === 'inventory'">
+                    <h2>All Maintenance</h2>
+                    <div class="task-table-wrapper">
+                        <!-- Filters and Controls -->
+                        <div class="table-controls">
+                            <div class="filters">
+                                <button :class="{ active: activeFilter === 'due' }" @click="setFilter('due')">Due</button>
+                                <button :class="{ active: activeFilter === 'all' }" @click="setFilter('all')">All</button>
+                                <button :class="{ active: activeFilter === 'completed' }"
+                                    @click="setFilter('completed')">Completed</button>
+                                <input type="text" v-model="searchQuery" placeholder="Search..." />
                             </div>
                         </div>
 
-                        <ul class="checklist">
-                            <li v-for="checklist in checklists" :key="checklist.id" class="checklist-item">
-                                <div class="checkbox" :class="{ 'checked': checklist.completed }"
-                                    @click="toggleTask(checklist)">
-                                    <span v-if="checklist.completed">✓</span>
+                        <!-- Task Table -->
+                        <table class="task-table">
+                            <thead>
+                                <tr>
+                                    <th>Equipment</th>
+                                    <th>Task Name</th>
+                                    <th>Assigned To</th>
+                                    <th>Intervals</th>
+                                    <th>Remaining</th>
+                                    <th>Next Due</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="task in filteredTasks" :key="task.id">
+                                    <td>{{ task.component }}</td>
+                                    <td>{{ task.taskName }}</td>
+                                    <td>{{ task.assignedTo }}</td>
+                                    <td>{{ task.recurrence }}</td>
+                                    <td>{{ task.remainingDays }}</td>
+                                    <td>{{ task.nextDue }}</td>
+                                    <td>
+                                        <span :class="['status-badge', task.status.toLowerCase().replace(' ', '-')]">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button @click="printMaintenance(task.component)" v-if="task.status === 'Completed'"
+                                            class="status-action">Print</button>
+                                        <button @click="showMaintenance(task.component)" v-else
+                                            class="status-action">Start</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Empty schedule -->
+                        <div v-if="!tasks.length">
+                            <div class="alert alert-primary" role="alert">
+                                <h4 class="alert-heading">Such Empty!!!</h4>
+                                <p>You have no maintenance, because you have not scheduled any for this ship.</p>
+                                <hr>
+                                <p class="mb-0">Navigate to the schedule tab, to start scheduling. Or click on this button
+                                    to
+                                    <button type="button" class="btn btn-primary"
+                                        @click="switchSchedule()">Schedule</button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="report-container" ref="reportContainer">
+                <div class="header">
+                    <div class="report-title">MAINTENANCE TASK REPORT</div>
+                </div>
+
+                <div class="report-info">
+                    <div class="info-box">
+                        <div class="info-label">Report Generated:</div>
+                        <div>{{ reportDate }}</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Report ID:</div>
+                        <div>{{ reportId }}</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Total Tasks:</div>
+                        <div>{{ maintenanceTasks.length }}</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Generated By:</div>
+                        <div>MarineTech System</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📊 Task Summary</div>
+                    <div class="summary-grid">
+                        <div class="summary-card">
+                            <div class="summary-number">1</div>
+                            <div class="summary-label">Completed</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-number">0</div>
+                            <div class="summary-label">Pending</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-number">0</div>
+                            <div class="summary-label">Overdue</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-number">{{ totalEstimatedHours }}</div>
+                            <div class="summary-label">Total Hours</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">🔧 Maintenance Tasks</div>
+                    <div v-for="task in maintenanceTasks" :key="task.taskName"
+                        :class="['task-item', getTaskStatusClass(task)]">
+
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">
+                                    {{ task.taskName }}
+                                    <span :class="['maintenance-type', 'type-' + task.maintenanceType]">
+                                        {{ task.maintenanceType }}
+                                    </span>
                                 </div>
-                                <span class="task-text" :class="{ 'completed': checklist.completed }"
-                                    @click="toggleTask(checklist)">
-                                    {{ checklist.text }}
-                                </span>
-                                <button v-if="showAddTaskButton" class="delete-btn" @click="deleteTask(checklist.id)"
-                                    title="Delete task">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3,6 5,6 21,6"></polyline>
-                                        <path
-                                            d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2">
-                                        </path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </button>
+                                <div class="task-component">Component: {{ task.component }}</div>
+                            </div>
+                            <span :class="['status-badge', 'status-' + task.status.toLowerCase().replace(' ', '-')]">
+                                {{ task.status }}
+                            </span>
+                        </div>
+
+                        <div class="task-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Assigned To</div>
+                                <div class="detail-value">{{ task.assignedTo }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Estimated Hours</div>
+                                <div class="detail-value">{{ task.estimatedHours }} hours</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Last Performed</div>
+                                <div class="detail-value">{{ formatDate(task.lastPerformed) }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Next Due</div>
+                                <div class="detail-value">{{ formatDate(task.nextDue) }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Recurrence</div>
+                                <div class="detail-value">{{ task.recurrence }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Remaining Days</div>
+                                <div class="detail-value">{{ task.remainingDays }} days</div>
+                            </div>
+                        </div>
+
+                        <div v-if="task.description"
+                            style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
+                            <div class="detail-label">Description</div>
+                            <div class="detail-value">{{ task.description }}</div>
+                        </div>
+
+                        <div v-if="task.notes"
+                            style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
+                            <div class="detail-label">Notes</div>
+                            <div class="detail-value">{{ task.notes }}</div>
+                        </div>
+
+                        <div v-if="task.checklistProgress && task.checklistProgress.length > 0" class="checklist-progress">
+                            <div class="detail-label">Checklist Progress</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" :style="{ width: getChecklistProgress(task) + '%' }"></div>
+                            </div>
+                            <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                                {{ getCompletedChecklistItems(task) }} of {{ task.checklistProgress.length }} items
+                                completed
+                                ({{ getChecklistProgress(task) }}%)
+                            </div>
+                            <div class="checklist-items">
+                                <div v-for="(item, index) in task.checklistProgress" :key="index" class="checklist-item">
+                                    <span class="checklist-icon">{{ item.completed ? '✅' : '⭕' }}</span>
+                                    <span>{{ item.text || 'Checklist Item ' + (index + 1) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📋 Recommendations</div>
+                    <div class="info-box">
+                        <ul>
+                            <li v-for="recommendation in generateRecommendations()" :key="recommendation">
+                                {{ recommendation }}
                             </li>
                         </ul>
-
-                        <div class="status" v-if="completedCount === checklists.length">
-                            All tasks completed! ✅
-                        </div>
-
-                        <button class="reset-button" @click.prevent="resetTasks">{{ checklistButtonLabel }}</button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Maintenance Schedule Form -->
-            <section :class="['form-section', { active: activeSection === 'schedule' && deepAccess() }]"
-                v-show="activeSection === 'schedule'">
-                <h2>📅 Maintenance Schedule</h2>
-                <form>
-                    <div class="form-group">
-                        <label for="task-name">Task Name</label>
-                        <input type="text" id="task-name" v-model="form.taskName" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="task-description">Description</label>
-                        <textarea id="task-description" v-model="form.description" required></textarea>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="maintenance-type">Maintenance Type</label>
-                            <select id="maintenance-type" v-model="form.maintenanceType" required>
-                                <option value="">-- Select Type --</option>
-                                <option value="preventive">Preventive</option>
-                                <option value="corrective">Corrective</option>
-                                <option value="predictive">Predictive</option>
-                                <option value="condition">Condition-Based</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="component">Component/System</label>
-                            <select id="component" v-model="form.component" required>
-                                <option value="">-- Select Component --</option>
-                                <option value="engine">Engine</option>
-                                <option value="hull">Hull</option>
-                                <option value="electronics">Electronics</option>
-                                <option value="deck">Deck Machinery</option>
-                                <option value="plumbing">Plumbing</option>
-                                <option value="electrical">Electrical</option>
-                                <option value="hvac">HVAC</option>
-                                <option value="safety">Safety Systems</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <input v-if="form.component === 'Other'" type="text" placeholder="Enter custom component/system"
-                                v-model="form.customComponent" style="margin-top: 8px;">
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="priority">Priority</label>
-                            <select id="priority" v-model="form.priority" required>
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                                <option value="critical">Critical</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="status">Status</label>
-                            <input type="text" id="status" v-model="form.status" readonly>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="estimated-hours">Estimated Hours</label>
-                            <input type="number" id="estimated-hours" v-model="form.estimatedHours" min="0" step="0.5">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="assigned-to">Assigned To</label>
-                        <select id="assigned-to" v-model="form.assignedTo">
-                            <option value="">-- Select Personnel --</option>
-                            <option v-for="member in getVesselCrew" :key="member.id"
-                                :value="`${member.name} - ${member.role}`">
-                                {{ member.name }} - {{ member.role }}
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="recurrence-type">Recurrence</label>
-                            <select id="recurrence-type" v-model="form.recurrence" required>
-                                <option value="once">One-time</option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="quarterly">Quarterly</option>
-                                <option value="semi-annual">Semi-annually</option>
-                                <option value="annual">Annually</option>
-                                <option value="custom">Custom Interval</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="last-performed">Last Performed Date</label>
-                            <input type="date" id="last-performed" v-model="form.lastPerformed">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="next-due">Due Date</label>
-                            <input type="date" id="next-due" v-model="form.nextDue" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Notifications</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="notify-email" v-model="form.notifyEmail">
-                                <label for="notify-email">Email Notification</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="notify-sms" v-model="form.notifySms">
-                                <label for="notify-sms">SMS Notification</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="notify-app" v-model="form.notifyApp">
-                                <label for="notify-app">In-App Notification</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="form-group">
-                            <label for="reminder-days">Reminder (Days Before)</label>
-                            <select id="reminder-days" v-model="form.reminderDays">
-                                <option value="1">1 day</option>
-                                <option value="3">3 days</option>
-                                <option value="7">1 week</option>
-                                <option value="14">2 weeks</option>
-                                <option value="30">1 month</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="schedule-notes">Notes</label>
-                        <textarea id="schedule-notes" v-model="form.notes"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Attachments</label>
-                        <div class="attachment-area">
-                            <p>{{ imgText }}</p>
-                            <input type="file" id="maintenance-files" class="file-input" @change="handleFiles" multiple>
-                            <label for="maintenance-files" class="file-label">Browse Files</label>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button type="button" class="btn btn-primary" @click.prevent="saveSchedule" :disabled="isSaving">
-                            {{ isSaving ? 'Saving...' : 'Save Schedule' }}
-                        </button>
-                    </div>
-                </form>
-            </section>
-
-            <!-- Inventory Form -->
-            <section :class="['form-section', { active: activeSection === 'inventory' }]"
-                v-show="activeSection === 'inventory'">
-                <h2>All Maintenance</h2>
-                <div class="task-table-wrapper">
-                    <!-- Filters and Controls -->
-                    <div class="table-controls">
-                        <div class="filters">
-                            <button :class="{ active: activeFilter === 'due' }" @click="setFilter('due')">Due</button>
-                            <button :class="{ active: activeFilter === 'all' }" @click="setFilter('all')">All</button>
-                            <button :class="{ active: activeFilter === 'completed' }"
-                                @click="setFilter('completed')">Completed</button>
-                            <input type="text" v-model="searchQuery" placeholder="Search..." />
-                        </div>
-                    </div>
-
-                    <!-- Task Table -->
-                    <table class="task-table">
-                        <thead>
-                            <tr>
-                                <th>Equipment</th>
-                                <th>Task Name</th>
-                                <th>Assigned To</th>
-                                <th>Intervals</th>
-                                <th>Remaining</th>
-                                <th>Next Due</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="task in filteredTasks" :key="task.id">
-                                <td>{{ task.component }}</td>
-                                <td>{{ task.taskName }}</td>
-                                <td>{{ task.assignedTo }}</td>
-                                <td>{{ task.recurrence }}</td>
-                                <td>{{ task.remainingDays }}</td>
-                                <td>{{ task.nextDue }}</td>
-                                <td>
-                                    <span :class="['status-badge', task.status.toLowerCase().replace(' ', '-')]">
-                                        {{ task.status }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button @click="printMaintenance(task.component)" v-if="task.status === 'Completed'"
-                                        class="status-action">Print</button>
-                                    <button @click="showMaintenance(task.component)" v-else
-                                        class="status-action">Start</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- Empty schedule -->
-                    <div v-if="!tasks.length">
-                        <div class="alert alert-primary" role="alert">
-                            <h4 class="alert-heading">Such Empty!!!</h4>
-                            <p>You have no maintenance, because you have not scheduled any for this ship.</p>
-                            <hr>
-                            <p class="mb-0">Navigate to the schedule tab, to start scheduling. Or click on this button to
-                                <button type="button" class="btn btn-primary" @click="switchSchedule()">Schedule</button>
-                            </p>
-                        </div>
                     </div>
                 </div>
-            </section>
-        </div>
 
-        <div class="report-container" ref="reportContainer">
-            <div class="header">
-                <div class="report-title">MAINTENANCE TASK REPORT</div>
-            </div>
-
-            <div class="report-info">
-                <div class="info-box">
-                    <div class="info-label">Report Generated:</div>
-                    <div>{{ reportDate }}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">Report ID:</div>
-                    <div>{{ reportId }}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">Total Tasks:</div>
-                    <div>{{ maintenanceTasks.length }}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">Generated By:</div>
-                    <div>MarineTech System</div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="section-title">📊 Task Summary</div>
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <div class="summary-number">1</div>
-                        <div class="summary-label">Completed</div>
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <div><strong>Report Generated By</strong></div>
+                        <div style="margin-top: 10px; color: #666;">MarineTech Maintenance System</div>
                     </div>
-                    <div class="summary-card">
-                        <div class="summary-number">0</div>
-                        <div class="summary-label">Pending</div>
+                    <div class="signature-box">
+                        <div><strong>Date</strong></div>
+                        <div style="margin-top: 10px; color: #666;">{{ reportDate }}</div>
                     </div>
-                    <div class="summary-card">
-                        <div class="summary-number">0</div>
-                        <div class="summary-label">Overdue</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number">{{ totalEstimatedHours }}</div>
-                        <div class="summary-label">Total Hours</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="section-title">🔧 Maintenance Tasks</div>
-                <div v-for="task in maintenanceTasks" :key="task.taskName" :class="['task-item', getTaskStatusClass(task)]">
-
-                    <div class="task-header">
-                        <div>
-                            <div class="task-title">
-                                {{ task.taskName }}
-                                <span :class="['maintenance-type', 'type-' + task.maintenanceType]">
-                                    {{ task.maintenanceType }}
-                                </span>
-                            </div>
-                            <div class="task-component">Component: {{ task.component }}</div>
-                        </div>
-                        <span :class="['status-badge', 'status-' + task.status.toLowerCase().replace(' ', '-')]">
-                            {{ task.status }}
-                        </span>
-                    </div>
-
-                    <div class="task-details">
-                        <div class="detail-item">
-                            <div class="detail-label">Assigned To</div>
-                            <div class="detail-value">{{ task.assignedTo }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Estimated Hours</div>
-                            <div class="detail-value">{{ task.estimatedHours }} hours</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Last Performed</div>
-                            <div class="detail-value">{{ formatDate(task.lastPerformed) }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Next Due</div>
-                            <div class="detail-value">{{ formatDate(task.nextDue) }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Recurrence</div>
-                            <div class="detail-value">{{ task.recurrence }}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">Remaining Days</div>
-                            <div class="detail-value">{{ task.remainingDays }} days</div>
-                        </div>
-                    </div>
-
-                    <div v-if="task.description"
-                        style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
-                        <div class="detail-label">Description</div>
-                        <div class="detail-value">{{ task.description }}</div>
-                    </div>
-
-                    <div v-if="task.notes" style="margin: 15px 0; padding: 10px; background: white; border-radius: 5px;">
-                        <div class="detail-label">Notes</div>
-                        <div class="detail-value">{{ task.notes }}</div>
-                    </div>
-
-                    <div v-if="task.checklistProgress && task.checklistProgress.length > 0" class="checklist-progress">
-                        <div class="detail-label">Checklist Progress</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" :style="{ width: getChecklistProgress(task) + '%' }"></div>
-                        </div>
-                        <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
-                            {{ getCompletedChecklistItems(task) }} of {{ task.checklistProgress.length }} items completed
-                            ({{ getChecklistProgress(task) }}%)
-                        </div>
-                        <div class="checklist-items">
-                            <div v-for="(item, index) in task.checklistProgress" :key="index" class="checklist-item">
-                                <span class="checklist-icon">{{ item.completed ? '✅' : '⭕' }}</span>
-                                <span>{{ item.text || 'Checklist Item ' + (index + 1) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section">
-                <div class="section-title">📋 Recommendations</div>
-                <div class="info-box">
-                    <ul>
-                        <li v-for="recommendation in generateRecommendations()" :key="recommendation">
-                            {{ recommendation }}
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="signature-section">
-                <div class="signature-box">
-                    <div><strong>Report Generated By</strong></div>
-                    <div style="margin-top: 10px; color: #666;">MarineTech Maintenance System</div>
-                </div>
-                <div class="signature-box">
-                    <div><strong>Date</strong></div>
-                    <div style="margin-top: 10px; color: #666;">{{ reportDate }}</div>
                 </div>
             </div>
         </div>
@@ -459,6 +468,7 @@ export default {
     data() {
         return {
             name: null,
+            ready: false,
             no: null,
             isSaving: false,
             lastSection: '',
@@ -602,8 +612,9 @@ export default {
                     await this.$store.dispatch('company/fetchCompanyInfo', profile.company_id);
                 }
             }
+            this.ready = true;
         } else {
-            this.$router.push({ path: `/app/dashboard` })
+            this.$router.push({ path: `/app/dashboard/maintenance` })
         }
     },
     methods: {
@@ -1919,5 +1930,4 @@ textarea {
         margin: 0;
         max-width: none;
     }
-}
-</style>
+}</style>
