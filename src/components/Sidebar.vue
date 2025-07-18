@@ -21,7 +21,8 @@
                 <a class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i
                         class="bi bi-people"></i> Crew Management</a>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                    <a class="dropdown-item black" @click="crewManage('vessel.name')">All Crew</a>
+                    <a class="dropdown-item black" @click="crewManage('vessel.name')"
+                        v-if="this.userProfile.role == 'owner' || this.userProfile.role == 'staff'">All Crew</a>
                     <div class="dropdown-divider black"></div>
                     <a class="dropdown-item black" @click="crewManage()">Get Crew by Vessel</a>
                 </div>
@@ -37,7 +38,7 @@
                 <a href="/app/voyage"><i class="fas fa-ship"></i> Voyage
                     Manager</a>
             </li>
-            <li>
+            <li v-if="this.userProfile.role == 'owner'">
                 <a @click="updateCompanyInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>
@@ -152,10 +153,9 @@ export default {
             return this.$store.getters['tasks/getTasksByVessel'](regno);
         },
         async updateCompanyInfo(currentData = this.company) {
-            if (this.userProfile.role == 'owner') {
-                const { value: formValues } = await Swal.fire({
-                    title: 'Update Company Information',
-                    html: `
+            const { value: formValues } = await Swal.fire({
+                title: 'Update Company Information',
+                html: `
                         <div style="text-align: left; max-width: 400px; margin: 0 auto;">
                         <div style="margin-bottom: 20px;">
                             <label class="file-upload">
@@ -213,115 +213,106 @@ export default {
                         </p>
                         </div>
                     `,
-                    focusConfirm: false,
-                    showCancelButton: true,
-                    confirmButtonText: 'Update Information',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#0d6efd',
-                    cancelButtonColor: '#6c757d',
-                    width: '500px',
-                    customClass: {
-                        popup: 'company-info-popup',
-                        title: 'company-info-title'
-                    },
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Update Information',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                width: '500px',
+                customClass: {
+                    popup: 'company-info-popup',
+                    title: 'company-info-title'
+                },
 
-                    didOpen: async () => {
-                        const fileInput = document.getElementById('swal-logo-input');
-                        const fileNameDisplay = document.getElementById('file-name-display');
+                didOpen: async () => {
+                    const fileInput = document.getElementById('swal-logo-input');
+                    const fileNameDisplay = document.getElementById('file-name-display');
 
-                        if (fileInput && fileNameDisplay) {
-                            fileInput.addEventListener('change', async (e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    fileNameDisplay.textContent = `Selected file: ${file.name}`;
-                                    this.selectedLogoFile = file;
-                                    await this.handleLogoChange(file)
-                                } else {
-                                    fileNameDisplay.textContent = '';
-                                    this.selectedLogoFile = null;
-                                }
-                            });
-                        }
-                    },
-
-                    preConfirm: () => {
-                        const location = document.getElementById('swal-location').value.trim();
-                        const estYear = document.getElementById('swal-estyear').value;
-                        const phoneNumber = document.getElementById('swal-phone').value.trim();
-                        const email = document.getElementById('swal-email').value.trim();
-                        const license = document.getElementById('swal-license').value.trim();
-
-                        if (email && !this.isValidEmail(email)) {
-                            Swal.showValidationMessage('Please enter a valid email address');
-                            return false;
-                        }
-
-                        if (estYear && (estYear < 1800 || estYear > 2025)) {
-                            Swal.showValidationMessage('Please enter a valid year between 1800 and 2025');
-                            return false;
-                        }
-
-                        const result = {};
-                        if (location) result.location = location;
-                        if (estYear) result.estYear = estYear;
-                        if (phoneNumber) result.phoneNumber = phoneNumber;
-                        if (email) result.email = email;
-                        if (license) result.license = license;
-
-                        return result;
-                    }
-                });
-
-                if (formValues) {
-                    formValues.logo = this.company.logo;
-                    const changedFields = {};
-
-                    for (const key in formValues) {
-                        if (formValues[key] !== currentData[key]) {
-                            changedFields[key] = {
-                                from: currentData[key],
-                                to: formValues[key]
-                            };
-                        }
-                    }
-
-                    if (Object.keys(changedFields).length === 0) {
-                        await Swal.fire({
-                            title: 'No Changes Detected',
-                            text: 'No fields were changed. Update cancelled.',
-                            icon: 'info',
-                            confirmButtonColor: '#0d6efd'
+                    if (fileInput && fileNameDisplay) {
+                        fileInput.addEventListener('change', async (e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                fileNameDisplay.textContent = `Selected file: ${file.name}`;
+                                this.selectedLogoFile = file;
+                                await this.handleLogoChange(file)
+                            } else {
+                                fileNameDisplay.textContent = '';
+                                this.selectedLogoFile = null;
+                            }
                         });
-                        return null;
+                    }
+                },
+
+                preConfirm: () => {
+                    const location = document.getElementById('swal-location').value.trim();
+                    const estYear = document.getElementById('swal-estyear').value;
+                    const phoneNumber = document.getElementById('swal-phone').value.trim();
+                    const email = document.getElementById('swal-email').value.trim();
+                    const license = document.getElementById('swal-license').value.trim();
+
+                    if (email && !this.isValidEmail(email)) {
+                        Swal.showValidationMessage('Please enter a valid email address');
+                        return false;
                     }
 
-                    await this.$store.dispatch('company/updateCompanyInfo', {
-                        formValues,
-                        changedFields,
-                        newLogo: this.selectedLogoFile || null
-                    });
+                    if (estYear && (estYear < 1800 || estYear > 2025)) {
+                        Swal.showValidationMessage('Please enter a valid year between 1800 and 2025');
+                        return false;
+                    }
 
-                    await Swal.fire({
-                        title: 'Success!',
-                        text: 'Company information has been updated successfully. Image update may take as much as 1 hour to update in your local system due to caching',
-                        icon: 'success',
-                        confirmButtonColor: '#0d6efd',
-                        timer: 2000,
-                        timerProgressBar: true
-                    });
+                    const result = {};
+                    if (location) result.location = location;
+                    if (estYear) result.estYear = estYear;
+                    if (phoneNumber) result.phoneNumber = phoneNumber;
+                    if (email) result.email = email;
+                    if (license) result.license = license;
 
-                    return formValues;
+                    return result;
+                }
+            });
+
+            if (formValues) {
+                formValues.logo = this.company.logo;
+                const changedFields = {};
+
+                for (const key in formValues) {
+                    if (formValues[key] !== currentData[key]) {
+                        changedFields[key] = {
+                            from: currentData[key],
+                            to: formValues[key]
+                        };
+                    }
                 }
 
-                return null;
-            } else {
-                Swal.fire({
-                    title: "Route Protected!",
-                    text: `Only admins can edit company info, you don't have access`,
-                    icon: "warning",
-                    confirmButtonText: "OK"
+                if (Object.keys(changedFields).length === 0) {
+                    await Swal.fire({
+                        title: 'No Changes Detected',
+                        text: 'No fields were changed. Update cancelled.',
+                        icon: 'info',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                    return null;
+                }
+
+                await this.$store.dispatch('company/updateCompanyInfo', {
+                    formValues,
+                    changedFields,
+                    newLogo: this.selectedLogoFile || null
                 });
+
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Company information has been updated successfully. Image update may take as much as 1 hour to update in your local system due to caching',
+                    icon: 'success',
+                    confirmButtonColor: '#0d6efd',
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+
+                return formValues;
             }
+
         },
 
         // Email validation helper function
@@ -330,7 +321,7 @@ export default {
             return emailRegex.test(email);
         },
         async handleLogoChange(file) {
-            
+
             if (file) {
                 this.selectedLogoFile = file;
                 // Generate a temporary preview
@@ -369,7 +360,7 @@ export default {
                     if (updateError) console.error('Update failed', error);
                 }
             }
-        
+
         }
     }
 }
