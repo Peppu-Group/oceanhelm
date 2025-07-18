@@ -28,7 +28,7 @@
             </div>
         </div>
         <!-- Register New Fleet -->
-        <div class="col-md-4" v-if="this.userProfile.role == 'owner'">
+        <div class="col-md-4" v-if="this.userProfile.role == 'owner' || this.userProfile.role == 'staff'">
             <div class="card border-0 shadow-sm" @click="newVessel()">
                 <div class="card-body d-flex align-items-center">
                     <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
