@@ -36,11 +36,13 @@
             <div class="header-actions">
                 <!-- Tabs -->
                 <div class="tabs">
-                    <button class="tab" :class="{ active: selectedTab === 'overview' }" @click="selectedTab = 'overview'">
+                    <button class="tab" :class="{ active: selectedTab === 'overview' }" @click="selectedTab = 'overview'"
+                        v-if="this.userProfile.role == 'owner' || this.userProfile.role == 'staff'">
                         <i class="fas fa-chart-bar"></i>
                         Overview
                     </button>
-                    <button class="tab" :class="{ active: selectedTab === 'inventory' }" @click="selectedTab = 'inventory'">
+                    <button class="tab" :class="{ active: selectedTab === 'inventory' }" @click="selectedTab = 'inventory'"
+                        v-if="this.userProfile.role == 'owner' || this.userProfile.role == 'staff'">
                         <i class="fas fa-boxes"></i>
                         Inventory
                     </button>
@@ -194,6 +196,22 @@
 
         <!-- Overview Tab Content -->
         <div v-if="selectedTab === 'overview'" class="inventory-table">
+            <div class="controls" v-if="this.userProfile.role == 'owner' || this.userProfile.role == 'staff'">
+                <div class="controls-row">
+                    <div class="search-box">
+                        <input type="text" placeholder="Search items, vessels, or categories..." v-model="searchTerm">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select v-model="selectedVessel" class="filter-select">
+                        <option value="">All Vessels</option>
+                        <option v-for="vessel in vessels" :key="vessel" :value="vessel.name">{{ vessel.name }}</option>
+                    </select>
+                    <select v-model="selectedCategory" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+                    </select>
+                </div>
+            </div>
             <div style="padding: 40px; text-align: center;">
                 <div class="dashboard div-responsive">
 
@@ -287,6 +305,10 @@
                         <i class="fas fa-upload"></i>
                         Import
                     </button>
+                    <button class="btn btn-secondary" @click="selectedTab = 'overview'">
+                        <i class="fas fa-chart-bar"></i>
+                        Overview
+                    </button>
                 </div>
             </div>
             <div class="table-responsive item-row">
@@ -369,6 +391,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 import Sidebar from '../components/Sidebar.vue';
 import VesselList from '../components/VesselList.vue';
 import Chart from 'chart.js/auto';
@@ -418,6 +441,7 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('user', ['userProfile', 'userRoleDescription']),
         vesselInventory() {
             if (!this.selectedVessel) return [];
             return this.inventoryData.filter(item => item.vessel === this.selectedVessel);
@@ -517,7 +541,22 @@ export default {
         this.$store.dispatch('inventory/fetchInventory');
     },
     methods: {
+        rejectAccess() {
+            Swal.fire({
+                title: 'Unauthorized',
+                text: 'You do not have the access to do this',
+                icon: 'info'
+            });
+        },
+        grantAccess(vessel) {
+            if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel)) {
+                return true
+            }
+        },
         inventoryVessel(vesselName) {
+            if (!this.grantAccess(vesselName)) {
+                return this.rejectAccess();
+            }
             this.selectedVessel = vesselName;
             this.showModal = true;
         },
