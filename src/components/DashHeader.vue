@@ -83,8 +83,8 @@ export default {
                         title: 'Create New User',
                         html: `
                             <div>
-                            <input id="swal-input-name" class="custom-input swal2-input" placeholder="Full Name">
-                            <input id="swal-input-email" class="custom-input swal2-input" placeholder="Email Address">
+                            <input type="text" id="swal-input-name" class="custom-input swal2-input" placeholder="Full Name">
+                            <input type="email" id="swal-input-email" class="custom-input swal2-input" placeholder="Email Address">
                             
                             <select id="swal-input-role" class="swal2-select">
                                 <option value="" disabled selected>Select Role</option>
@@ -93,8 +93,10 @@ export default {
                                 <option value="staff">Staff</option>
                             </select>
 
-                            <input id="swal-input-password" type="password" class="custom-input swal2-input" placeholder="Password">
-                            
+                            <div style="position: relative;">
+                                <input type="password" id="swal-input-password" class="custom-input swal2-input" placeholder="Password" required>
+                                <span id="toggle-password" style="position: absolute; top: 25px; right: 10px; cursor: pointer;">👁️</span>
+                            </div>                            
                             <div id="vessel-container" style="margin-top: 10px; display: none;">
                                 <label for="swal-input-vessel">Select Vessel</label>
                                 <select id="swal-input-vessel" class="swal2-select">
@@ -126,6 +128,15 @@ export default {
                             const vesselContainer = document.getElementById('vessel-container');
                             const categoryContainer = document.getElementById('category-container');
                             const categoryCheckboxes = () => Array.from(document.querySelectorAll('.category-checkbox'));
+                            const passwordInput = document.getElementById('swal-input-password');
+                            const toggleBtn = document.getElementById('toggle-password');
+
+                            toggleBtn.addEventListener('click', () => {
+                                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                                passwordInput.type = type;
+                                toggleBtn.textContent = type === 'password' ? '👁️' : '🙈';
+                            });
+
 
                             roleInput.addEventListener('change', (e) => {
                                 const selectedRole = e.target.value;
@@ -156,7 +167,9 @@ export default {
                                 .filter(cb => cb.checked)
                                 .map(cb => cb.value);
 
-                            if (!name || !email || !role || !password) {
+                            const isValidEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
+
+                            if (!name || !email || !role || !password || !isValidEmail) {
                                 Swal.showValidationMessage('Please fill all required fields');
                                 return false;
                             }

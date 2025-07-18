@@ -264,11 +264,11 @@ export default {
                   <p>(Request Demo or General Enquiries)</p>
                     <div class="custom-swal-content">
                         <label class="custom-input-label" for="fullname">Full Name *</label>
-                        <input id="fullname" class="custom-input" placeholder="Enter your full name">
+                        <input type="text" id="fullname" class="custom-input" placeholder="Enter your full name">
                         <div id="fullname-error" class="error-message">Please enter your full name</div>
                         
                         <label class="custom-input-label" for="email">Email Address *</label>
-                        <input id="email" class="custom-input" placeholder="Enter your email address">
+                        <input type="email" id="email" class="custom-input" placeholder="Enter your email address">
                         <div id="email-error" class="error-message">Please enter a valid email address</div>
                         
                         <label class="custom-input-label" for="message">Message *</label>

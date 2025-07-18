@@ -159,7 +159,7 @@ export default {
                 icon: "info"
               });
 
-              this.resetForm();
+              this.toggleForm();
             } else if (data.session) {
               // User is signed in immediately (if email confirmation is not required)
               this.$router.push({ name: 'dashboard' });
