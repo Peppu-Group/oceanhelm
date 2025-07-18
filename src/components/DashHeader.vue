@@ -31,6 +31,17 @@ export default {
     methods: {
         ...mapActions('user', ['fetchUserProfile']),
 
+        async logout() {
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+                console.error('Error signing out:', error.message);
+            } else {
+                this.$router.push({ name: 'login' })
+            }
+
+        },
+
         async loggedIn() {
             await this.fetchUserProfile();
 
@@ -38,9 +49,17 @@ export default {
                 Swal.fire({
                     title: "Logged in",
                     text: this.userRoleDescription,
-                    icon: "info"
+                    icon: "info",
+                    showCancelButton: true,
+                    confirmButtonText: "OK",
+                    cancelButtonText: "Logout",
+                }).then((result) => {
+                    if (result.dismiss === Swal.DismissReason.cancel) {
+                        this.logout(); // Call your logout method
+                    }
                 });
             }
+
         },
         addUser() {
             Swal.fire({
