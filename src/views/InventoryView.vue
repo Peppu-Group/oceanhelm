@@ -77,7 +77,7 @@
                     </div>
                     <select v-model="selectedVessel" class="filter-select">
                         <option value="">All Vessels</option>
-                        <option v-for="vessel in vessels" :key="vessel" :value="vessel">{{ vessel.name }}</option>
+                        <option v-for="vessel in vessels" :key="vessel" :value="vessel.name">{{ vessel.name }}</option>
                     </select>
                     <select v-model="selectedCategory" class="filter-select">
                         <option value="">All Categories</option>
@@ -422,6 +422,7 @@ export default {
             if (!this.selectedVessel) return [];
             return this.inventoryData.filter(item => item.vessel === this.selectedVessel);
         },
+
         filteredInventory() {
             let filtered = this.inventoryData;
 
@@ -438,7 +439,7 @@ export default {
 
             // Vessel filter
             if (this.selectedVessel) {
-                filtered = filtered.filter(item => item.vessel === this.selectedVessel.name);
+                filtered = filtered.filter(item => item.vessel === this.selectedVessel);
             }
 
             // Category filter
@@ -2081,17 +2082,17 @@ body {
 }
 
 .vessel-btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    color: white;
 }
 
 .red-btn {
-  background: red;
+    background: red;
 }
 
 .green-btn {
