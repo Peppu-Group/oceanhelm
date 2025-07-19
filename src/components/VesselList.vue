@@ -204,7 +204,7 @@ export default {
                     // Process the form data
                     const { vesselname, regno } = result.value;
                     // Here you would typically send this data to your server
-                    let status = 'Active';
+                    let status = 'Inactive';
                     let newVessel = { name: vesselname, registrationNumber: regno, status };
 
                     // Add a new vessel

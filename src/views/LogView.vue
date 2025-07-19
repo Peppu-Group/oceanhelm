@@ -100,7 +100,7 @@
                                 <td>
                                     {{ log.details.status }}
                                     <div v-for="(change, key) in log.details.information" :key="key">
-                                        <strong>{{ key }}: </strong><small style="color: gray">{{ change.from || change }} → {{
+                                        <strong>{{ key }}: </strong><small style="color: gray">{{ change.from || "" }} → {{
                                             change.to || change }}</small>
                                     </div>
                                 </td>
