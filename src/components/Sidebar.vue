@@ -35,7 +35,7 @@
                     Processing</a>
             </li>
             <li>
-                <a href="/app/voyage"><i class="fas fa-ship"></i> Voyage
+                <a @click="comingSoon()"><i class="fas fa-ship"></i> Voyage
                     Manager</a>
             </li>
             <li v-if="this.userProfile.role == 'owner'">
