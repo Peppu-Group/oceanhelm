@@ -37,6 +37,8 @@ export default {
             if (error) {
                 console.error('Error signing out:', error.message);
             } else {
+                  // Clear all localStorage data
+                 localStorage.clear();
                 this.$router.push({ name: 'login' })
             }
 

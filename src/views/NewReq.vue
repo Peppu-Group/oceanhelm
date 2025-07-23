@@ -600,7 +600,6 @@ export default {
         this.userRole = 'staff'; // optional fallback
       }
     }
-    console.log(this.requisitions)
     // fetch requisitions
     this.$store.dispatch('requisitions/fetchRequisitions');
     // fetch vessels.
@@ -630,7 +629,6 @@ export default {
       return typeof value === 'number' ? value.toFixed(2) : 0.00;
     },
     startEdit(index) {
-      console.log(this.poDetails.items[index])
       this.poDetails.items[index].editing = true;
       this.poDetails.items[index].tempPrice = this.poDetails.items[index].unitPrice;
     },
@@ -823,9 +821,7 @@ export default {
       const inventory = this.findInventoryFromRequisition(requisition);
 
       if (inventory && inventory.minStock !== undefined) {
-        console.log(inventory)
-        console.log('Min Stock:', inventory.minStock);
-        console.log('Max Stock:', inventory.maxStock);
+        
       }
 
     },
