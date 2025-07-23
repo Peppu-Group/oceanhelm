@@ -38,7 +38,7 @@
                 <a @click="comingSoon()"><i class="fas fa-ship"></i> Voyage
                     Manager</a>
             </li>
-            <li v-if="this.userProfile.role == 'owner'">
+            <li v-if="this.userProfile.role == 'owner' || this.userProfile.role == 'staff'">
                 <a @click="updateCompanyInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>
@@ -273,7 +273,8 @@ export default {
             });
 
             if (formValues) {
-                formValues.logo = this.company.logo;
+                console.log(this.company.logo)
+                // formValues.logo = this.company.logo;
                 const changedFields = {};
 
                 for (const key in formValues) {
@@ -288,7 +289,7 @@ export default {
                 if (Object.keys(changedFields).length === 0) {
                     await Swal.fire({
                         title: 'No Changes Detected',
-                        text: 'No fields were changed. Update cancelled.',
+                        text: 'We have updated your logo, no other fields were changed.',
                         icon: 'info',
                         confirmButtonColor: '#0d6efd'
                     });
@@ -297,8 +298,7 @@ export default {
 
                 await this.$store.dispatch('company/updateCompanyInfo', {
                     formValues,
-                    changedFields,
-                    newLogo: this.selectedLogoFile || null
+                    changedFields                
                 });
 
                 await Swal.fire({
@@ -356,6 +356,8 @@ export default {
                         .from('companies')
                         .update({ logo: publicUrl })
                         .eq('id', companyId);
+
+                    this.company.logo = publicUrl;
 
                     if (updateError) console.error('Update failed', error);
                 }
