@@ -42,7 +42,7 @@
                 <a @click="updateCompanyInfo()"><i class="bi bi-gear"></i> Settings</a>
             </li>
             <li>
-                <a @click="comingSoon()"><i class="bi bi-question-circle"></i> Help & Support</a>
+                <a @click="helpSupport()"><i class="bi bi-question-circle"></i> Help & Support</a>
             </li>
         </ul>
     </nav>
@@ -133,6 +133,26 @@ export default {
                 title: "Coming soon!",
                 text: "This feature is coming soon",
                 icon: "info"
+            });
+        },
+        helpSupport() {
+            Swal.fire({
+                title: 'Contact Information',
+                html: `
+                <p><strong>Company:</strong> MarineTech (Peppu Ventures Limited)</p>
+                <p><strong>Email:</strong> marine@peppubuild.com</p>
+                <p><strong>Phone:</strong> +234 907 699 3818</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Documentation',
+                cancelButtonText: 'OK',
+                reverseButtons: true, // so OK appears on the right
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Open documentation link
+                    window.open('https://marinetech.gitbook.io/marinetech-docs/', '_blank');
+                }
+                // If cancelled, Swal automatically closes
             });
         },
         editInfo() {
@@ -298,7 +318,7 @@ export default {
 
                 await this.$store.dispatch('company/updateCompanyInfo', {
                     formValues,
-                    changedFields                
+                    changedFields
                 });
 
                 await Swal.fire({

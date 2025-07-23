@@ -62,6 +62,10 @@
                     <option value="">All Ports</option>
                     <option v-for="port in ports" :key="port" :value="port">{{ port }}</option>
                 </select>
+                <button class="btn btn-primary" @click="openHire">
+                    <i class="fas fa-file-alt"></i>
+                    Hire Information
+                </button>
                 <button class="btn btn-primary" @click="openModal">
                     <i class="fas fa-plus"></i>
                     Plan Voyage
@@ -268,6 +272,47 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="inventory-table" v-if="selectedTab == 'hire' && selectedTab !== 'dashboard'">
+                    <div class="table-responsive item-row">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Vessel</th>
+                                    <th>Engaged Date</th>
+                                    <th>Dis-engaged Date</th>
+                                    <th>Vessel</th>
+                                    <th>Maintenance Start</th>
+                                    <th>Maintenance End</th>
+                                    <th>Port Call</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in filteredVoyage" :key="item.id">
+                                    <td><strong>{{ item.id }}</strong></td>
+                                    <td>
+                                        <i class="fas fa-calendar"></i>
+                                        {{ item.date }}
+                                    </td>
+                                    <td>{{ item.purpose }}</td>
+                                    <td>{{ item.vessel }}</td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ item.origin }}
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        {{ item.call }}
+                                    </td>
+                                    <td>
+                                        <i class="fa-solid fa-clock"></i>
+                                        {{ item.start }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    </div>
 
                 <div class="inventory-table" v-if="selectedTab !== 'dashboard'">
                     <div class="table-responsive item-row">
@@ -532,6 +577,9 @@ export default {
                 'ongoing': 'status-ongoing'
             };
             return classes[action] || '';
+        },
+        openHire() {
+            this.selectedTab == 'hire'
         },
         openModal() {
             this.showModal = true;

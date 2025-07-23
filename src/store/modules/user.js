@@ -15,7 +15,7 @@ export default {
 
       switch (role) {
         case 'owner':
-          return `You're logged as ${full_name}, with owner access. You have full access, you can see the changes everyone makes.`;
+          return `You're logged as ${full_name}, with marine superintendent access. You have full access, you can see the changes everyone makes.`;
         case 'captain':
           return `You're logged as ${full_name}, with captain access. You have full access for your vessel's information, you can see the changes everyone makes to your vessel.`;
         case 'staff':
