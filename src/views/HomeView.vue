@@ -69,26 +69,39 @@
         <div class="feature-card">
           <div class="feature-icon">
             <svg viewBox="0 0 64 64" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-              <path d="M2 42l4 8h52l4-8-8-4v-8H10v8l-8 4zM32 10c-1.1 0-2 .9-2 2v6H14v4h36v-4H34v-6c0-1.1-.9-2-2-2zm0-6c-2.2 0-4 1.8-4 4v2h8v-2c0-2.2-1.8-4-4-4z"/>
-              <path d="M10 54c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6zm44 0c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6z"/>
+              <path
+                d="M2 42l4 8h52l4-8-8-4v-8H10v8l-8 4zM32 10c-1.1 0-2 .9-2 2v6H14v4h36v-4H34v-6c0-1.1-.9-2-2-2zm0-6c-2.2 0-4 1.8-4 4v2h8v-2c0-2.2-1.8-4-4-4z" />
+              <path
+                d="M10 54c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6zm44 0c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6z" />
             </svg>
           </div>
           <h3>Voyage Management</h3>
-          <p>Easily manage logistics and positioning of all the vessels in your fleet. Understand when a vessel signs in or out, get timesheet report.</p>
+          <p>Easily manage logistics and positioning of all the vessels in your fleet. Understand when a vessel signs in
+            or out, get timesheet report.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 2H4C2.9 2 2 2.9 2 4v17.17c0 .53.21 1.04.59 1.41.38.38.89.59 1.41.59.26 0 .51-.05.75-.15L12 20.25l7.25 2.77c.24.1.49.15.75.15.52 0 1.03-.21 1.41-.59.38-.37.59-.88.59-1.41V4c0-1.1-.9-2-2-2zm0 17.17l-6.25-2.39a1.01 1.01 0 0 0-.75 0L4 19.17V4h16v15.17z"/>
-              <path d="M7 9h10v2H7zM7 13h7v2H7z"/>
+              <path
+                d="M20 2H4C2.9 2 2 2.9 2 4v17.17c0 .53.21 1.04.59 1.41.38.38.89.59 1.41.59.26 0 .51-.05.75-.15L12 20.25l7.25 2.77c.24.1.49.15.75.15.52 0 1.03-.21 1.41-.59.38-.37.59-.88.59-1.41V4c0-1.1-.9-2-2-2zm0 17.17l-6.25-2.39a1.01 1.01 0 0 0-.75 0L4 19.17V4h16v15.17z" />
+              <path d="M7 9h10v2H7zM7 13h7v2H7z" />
             </svg>
           </div>
           <h3>Compliance Management</h3>
-          <p>Stay ahead of regulatory demands by effortlessly tracking vessel certifications, crew qualifications, and compliance deadlines. Receive timely alerts for expirations, ensure audit readiness, and maintain operational integrity across your fleet.</p>
+          <p>Stay ahead of regulatory demands by effortlessly tracking vessel certifications, crew qualifications, and
+            compliance deadlines. Receive timely alerts for expirations, ensure audit readiness, and maintain operational
+            integrity across your fleet.</p>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Video Section -->
+  <div class="video-container">
+    <div class="video-wrapper">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/OykxpTlZhhc?si=lsJye9oRAbBPlsH7" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </div>
+  </div>
 
   <!-- Platform Overview -->
   <section class="platform" id="platform">
@@ -801,5 +814,51 @@ nav a:hover {
   font-size: 18px;
   max-width: 600px;
   margin: 0 auto 40px;
+}
+
+.video-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 40px 20px;
+  margin: 20px auto;
+  max-width: 1200px;
+}
+
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  padding-bottom: 45%;
+  /* 16:9 aspect ratio (9/16 * 100) */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .video-container {
+    padding: 20px 15px;
+    margin: 10px;
+  }
+
+  .video-wrapper {
+    padding-bottom: 56.25%;
+    /* Maintain 16:9 on mobile */
+  }
 }
 </style>
