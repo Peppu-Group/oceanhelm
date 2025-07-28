@@ -211,7 +211,6 @@ export default {
                     }
 
                     const publicUrl = publicUrlData.publicUrl;
-
                     this.certifications.push({
                         id: cert_id,
                         name: this.newCert.name,
@@ -282,7 +281,7 @@ export default {
             this.newCert = {
                 name: '',
                 expiry_date: '',
-                image: ''
+                image: '',
             };
         }
     }

@@ -1,0 +1,38 @@
+name: Certification Notification
+
+on:
+  schedule:
+    # Runs every day at 9 AM GMT+1
+    - cron: "0 8 * * *"
+  workflow_dispatch: # Optional: manual trigger
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout (not strictly required since we only call API)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # 3. Install axios
+      - name: Install axios
+        run: npm install axios
+
+      # 4. Call the API
+      - name: Send POST Request
+        run: |
+          node -e "
+          const axios = require('axios');
+          axios.post('https://proctoredserver.peppubuild.com/mailNotification')
+            .then(res => console.log('Notification sent:', res.status))
+            .catch(err => { console.error('Error:', err.message); process.exit(1); });
+          "
+        env:
+          API_KEY: ${{ secrets.API_KEY }} # if your API needs authentication

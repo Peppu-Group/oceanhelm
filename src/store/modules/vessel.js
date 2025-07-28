@@ -165,11 +165,18 @@ export default {
         }
       }
     },
-    async updateVesselCert({ commit }, { cert, id }) {
+    async updateVesselCert({ rootState }, { cert, id }) {
+      let email = rootState.company.company.email  ;
+
+       // Attach email to each certificate
+      const cert_with_email = cert.map(c => ({
+        ...c,
+        email
+      }));
       // Update in Supabase
       const { data, error } = await supabase
         .from('vessels')
-        .update({ certifications: cert })
+        .update({ certifications: cert_with_email  })
         .eq('registration_number', id);
     },
     async deleteVessel({ commit }, id) {
