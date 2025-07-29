@@ -30,7 +30,7 @@ jobs:
         run: |
           node -e "
           const axios = require('axios');
-          axios.post('https://proctoredserver.peppubuild.com/mailNotification')
+          axios.post('https://proctoredserver.peppubuild.com/certification/reminder')
             .then(res => console.log('Notification sent:', res.status))
             .catch(err => { console.error('Error:', err.message); process.exit(1); });
           "
