@@ -169,7 +169,7 @@ export default {
                                 .filter(cb => cb.checked)
                                 .map(cb => cb.value);
 
-                            const isValidEmail = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
+                            const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
                             if (!name || !email || !role || !password || !isValidEmail) {
                                 Swal.showValidationMessage('Please fill all required fields');
