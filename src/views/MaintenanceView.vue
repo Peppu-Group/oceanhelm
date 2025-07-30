@@ -66,6 +66,16 @@
                                 </li>
                             </ul>
 
+                            <div class="form-group">
+                                <label>Image Evidence</label>
+                                <p>You can only upload one image evidence here.</p>
+                                <div class="attachment-area">
+                                    <p>{{ fileText }}</p>
+                                    <input type="file" id="evidence-files" class="file-input" @change="handleImg">
+                                    <label for="evidence-files" class="file-label">Browse Files</label>
+                                </div>
+                            </div>
+
                             <div class="status" v-if="completedCount === checklists.length">
                                 All tasks completed! ✅
                             </div>
@@ -194,10 +204,6 @@
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="notify-sms" v-model="form.notifySms">
                                     <label for="notify-sms">SMS Notification</label>
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="checkbox" id="notify-app" v-model="form.notifyApp">
-                                    <label for="notify-app">In-App Notification</label>
                                 </div>
                             </div>
                         </div>
@@ -473,7 +479,9 @@ export default {
             isSaving: false,
             lastSection: '',
             currentTask: '',
-            imgText: 'Drag and drop files here or',
+            imgText: 'Choose file to upload',
+            fileText: 'Drag and drop files here or',
+            fileattachments: {},
             tasks: [],
             activeSection: 'inventory',
             sections: [
@@ -504,8 +512,7 @@ export default {
                 lastPerformed: '',
                 nextDue: '',
                 notifyEmail: true,
-                notifySms: false,
-                notifyApp: true,
+                notifySms: true,
                 reminderDays: '1',
                 estimatedDuration: null,
                 notes: '',
@@ -687,7 +694,7 @@ export default {
                     this.isLoading = false; // End loading regardless of success or failure
                 });
         },
-        showMaintenance(taskComponent) {
+        async showMaintenance(taskComponent) {
             if (this.deepAccess()) {
                 const tasks = this.tasks;
                 const task = tasks.find(t => t.component === taskComponent);
@@ -734,6 +741,12 @@ export default {
         handleFiles(event) {
             this.imgText = event.target.files[0].name
             this.form.attachments = {
+                file: event.target.files[0] // only the first file
+            };
+        },
+        handleImg(event) {
+            this.fileText = event.target.files[0].name
+            this.fileattachments = {
                 file: event.target.files[0] // only the first file
             };
         },
@@ -897,8 +910,6 @@ export default {
                         return;
                     }
 
-                    console.log(publicUrlData)
-
                     const publicUrl = publicUrlData.publicUrl;
 
                     // Update the company's logo with the public URL
@@ -941,8 +952,7 @@ export default {
                 lastPerformed: '',
                 nextDue: '',
                 notifyEmail: true,
-                notifySms: false,
-                notifyApp: true,
+                notifySms: true,
                 reminderDays: '1',
                 estimatedDuration: null,
                 notes: '',
@@ -986,8 +996,52 @@ export default {
                     tasks: this.tasks,
                     updateTask
                 });
-                // send to maintenance page
-                this.activeSection = 'inventory';
+                const file = this.fileattachments.file;
+
+                if (!file) {
+                    // send to maintenance page
+                    this.activeSection = 'inventory';
+                } else {
+
+                    // Push Image 
+                    const randomText = Math.random().toString(36).substring(2, 8);
+                    let companyId = localStorage.getItem('company_id');
+                    const { data, error } = await supabase.storage
+                        .from('company-files')
+                        .upload(`tasks/${companyId}-${randomText}.png`, file, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+
+                    if (data) {
+                        const filePath = data.path;
+
+                        const { data: publicUrlData, error: urlError } = supabase
+                            .storage
+                            .from('company-files')
+                            .getPublicUrl(filePath);
+
+                        if (urlError) {
+                            console.error('Failed to get public URL', urlError);
+                            return;
+                        }
+
+                        const publicUrl = publicUrlData.publicUrl;
+
+                        // Update the company's logo with the public URL
+                        const { error: updateError } = await supabase
+                            .from('tasks')
+                            .update({ after: publicUrl })
+                            .eq('company_id', companyId)
+                            .eq('vessel', this.$route.params.id)
+                            .eq('component', currentTask);
+
+                        if (updateError) console.error('Update failed', error);
+                    }
+
+                    // send to maintenance page
+                    this.activeSection = 'inventory';
+                }
             }
         },
         cleanAndParseAIResponse(text) {
@@ -1012,7 +1066,6 @@ export default {
                 return JSON.parse(text);
             } catch (err) {
                 console.error("Failed to parse cleaned response:", err.message);
-                console.log("Raw cleaned text:", text);
                 return null;
             }
         },
@@ -1021,7 +1074,6 @@ export default {
                 const res = await axios.post(`https://proctoredserver.peppubuild.com/promptai`, {
                     userReq: mainType
                 });
-                console.log(res.data.result)
                 let result = res.data.result;
                 let content = '';
 
@@ -1930,4 +1982,5 @@ textarea {
         margin: 0;
         max-width: none;
     }
-}</style>
+}
+</style>
