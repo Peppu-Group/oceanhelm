@@ -99,7 +99,8 @@ export default {
         status: task.status,
         remainingDays: task.remaining_days,
         attachments: task.attachments,
-        checklistProgress: task.checklist_progress
+        checklistProgress: task.checklist_progress,
+        after: task.after
       }));
 
       commit('SET_TASKS', { vesselId, tasks: simplifiedTasks });
