@@ -121,6 +121,7 @@ export default {
             .insert([
               {
                 task_name: task.taskName,
+                email: task.email,
                 description: task.description,
                 maintenance_type: task.maintenanceType,
                 component: task.component,

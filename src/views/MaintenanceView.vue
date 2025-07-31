@@ -543,6 +543,7 @@ export default {
                 estimatedDuration: null,
                 notes: '',
                 status: 'Soon',
+                email: '',
                 remainingDays: null,
                 attachments: {}
             },
@@ -611,7 +612,10 @@ export default {
         },
         totalEstimatedHours() {
             return this.maintenanceTasks.reduce((total, task) => total + (task.estimatedHours || 0), 0);
-        }
+        },
+        company() {
+            return this.$store.getters['company/company'];
+        },
     },
     async mounted() {
         let id = this.$route.params.id;
@@ -889,7 +893,7 @@ export default {
             // validate that the component isn't already in maintenance.
             const tasksData = localStorage.getItem(`tasks-${id}`) || '[]';
             const tasks = JSON.parse(tasksData);
-
+            taskData.email = this.company.email;
             // Check for duplicate component
             const hasDuplicateComponent = tasks.some(task => task.component === taskData.component);
 
@@ -1057,7 +1061,7 @@ export default {
 
                         const publicUrl = publicUrlData.publicUrl;
 
-                        // Update the company's logo with the public URL
+                        // Update the task's logo with the public URL
                         const { error: updateError } = await supabase
                             .from('tasks')
                             .update({ after: publicUrl })
