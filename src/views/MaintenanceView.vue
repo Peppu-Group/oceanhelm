@@ -1031,7 +1031,7 @@ export default {
                     // send to maintenance page
                     this.activeSection = 'inventory';
                 } else {
-
+                    this.fileattachments.file = null;
                     // Push Image 
                     const randomText = Math.random().toString(36).substring(2, 8);
                     let companyId = localStorage.getItem('company_id');
