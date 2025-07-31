@@ -34,10 +34,6 @@ export default {
         const nameOnly = task.assignedTo.split('-')[0].trim();
         const crewInfo = rootState.crew.crewMembers.find(m => m.name === nameOnly);
         const companyInfo = rootState.company.company;
-
-        console.log(companyInfo)
-        console.log(rootState.company)
-
         let notificationData = {
           companyName: companyInfo.name,
           name: task.assignedTo,
@@ -173,7 +169,6 @@ export default {
     },
     async updateTask({ commit }, { vesselId, tasks, updateTask }) {
       const { data: { session } } = await supabase.auth.getSession();
-
       if (session) {
         const user = session.user;
         const { data: profile, error } = await supabase
@@ -188,7 +183,8 @@ export default {
           // Build payload safely
           const updatePayload = {
             checklist_progress: updateTask.checklistProgress,
-            status: updateTask.status
+            status: updateTask.status,
+            after: updateTask.after
           };
 
           // Update in Supabase. we need a method to compare vesselId and component.

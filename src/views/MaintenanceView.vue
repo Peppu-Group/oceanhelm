@@ -73,7 +73,8 @@
                                         <span class="task-text">
                                             Image Evidence Already Uploaded
                                         </span>
-                                        <button class="delete-btn" @click="deleteEvidence()" title="Delete Image">
+                                        <button type="button" class="delete-btn" @click="deleteEvidence()"
+                                            title="Delete Image">
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                 stroke-linejoin="round">
@@ -89,7 +90,7 @@
                                 </ul>
                             </div>
 
-                            <div class="form-group" v-else>
+                            <div class="form-group" v-else :key="refreshKey || 'default'">
                                 <label>Upload Image Evidence</label>
                                 <p>You can only upload one image evidence here.</p>
                                 <div class="attachment-area">
@@ -507,6 +508,7 @@ export default {
             fileText: 'Drag and drop files here or',
             fileattachments: {},
             tasks: [],
+            refreshKey: 0,
             activeSection: 'inventory',
             sections: [
                 { id: 'schedule', name: 'Schedule', icon: '📅' },
@@ -732,7 +734,6 @@ export default {
 
                 // Remove the file attachment form, replace with delete button first.
                 this.after = task.after;
-                console.log(this.after)
                 // Also update current task in localStorage (optional)
                 localStorage.setItem('currentTask', taskComponent);
                 this.currentTask = taskComponent;
@@ -1016,7 +1017,8 @@ export default {
                 let updateTask = {
                     checklistProgress: this.tasks[taskIndex].checklistProgress,
                     status: this.tasks[taskIndex].status,
-                    component: currentTask
+                    component: currentTask,
+                    after: this.after
                 }
                 await this.$store.dispatch('tasks/updateTask', {
                     vesselId: id,
@@ -1062,6 +1064,8 @@ export default {
                             .eq('company_id', companyId)
                             .eq('vessel', this.$route.params.id)
                             .eq('component', currentTask);
+
+                        this.tasks[taskIndex].after = publicUrl;
 
                         if (updateError) console.error('Update failed', error);
                     }
@@ -1173,6 +1177,36 @@ export default {
             recommendations.push('Update task progress and notes in real-time for accurate reporting');
 
             return recommendations;
+        },
+        async deleteEvidence() {
+            let currentTask = localStorage.getItem('currentTask');
+            let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
+
+            if (taskIndex !== -1) {
+                const url = this.after;
+                const match = url.match(/tasks\/.+$/);
+
+                if (match) {
+                    const filePath = match;
+                    const { data, error: deleteError } = await supabase
+                        .storage
+                        .from('company-files')
+                        .remove([filePath]);
+
+                    if (deleteError) {
+                        console.error('Error deleting file:', deleteError);
+                    } else {
+                        this.after = null;
+                        this.tasks[taskIndex].after = null;
+                        this.fileText = 'Drag and drop files here or',
+                        this.fileattachments = {};
+                        this.refreshKey += 1;
+                       // this.$refs.fileInput.value = ''; // reset file input
+                                                // update supabase
+                        // this.updateVesselCert(this.certifications);
+                    }
+                }
+            }
         }
     }
 
