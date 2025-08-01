@@ -99,7 +99,10 @@
   <!-- Video Section -->
   <div class="video-container">
     <div class="video-wrapper">
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/OykxpTlZhhc?si=lsJye9oRAbBPlsH7" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/OykxpTlZhhc?si=lsJye9oRAbBPlsH7"
+        title="YouTube video player" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -237,8 +240,7 @@
         </div>
         <div class="testimonial-author">
           <div class="author-image">
-            <img src="https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000"
-              alt="Captain James Miller">
+            <img src="../assets/oromena.png" alt="Captain James Miller">
           </div>
           <div class="author-info">
             <h4>Engr. Emmanuel Ukoh</h4>
@@ -265,6 +267,8 @@
 <script>
 import NavBar from '../components/NavBar.vue'
 import FooterView from '../components/FooterView.vue'
+import axios from 'axios';
+
 export default {
   name: 'HomeView',
   components: { NavBar, FooterView },
@@ -343,19 +347,37 @@ export default {
           // Process the form data
           const { fullname, email, message } = result.value;
 
-          // Here you would typically send this data to your server
-          console.log('Form submitted:', { fullname, email, message });
+          const notificationData = {
+            fullname,
+            email,
+            message
+          };
 
-          // Show success message
-          Swal.fire({
-            icon: 'success',
-            title: 'Thank You!',
-            text: 'Your message has been sent successfully. We will get back to you soon.',
-            confirmButtonText: 'Close',
-            customClass: {
-              confirmButton: 'swal2-confirm'
-            }
-          });
+          axios.post('https://proctoredserver.peppubuild.com/contact', notificationData)
+            .then(response => {
+              // Show success message
+              Swal.fire({
+                icon: 'success',
+                title: 'Thank You!',
+                text: 'Your message has been sent successfully. We will get back to you soon.',
+                confirmButtonText: 'Close',
+                customClass: {
+                  confirmButton: 'swal2-confirm'
+                }
+              });
+            })
+            .catch(error => {
+              // Show success message
+              Swal.fire({
+                icon: 'error',
+                text: 'An error occurred, message could not be sent',
+                confirmButtonText: 'Close',
+                customClass: {
+                  confirmButton: 'swal2-confirm'
+                }
+              });
+            });
+
         }
       });
     }
@@ -860,5 +882,4 @@ nav a:hover {
     padding-bottom: 56.25%;
     /* Maintain 16:9 on mobile */
   }
-}
-</style>
+}</style>
