@@ -3,7 +3,7 @@
     <div class="container">
         <div class="footer-grid">
             <div class="footer-about">
-                <h3>MarineTech</h3>
+                <h3>OceanHelm</h3>
                 <p>Comprehensive maritime management software for modern fleets. Streamlining maintenance, requisition processing, inventory management, and cross-vessel communication.</p>
                 <div class="social-links">
                     <!-- Facebook -->
@@ -57,7 +57,7 @@
         </div>
         
         <div class="footer-bottom">
-            <p>&copy; 2025 MarineTech. All rights reserved.</p>
+            <p>&copy; 2025 OceanHelm. All rights reserved.</p>
             <div class="made-in-nigeria">
                     <span class="nigeria-flag">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" width="21" height="14">

@@ -2,7 +2,7 @@
   <body>
     <div class="login-container">
       <div class="logo-section">
-        <div class="logo">MarineTech</div>
+        <div class="logo">OceanHelm</div>
         <div class="tagline">Maritime Operations Management, Proudly made in Nigeria</div>
       </div>
 

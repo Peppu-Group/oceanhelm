@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <Sidebar />
     <div id="content" class="container">
-        <h1>MarineTech Crew Management</h1>
+        <h1>OceanHelm Crew Management</h1>
 
         <div class="crew-section">
             <div class="section-header">

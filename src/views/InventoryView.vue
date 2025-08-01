@@ -13,7 +13,7 @@
         <!-- Vessels Header -->
         <div class="header">
             <div>
-                <h1><i class="fas fa-ship"></i>MarineTech Inventory Management</h1>
+                <h1><i class="fas fa-ship"></i>OceanHelm Inventory Management</h1>
                 <div class="header-stats">
                     <div class="stat-card">
                         <div class="stat-value">{{ vessels.length }}</div>

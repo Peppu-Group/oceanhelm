@@ -113,7 +113,7 @@
             <h3>Our Platform</h3>
             <h2>Designed For Maritime Operations</h2>
             <p>
-              MarineTech provides a comprehensive, easy-to-use platform that connects all aspects of your fleet management
+              OceanHelm provides a comprehensive, easy-to-use platform that connects all aspects of your fleet management
               into one unified system. Our software works seamlessly both online and offline, ensuring you have access to
               critical information wherever you are.
             </p>
@@ -231,7 +231,7 @@
       </div>
       <div class="testimonial-card">
         <div class="testimonial-text">
-          "MarineTech has revolutionized how we manage our fleet. The maintenance scheduling and inventory tracking
+          "OceanHelm has revolutionized how we manage our fleet. The maintenance scheduling and inventory tracking
           features have saved us countless hours and significantly reduced our operational costs. The ability to share
           data between vessels and our shore office has been a game-changer for our operations."
         </div>
@@ -253,7 +253,7 @@
   <section class="cta" id="demo">
     <div class="container">
       <h2>Ready to Transform Your Maritime Operations?</h2>
-      <p>Schedule a personalized demo today and discover how MarineTech can help your fleet operate more efficiently.</p>
+      <p>Schedule a personalized demo today and discover how OceanHelm can help your fleet operate more efficiently.</p>
       <a @click="contactDemo()" class="primary-button">Request Demo</a>
     </div>
   </section>

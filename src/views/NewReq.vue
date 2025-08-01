@@ -12,7 +12,7 @@
   <div id="content">
     <div class="container">
       <div class="header">
-        <h1>MarineTech Requisition System</h1>
+        <h1>OceanHelm Requisition System</h1>
         <p>Streamlined Material Request & Ordering Process</p>
       </div>
 

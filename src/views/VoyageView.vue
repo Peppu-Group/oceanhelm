@@ -13,7 +13,7 @@
         <!-- Header -->
         <div class="header">
             <div>
-                <h1><i class="fas fa-ship"></i>MarineTech Voyage Management System</h1>
+                <h1><i class="fas fa-ship"></i>OceanHelm Voyage Management System</h1>
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary">

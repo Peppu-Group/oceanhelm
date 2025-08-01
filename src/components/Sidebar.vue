@@ -2,7 +2,7 @@
     <nav id="sidebar">
         <div class="logo d-flex align-items-center left">
             <i class="bi bi-water me-2"></i>
-            <span>MarineTech</span>
+            <span>OceanHelm</span>
         </div>
         <ul class="list-unstyled components mt-4">
             <li class="active">
@@ -139,7 +139,7 @@ export default {
             Swal.fire({
                 title: 'Contact Information',
                 html: `
-                <p><strong>Company:</strong> MarineTech (Peppu Ventures Limited)</p>
+                <p><strong>Company:</strong> OceanHelm (Peppu Ventures Limited)</p>
                 <p><strong>Email:</strong> marine@peppubuild.com</p>
                 <p><strong>Phone:</strong> +234 907 699 3818</p>
                 `,
@@ -150,7 +150,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Open documentation link
-                    window.open('https://marinetech.gitbook.io/marinetech-docs/', '_blank');
+                    window.open('https://OceanHelm.gitbook.io/OceanHelm-docs/', '_blank');
                 }
                 // If cancelled, Swal automatically closes
             });
