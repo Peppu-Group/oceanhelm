@@ -5,7 +5,7 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#">
                 <img src="../assets/logo.png" style="height: 40px; width: 40px; margin-right: 20px"/>
-                <h1 class="mb-0 fs-4 fw-bold text-primary">Marine<span class="text-info">Tech</span> - Peppubuild</h1>
+                <h1 class="mb-0 fs-4 fw-bold text-primary">Ocean<span class="text-info">Helm</span></h1>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
