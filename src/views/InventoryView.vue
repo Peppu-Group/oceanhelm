@@ -103,7 +103,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Item Code</th>
+                            <th>Part Number</th>
                             <th>Item Name</th>
                             <th>Category</th>
                             <th>Vessel</th>
@@ -236,13 +236,6 @@
                                 <canvas ref="activityChart"></canvas>
                             </div>
                         </div>
-
-                        <div class="chart-card full-width">
-                            <h3 class="chart-title">Inventory Value Trend (Last 6 Months)</h3>
-                            <div class="chart-container">
-                                <canvas ref="trendChart"></canvas>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -315,7 +308,7 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Item Code</th>
+                            <th>Part Number</th>
                             <th>Item Name</th>
                             <th>Category</th>
                             <th>Vessel</th>
@@ -1037,7 +1030,7 @@ export default {
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="itemCode">Item Code <span class="required">*</span></label>
+                                <label for="itemCode">Part Number <span class="required">*</span></label>
                                 <input type="text" id="itemCode" placeholder="e.g., ENG-001" required>
                             </div>
                             <div class="form-group">
@@ -1127,7 +1120,7 @@ export default {
 
                     // Validation
                     if (!itemCode.trim()) {
-                        Swal.showValidationMessage('Item Code is required');
+                        Swal.showValidationMessage('Part Number is required');
                         return false;
                     }
                     if (!itemName.trim()) {
@@ -1221,6 +1214,19 @@ export default {
 
             if (formValues) {
                 // Process the form data
+                const isDuplicate = this.inventoryData.some(item =>
+                    item.id === formValues.id && item.vessel === formValues.vessel
+                );
+
+                if (isDuplicate) {
+                    // Prevent adding
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Duplicate Entry',
+                        text: `Item with Part Number: ${formValues.id} already exists in vessel ${formValues.vessel}. Use the transfer action instead.`
+                    });
+                    return;
+                }
                 await this.addInventoryItem(formValues);
             }
         },
@@ -1347,7 +1353,6 @@ export default {
         createCharts() {
             this.createCategoryChart();
             this.createStockChart();
-            this.createTrendChart();
             this.createStocksChart();
         },
         createStocksChart() {
@@ -1490,63 +1495,6 @@ export default {
             }));
 
             return trendData;
-        },
-        createTrendChart() {
-            const ctx = this.$refs.trendChart.getContext('2d');
-
-            // Trend data for the last 6 months
-            const trendData = this.getTrendDataFromInventory()
-
-            this.trendChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: trendData.map(d => d.month),
-                    datasets: [{
-                        label: 'Inventory Value ($)',
-                        data: trendData.map(d => d.value),
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#3b82f6',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: {
-                                color: '#94a3b8',
-                                callback: function (value) {
-                                    return '$' + (value / 1000) + 'K';
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(59, 130, 246, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#94a3b8'
-                            },
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
         },
         updateCharts() {
             // Destroy and recreate charts
