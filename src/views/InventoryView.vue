@@ -89,7 +89,7 @@
                         <i class="fas fa-plus"></i>
                         Add Item
                     </button>
-                    <button class="btn btn-secondary" @click="exportData">
+                    <button class="btn btn-secondary" @click="generatePDF">
                         <i class="fas fa-download"></i>
                         Export
                     </button>
@@ -290,7 +290,7 @@
                         <i class="fas fa-plus"></i>
                         Add Item
                     </button>
-                    <button class="btn btn-secondary" @click="exportData">
+                    <button class="btn btn-secondary" @click="generatePDF">
                         <i class="fas fa-download"></i>
                         Export
                     </button>
@@ -388,6 +388,7 @@ import { mapGetters } from 'vuex';
 import Sidebar from '../components/Sidebar.vue';
 import VesselList from '../components/VesselList.vue';
 import Chart from 'chart.js/auto';
+import { jsPDF } from "jspdf";
 
 export default {
     name: 'inventory',
@@ -509,6 +510,43 @@ export default {
             });
             return status;
         },
+        processedData() {
+            const results = [];
+
+            // Process each inventory item
+            this.filteredInventory.forEach(item => {
+                item.actionType.forEach(action => {
+                    // Add main action entry
+                    results.push({
+                        partNumber: item.id,
+                        vessel: item.vessel,
+                        location: item.location,
+                        actionType: action.action,
+                        initialQuantity: action.initialQuantity,
+                        finalQuantity: action.finalQuantity,
+                        date: action.date,
+                        isTransferDestination: false
+                    });
+
+                    // For transfer actions, add destination entry
+                    if (action.action === 'transfer' && action.to) {
+                        results.push({
+                            partNumber: item.id,
+                            vessel: action.to[0], // destination vessel
+                            location: action.to[1], // destination location
+                            actionType: 'transfer (received)',
+                            initialQuantity: 0, // receiving location starts with 0
+                            finalQuantity: item.actionType.find(a => a === action).initialQuantity - action.finalQuantity, // transferred quantity
+                            date: action.date,
+                            isTransferDestination: true
+                        });
+                    }
+                });
+            });
+
+            // Sort by date in ascending order
+            return results.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
     },
     watch: {
         selectedTab(newTab) {
@@ -606,16 +644,14 @@ export default {
                 year: 'numeric'
             });
         },
-        exportData() {
-            alert('Export functionality will be implemented');
-        },
         importData() {
             alert('Import functionality will be implemented');
         },
         updateInventory(id, stockData, location, vessel, action) {
             let actionType = {
                 action: action,
-                quantity: stockData.quantityReceived
+                initialQuantity: parseInt(stockData.currentStock) - parseInt(stockData.quantityReceived),
+                finalQuantity: stockData.currentStock,
             };
             const payload = { id, location, vessel, stockData, actionType };
             this.$store.dispatch('inventory/updateInventory', payload);
@@ -777,7 +813,8 @@ export default {
 
                 let actionType = {
                     action: action,
-                    quantity: transferQuantity
+                    initialQuantity: parseInt(stockData.currentStock) - parseInt(transferQuantity),
+                    finalQuantity: stockData.currentStock
                 };
 
                 const payload = { id, location, vessel, stockData, actionType };
@@ -1282,6 +1319,76 @@ export default {
             const unitPrice = totalValue / totalStock;
 
             return unitPrice;
+        },
+        generatePDF() {
+            const doc = new jsPDF();
+
+            // Set title
+            doc.setFontSize(20);
+            doc.setTextColor(13, 110, 253);
+            doc.text('Inventory Actions Report', 20, 20);
+
+            // Add generation date
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+
+            // Prepare table data
+            const tableData = this.processedData.map(row => [
+                row.partNumber,
+                row.vessel,
+                row.location,
+                row.actionType,
+                row.initialQuantity.toString(),
+                row.finalQuantity.toString(),
+                this.formatDate(row.date)
+            ]);
+
+            // Generate table with vertical lines
+            doc.autoTable({
+                head: [['Part Number', 'Vessel', 'Location', 'Action Type', 'Initial Qty', 'Final Qty', 'Date']],
+                body: tableData,
+                startY: 40,
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 5,
+                    lineColor: [200, 200, 200],
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    fillColor: [13, 110, 253],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                    lineColor: [255, 255, 255],
+                    lineWidth: 0.1
+                },
+                tableLineColor: [200, 200, 200],
+                tableLineWidth: 0.1,
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 30 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 20 },
+                    5: { cellWidth: 20 },
+                    6: { cellWidth: 30 }
+                },
+                didDrawCell: function (data) {
+                    // Add vertical lines to all cells
+                    if (data.column.index < 6) { // Don't add line after last column
+                        const x = data.cell.x + data.cell.width;
+                        const y1 = data.cell.y;
+                        const y2 = data.cell.y + data.cell.height;
+
+                        doc.setDrawColor(200, 200, 200);
+                        doc.setLineWidth(0.1);
+                        doc.line(x, y1, x, y2);
+                    }
+                }
+            });
+
+            // Save the PDF
+            doc.save('inventory-actions-report.pdf');
         },
         getInventoryChartData() {
             const now = new Date();

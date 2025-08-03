@@ -41,7 +41,8 @@ export default {
                 state.inventory[index].status = stockData.status;
                 state.inventory[index].actionType.push({
                     action: payload.actionType.action,
-                    quantity: payload.actionType.quantity,
+                    initialQuantity: payload.actionType.initialQuantity,
+                    finalQuantity: payload.actionType.finalQuantity,
                     value: stockData.value,
                     date: new Date().toISOString()
                 });
@@ -155,7 +156,8 @@ export default {
                         updatedActionType.push({
                             action: payload.actionType.action,
                             receiver: user.user_metadata.fullName,
-                            quantity: payload.actionType.quantity,
+                            initialQuantity: payload.actionType.initialQuantity,
+                            finalQuantity: payload.actionType.finalQuantity,
                             value: stockData.value,
                             date: new Date().toISOString()
                         });

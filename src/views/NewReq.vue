@@ -702,7 +702,8 @@ export default {
 
           const actionType = {
             action: 'stockin',
-            quantity: requisitionItem.qty,
+            initialQuantity: parseInt(currentStock) - parseInt(requisitionItem.qty),
+            finalQuantity: currentStock,
             date: new Date().toISOString()
           };
 
