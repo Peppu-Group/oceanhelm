@@ -39,13 +39,18 @@ export default {
                 state.inventory[index].value = stockData.value;
                 state.inventory[index].currentStock = stockData.currentStock;
                 state.inventory[index].status = stockData.status;
+                if (!Array.isArray(state.inventory[index].actionType)) {
+                    state.inventory[index].actionType = [];
+                }
                 state.inventory[index].actionType.push({
                     action: payload.actionType.action,
                     initialQuantity: payload.actionType.initialQuantity,
                     finalQuantity: payload.actionType.finalQuantity,
                     value: stockData.value,
-                    date: new Date().toISOString()
+                    date: new Date().toISOString(),
+                    ...(payload.actionType.action === 'transfer' && { to: payload.actionType.to })
                 });
+                console.log(state.inventory[index])
             }
         }
     },
@@ -159,7 +164,8 @@ export default {
                             initialQuantity: payload.actionType.initialQuantity,
                             finalQuantity: payload.actionType.finalQuantity,
                             value: stockData.value,
-                            date: new Date().toISOString()
+                            date: new Date().toISOString(),
+                            ...(payload.actionType.action === 'transfer' && { to: payload.actionType.to })
                         });
 
                         const { data, error } = await supabase

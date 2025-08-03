@@ -389,6 +389,7 @@ import Sidebar from '../components/Sidebar.vue';
 import VesselList from '../components/VesselList.vue';
 import Chart from 'chart.js/auto';
 import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default {
     name: 'inventory',
@@ -515,6 +516,9 @@ export default {
 
             // Process each inventory item
             this.filteredInventory.forEach(item => {
+                // Skip if actionType is missing or not an array
+                if (!Array.isArray(item.actionType)) return;
+
                 item.actionType.forEach(action => {
                     // Add main action entry
                     results.push({
@@ -536,13 +540,16 @@ export default {
                             location: action.to[1], // destination location
                             actionType: 'transfer (received)',
                             initialQuantity: 0, // receiving location starts with 0
-                            finalQuantity: item.actionType.find(a => a === action).initialQuantity - action.finalQuantity, // transferred quantity
+                            finalQuantity:
+                                item.actionType.find(a => a === action).initialQuantity -
+                                action.finalQuantity, // transferred quantity
                             date: action.date,
                             isTransferDestination: true
                         });
                     }
                 });
             });
+
 
             // Sort by date in ascending order
             return results.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -648,14 +655,25 @@ export default {
             alert('Import functionality will be implemented');
         },
         updateInventory(id, stockData, location, vessel, action) {
+            let initialQuantity;
+
+            if (action === 'stock-in') {
+                initialQuantity =
+                    parseInt(stockData.currentStock) - parseInt(stockData.quantityReceived);
+            } else {
+                initialQuantity = parseInt(stockData.currentStock) + parseInt(stockData.quantityReceived);
+            }
+
             let actionType = {
                 action: action,
-                initialQuantity: parseInt(stockData.currentStock) - parseInt(stockData.quantityReceived),
-                finalQuantity: stockData.currentStock,
+                initialQuantity: initialQuantity,
+                finalQuantity: stockData.currentStock
             };
+
             const payload = { id, location, vessel, stockData, actionType };
             this.$store.dispatch('inventory/updateInventory', payload);
         },
+
         stockIn(item) {
             Swal.fire({
                 title: 'Stock-In Entry',
@@ -704,6 +722,7 @@ export default {
                         // unitPrice: parseFloat(unitPrice),
                         // supplier: supplier.trim(),
                         // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        quantityReceived: quantityReceived,
                         status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
                         maxStock: item.maxStock,
                         minStock: item.minStock,
@@ -714,7 +733,7 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     const stockData = result.value;
-                    this.updateInventory(stockData.id, stockData, item.location, item.vessel, 'stockin')
+                    this.updateInventory(stockData.id, stockData, item.location, item.vessel, 'stock-in')
                 }
             })
         },
@@ -730,7 +749,7 @@ export default {
                         <input class="custom-input" type="number" id="quantityReceived" placeholder="Enter quantity removed" min="1" required>
                     </div>
                     <div class="form-group">
-                        <label class="custom-input-label" for="dateReceived">Date Received</label>
+                        <label class="custom-input-label" for="dateReceived">Date Removed</label>
                         <input class="custom-input" type="date" id="dateReceived">
                     </div>
                 `,
@@ -759,6 +778,7 @@ export default {
                         // unitPrice: parseFloat(unitPrice),
                         // supplier: supplier.trim(),
                         // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                        quantityReceived: quantityReceived,
                         status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
                         maxStock: item.maxStock,
                         minStock: item.minStock,
@@ -813,8 +833,9 @@ export default {
 
                 let actionType = {
                     action: action,
-                    initialQuantity: parseInt(stockData.currentStock) - parseInt(transferQuantity),
-                    finalQuantity: stockData.currentStock
+                    initialQuantity: parseInt(stockData.currentStock) + parseInt(transferQuantity),
+                    finalQuantity: stockData.currentStock,
+                    to: [inventory.vessel, inventory.location]
                 };
 
                 const payload = { id, location, vessel, stockData, actionType };
@@ -960,6 +981,7 @@ export default {
                             // unitPrice: parseFloat(unitPrice),
                             // supplier: supplier.trim(),
                             // dateReceived: dateReceived || new Date().toISOString().split('T')[0],
+                            quantityReceived: quantityReceived,
                             status: this.getStockStatus(currentStock, item.minStock, item.maxStock),
                             maxStock: item.maxStock,
                             minStock: item.minStock,
@@ -1294,8 +1316,34 @@ export default {
                     minStock: itemData.minStock
                 }
 
-                this.$store.dispatch('inventory/addInventory', inventory);
+                this.$store.dispatch('inventory/addInventory', inventory)
+                    .then(() => {
+                        // Runs only after addInventory is completed
+                        let id = inventory.itemId;
+                        let vessel = inventory.vessel;
+                        let location = inventory.location;
 
+                        let stockData = {
+                            status: inventory.status,
+                            currentStock: inventory.currentstock,
+                            value: inventory.value
+                        };
+
+                        let action = 'initial balance';
+
+                        let actionType = {
+                            action: action,
+                            initialQuantity: 0,
+                            finalQuantity: inventory.currentstock
+                        };
+
+                        const payload = { id, location, vessel, stockData, actionType };
+
+                        this.$store.dispatch('inventory/updateInventory', payload);
+                    })
+                    .catch(error => {
+                        console.error('Error adding inventory:', error);
+                    });
             } catch (error) {
                 Swal.fire({
                     title: 'Error!',
@@ -1345,7 +1393,7 @@ export default {
             ]);
 
             // Generate table with vertical lines
-            doc.autoTable({
+            autoTable(doc, {
                 head: [['Part Number', 'Vessel', 'Location', 'Action Type', 'Initial Qty', 'Final Qty', 'Date']],
                 body: tableData,
                 startY: 40,

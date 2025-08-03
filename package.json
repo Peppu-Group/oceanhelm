@@ -16,6 +16,7 @@
     "html2pdf": "^0.0.11",
     "html2pdf.js": "^0.10.3",
     "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "vue": "^3.3.4",
     "vue-router": "^4.2.2",
     "vuex": "^4.0.2"
