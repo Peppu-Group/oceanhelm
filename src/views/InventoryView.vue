@@ -277,12 +277,7 @@
         </div>
 
         <!-- Inventory Tab by Vessels -->
-        <div v-if="showModal && vesselInventory.length === 0 && this.selectedTab == 'vessels'" class="empty-state">
-            <i class="fas fa-box-open"></i>
-            <h3>No items found</h3>
-            <p>Try adjusting your search or filters</p>
-        </div>
-        <div v-if="showModal && vesselInventory.length > 0 && this.selectedTab == 'vessels'" class="table-responsive">
+        <div v-if="showModal && this.selectedTab == 'vessels'" class="table-responsive">
             <!-- Controls -->
             <div class="controls">
                 <div class="controls-row">
@@ -377,6 +372,11 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div v-if="showModal && vesselInventory.length === 0 && this.selectedTab == 'vessels'" class="empty-state">
+                <i class="fas fa-box-open"></i>
+                <h3>No items found</h3>
+                <p>Try adjusting your search or filters</p>
             </div>
         </div>
 
