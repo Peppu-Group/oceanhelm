@@ -777,7 +777,36 @@ export default {
                 return;
             }
 
-            // Validate each row
+            // First pass: Check for duplicates within CSV itself
+            const csvPartNumbers = new Set();
+            for (let i = 0; i < data.length; i++) {
+                const partNumber = data[i]['part number'];
+                if (csvPartNumbers.has(partNumber)) {
+                    this.showMessage(`Duplicate part number found in CSV at row ${i + 2}: ${partNumber}. Please remove duplicates and try again.`, 'error');
+                    this.importedData = [];
+                    return; // Halt processing
+                }
+                csvPartNumbers.add(partNumber);
+            }
+
+            // Second pass: Check against existing inventory
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+                const partNumber = row['part number'];
+
+                // Check if item with this part number already exists in inventory
+                const existingItem = this.filteredInventory.find(entry =>
+                    entry.id === partNumber // Fixed: was entry.id
+                );
+
+                if (existingItem) {
+                    this.showMessage(`Duplicate part number found in inventory: ${partNumber}. Remove item(s), consider stock-in or transfer instead.`, 'error');
+                    this.importedData = [];
+                    return; // Halt processing immediately
+                }
+            }
+
+            // Third pass: Validate required fields and process data
             const validData = [];
             const errors = [];
 
@@ -796,7 +825,6 @@ export default {
                 if (missingFields.length > 0) {
                     errors.push(`Row ${rowNumber}: Missing ${missingFields.join(', ')}`);
                 } else {
-                    // Convert to our data structure
                     validData.push({
                         partNumber: row['part number'],
                         itemName: row['item name'],
@@ -816,7 +844,7 @@ export default {
                 this.importedData = [];
             } else {
                 this.importedData = validData;
-                this.showMessage(`Successfully imported ${validData.length} rows!`, 'success');
+                this.showMessage(`Successfully imported ${validData.length} row(s)!`, 'success');
             }
         },
         rejectAccess() {
