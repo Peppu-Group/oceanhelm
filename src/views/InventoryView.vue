@@ -93,7 +93,7 @@
                         <i class="fas fa-download"></i>
                         Export
                     </button>
-                    <button class="btn btn-secondary" @click="importData">
+                    <button class="btn btn-secondary" @click="toggleImportOptions">
                         <i class="fas fa-upload"></i>
                         Import
                     </button>
@@ -289,7 +289,7 @@
                         <i class="fas fa-download"></i>
                         Export
                     </button>
-                    <button class="btn btn-secondary" @click="importData">
+                    <button class="btn btn-secondary" @click="toggleImportOptions">
                         <i class="fas fa-upload"></i>
                         Import
                     </button>
@@ -379,7 +379,82 @@
                 <p>Try adjusting your search or filters</p>
             </div>
         </div>
+        <!--Show Import Modal-->
+        <div v-if="showImportModal" class="modal-overlay" @click.self="closeImportModal">
+            <div class="modal-container">
+                <button class="modal-close" @click="closeImportModal">✕</button>
 
+                <h2 class="modal-title">📦 Import Inventory Data</h2>
+
+                <div class="import-section">
+                    <transition name="fade">
+                        <div class="sub-buttons">
+                            <button class="sub-btn" @click="downloadTemplate">
+                                📥 Download Template
+                            </button>
+                            <button class="sub-btn" @click="triggerFileUpload">
+                                📤 Upload Inventory
+                            </button>
+                        </div>
+                    </transition>
+
+                    <input type="file" ref="fileInput" class="file-input" accept=".csv" @change="handleFileUpload">
+
+                    <transition name="fade">
+                        <div class="upload-area" :class="{ dragover: isDragOver }" @drop="handleDrop"
+                            @dragover.prevent="isDragOver = true" @dragleave="isDragOver = false" @dragenter.prevent>
+                            <div class="upload-text">
+                                Drop your CSV file here or click "Upload Inventory"
+                            </div>
+                            <small style="color: #666;">Supported format: .csv</small>
+                        </div>
+                    </transition>
+                </div>
+
+                <transition name="fade">
+                    <div v-if="message" class="message show" :class="messageType">
+                        {{ message }}
+                    </div>
+                </transition>
+
+                <transition name="fade">
+                    <div v-if="importedData.length > 0" class="data-preview">
+                        <h3>📊 Imported Data Preview ({{ importedData.length }} rows)</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Part Number</th>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Vessel</th>
+                                    <th>Location</th>
+                                    <th>Stock Level</th>
+                                    <th>Min Stock</th>
+                                    <th>Max Stock</th>
+                                    <th>Unit Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(row, index) in importedData.slice(0, 10)" :key="index">
+                                    <td>{{ row.partNumber }}</td>
+                                    <td>{{ row.itemName }}</td>
+                                    <td>{{ row.category }}</td>
+                                    <td>{{ row.vessel }}</td>
+                                    <td>{{ row.location }}</td>
+                                    <td>{{ row.stockLevel }}</td>
+                                    <td>{{ row.minStock }}</td>
+                                    <td>{{ row.maxStock }}</td>
+                                    <td>{{ row.unitPrice }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div v-if="importedData.length > 10" style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                            Showing first 10 rows of {{ importedData.length }} total rows
+                        </div>
+                    </div>
+                </transition>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -390,6 +465,7 @@ import VesselList from '../components/VesselList.vue';
 import Chart from 'chart.js/auto';
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import Papa from 'papaparse';
 
 export default {
     name: 'inventory',
@@ -399,9 +475,14 @@ export default {
         return {
             selectedTab: 'vessels',
             showModal: false,
+            message: '',
+            messageType: '',
+            importedData: [],
+            isDragOver: false,
             searchTerm: '',
             selectedVessel: '',
             selectedCategory: '',
+            showImportModal: false,
             currentPage: 1,
             itemsPerPage: 10,
             categories: [
@@ -432,6 +513,17 @@ export default {
                 'Reserved',
                 'Maintenance',
                 'Damaged'
+            ],
+            requiredColumns: [
+                'part number',
+                'item name',
+                'category',
+                'vessel',
+                'location',
+                'stock level',
+                'min stock',
+                'max stock',
+                'unit price'
             ]
         }
     },
@@ -579,6 +671,154 @@ export default {
         this.$store.dispatch('inventory/fetchInventory');
     },
     methods: {
+        toggleImportOptions() {
+            this.showImportModal = true;
+            this.clearMessage();
+            this.importedData = [];
+        },
+        showMessage(text, type) {
+            this.message = text;
+            this.messageType = type;
+            setTimeout(() => {
+                this.clearMessage();
+            }, 5000);
+        },
+        clearMessage() {
+            this.message = '';
+            this.messageType = '';
+        },
+        closeImportModal() {
+            this.showImportModal = false;
+            this.message = '';
+            this.isDragOver = false;
+        },
+        downloadTemplate() {
+            const headers = [
+                'part number',
+                'item name',
+                'category',
+                'vessel',
+                'location',
+                'stock level',
+                'min stock',
+                'max stock',
+                'unit price'
+            ];
+
+            let csvContent = headers.join(',') + '\n';
+            // Add 10 empty rows
+            for (let i = 0; i < 10; i++) {
+                csvContent += ','.repeat(headers.length - 1) + '\n';
+            }
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'inventory_import_template.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            this.showMessage('Template downloaded successfully!', 'success');
+        },
+        triggerFileUpload() {
+            this.$refs.fileInput.click();
+        },
+
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.processFile(file);
+            }
+        },
+        handleDrop(event) {
+            event.preventDefault();
+            this.isDragOver = false;
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                    this.processFile(file);
+                } else {
+                    this.showMessage('Please upload a CSV file only.', 'error');
+                }
+            }
+        },
+        processFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                this.showMessage('Please upload a CSV file only.', 'error');
+                return;
+            }
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                dynamicTyping: true,
+                transformHeader: (header) => header.toLowerCase().trim(),
+                complete: (results) => {
+                    this.validateAndProcessData(results.data, results.meta.fields);
+                },
+                error: (error) => {
+                    this.showMessage(`Error reading file: ${error.message}`, 'error');
+                }
+            });
+        },
+        validateAndProcessData(data, headers) {
+            // Check if all required columns are present
+            const missingColumns = this.requiredColumns.filter(col =>
+                !headers.some(header => header.toLowerCase().trim() === col)
+            );
+
+            if (missingColumns.length > 0) {
+                this.showMessage(`Missing required columns: ${missingColumns.join(', ')}`, 'error');
+                return;
+            }
+
+            // Validate each row
+            const validData = [];
+            const errors = [];
+
+            data.forEach((row, index) => {
+                const rowNumber = index + 2; // +2 because index starts at 0 and we skip header
+                const missingFields = [];
+
+                // Check each required field
+                this.requiredColumns.forEach(column => {
+                    const value = row[column];
+                    if (value === null || value === undefined || value === '') {
+                        missingFields.push(column);
+                    }
+                });
+
+                if (missingFields.length > 0) {
+                    errors.push(`Row ${rowNumber}: Missing ${missingFields.join(', ')}`);
+                } else {
+                    // Convert to our data structure
+                    validData.push({
+                        partNumber: row['part number'],
+                        itemName: row['item name'],
+                        category: row['category'],
+                        vessel: row['vessel'],
+                        location: row['location'],
+                        stockLevel: row['stock level'],
+                        minStock: row['min stock'],
+                        maxStock: row['max stock'],
+                        unitPrice: row['unit price']
+                    });
+                }
+            });
+
+            if (errors.length > 0) {
+                this.showMessage(`Validation errors found:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? '\n...and ' + (errors.length - 5) + ' more errors' : ''}`, 'error');
+                this.importedData = [];
+            } else {
+                this.importedData = validData;
+                this.showMessage(`Successfully imported ${validData.length} rows!`, 'success');
+            }
+        },
         rejectAccess() {
             Swal.fire({
                 title: 'Unauthorized',
@@ -2260,6 +2500,274 @@ body {
     .vessel-stats {
         flex-direction: column;
         gap: 10px;
+    }
+}
+
+
+
+
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Modal Container */
+.modal-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Close Button */
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: #dc2626;
+    color: white;
+    transform: rotate(90deg);
+}
+
+/* Import Section */
+.import-section {
+    text-align: center;
+}
+
+/* Modal Title */
+.modal-title {
+    color: #333;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--dashsecondary-color), var(--dashprimary-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sub-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.sub-btn {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--dashprimary-color);
+    border: 2px solid var(--dashprimary-color);
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.sub-btn:hover {
+    background: var(--dashprimary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(102, 126, 234, 0.3);
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-area {
+    margin-top: 20px;
+    padding: 30px;
+    border: 2px dashed var(--dashprimary-color);
+    border-radius: 15px;
+    background: rgba(102, 126, 234, 0.05);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: #764ba2;
+}
+
+.upload-area.dragover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: #764ba2;
+    transform: scale(1.02);
+}
+
+.upload-text {
+    color: var(--dashprimary-color);
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: 500;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.message.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.data-preview {
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.data-preview h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.data-table th {
+    background: rgba(102, 126, 234, 0.1);
+    font-weight: 600;
+    color: #333;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Modal Transitions */
+.modal-enter-active,
+.modal-leave-active {
+    transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-from .modal-container,
+.modal-leave-to .modal-container {
+    transform: translateY(-30px) scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .modal-container {
+        margin: 10px;
+        padding: 30px 20px;
+        max-height: 95vh;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+    }
+
+    .sub-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .modal-close {
+        top: 15px;
+        right: 15px;
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
     }
 }
 </style>
