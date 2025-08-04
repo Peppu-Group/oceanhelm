@@ -134,6 +134,98 @@ export default {
 
         },
 
+        async addMultipleInventory({ commit }, inventoryArray) {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) {
+                // Redirect to login
+                return;
+            }
+
+            const user = session.user;
+
+            // Get company ID
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('company_id')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                console.error('Error fetching profile:', profileError);
+                return;
+            }
+
+            const companyId = profile.company_id;
+
+            // Map array to Supabase-compatible insert objects
+            const supabaseData = inventoryArray.map(item => ({
+                itemId: item.partNumber,
+                itemname: item.itemName,
+                value: item.value,
+                status: item.status,
+                category: item.category,
+                vessel: item.vessel,
+                currentstock: item.stockLevel,
+                lastupdated: new Date().toISOString(),
+                actionType: [item.actionType],
+                location: item.location,
+                maxStock: item.maxStock,
+                minStock: item.minStock,
+                active: true,
+                company_id: companyId
+            }));
+
+            // Insert multiple rows in one request
+            const { error } = await supabase
+                .from('inventory')
+                .insert(supabaseData, { returning: 'minimal' });
+
+            if (error) {
+                errorMessage(error);
+                return;
+            }
+
+            // Transform and commit each item to Vuex store
+            const transformed = inventoryArray.map(item => ({
+                id: item.partNumber,
+                location: item.location,
+                itemName: item.itemName,
+                value: item.value,
+                status: item.status,
+                category: item.category,
+                vessel: item.vessel,
+                currentStock: item.stockLevel,
+                actionType: [item.actionType],
+                lastUpdated: new Date().toISOString(),
+                maxStock: item.maxStock,
+                minStock: item.minStock,
+                active: true
+            }));
+
+            transformed.forEach(inv => commit('ADD_INVENTORY', inv));
+
+            // Log activity (optional: describe as "batch added")
+            await logActivity({
+                id: companyId,
+                action: 'add',
+                table: 'inventory',
+                details: {
+                    status: `Added a new batch of ${inventoryArray.length} item(s) to inventory`,
+                    information: transformed
+                }
+            });
+
+            Swal.fire({
+                title: 'Success!',
+                text: 'Inventory items have been added successfully.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        },
+
+
         async updateInventory({ commit, state }, payload) {
             const { data: { session } } = await supabase.auth.getSession();
 

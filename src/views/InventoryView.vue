@@ -834,7 +834,15 @@ export default {
                         stockLevel: row['stock level'],
                         minStock: row['min stock'],
                         maxStock: row['max stock'],
-                        unitPrice: row['unit price']
+                        unitPrice: row['unit price'],
+                        value: row['unit price'] * row['stock level'],
+                        status: this.getStockStatus(row['stock level'], row['min stock'], row['max stock']),
+                        actionType: {
+                            action: 'initial balance',
+                            initialQuantity: 0,
+                            finalQuantity: row['stock level'],
+                            date: new Date().toISOString()
+                        }
                     });
                 }
             });
@@ -844,6 +852,8 @@ export default {
                 this.importedData = [];
             } else {
                 this.importedData = validData;
+                console.log(this.importedData)
+                this.$store.dispatch('inventory/addMultipleInventory', this.importedData);
                 this.showMessage(`Successfully imported ${validData.length} row(s)!`, 'success');
             }
         },
