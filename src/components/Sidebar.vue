@@ -293,7 +293,6 @@ export default {
             });
 
             if (formValues) {
-                console.log(this.company.logo)
                 // formValues.logo = this.company.logo;
                 const changedFields = {};
 
@@ -352,7 +351,7 @@ export default {
                 const { data, error } = await supabase.storage
                     .from('company-files')
                     .upload(`logos/${companyId}.png`, file, {
-                        cacheControl: '3600',
+                        cacheControl: 0,
                         upsert: true
                     });
 
