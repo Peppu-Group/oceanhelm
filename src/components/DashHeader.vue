@@ -90,7 +90,6 @@ export default {
                             
                             <select id="swal-input-role" class="swal2-select">
                                 <option value="" disabled selected>Select Role</option>
-                                <option value="owner">Owner</option>
                                 <option value="captain">Captain</option>
                                 <option value="staff">Staff</option>
                             </select>
