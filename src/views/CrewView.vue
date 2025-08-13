@@ -14,7 +14,6 @@
           <CrewManagement
               :crew="crewMembers"
               :user-profile="userProfile"
-              :loading="loading"
               :available-roles="availableRoles"
               :config="crewConfig"
               @crew-add="handleCrewAdd"
@@ -62,7 +61,6 @@
       
       computed: {
           ...mapGetters('user', ['userProfile']),
-          ...mapGetters('crew', ['isLoading']),
           
           vessels() {
             return this.$store.getters['vessel/allVessels'];
@@ -71,10 +69,6 @@
           crewMembers() {
               // const vesselId = this.$route.params.id
               return this.$store.getters['crew/allCrew']
-          },
-          
-          loading() {
-              return this.isLoading
           }
       },
       

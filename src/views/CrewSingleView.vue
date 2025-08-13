@@ -15,7 +15,6 @@
               :crew="crewMembers"
               :vessel-name="vesselName"
               :user-profile="userProfile"
-              :loading="loading"
               :available-roles="availableRoles"
               :config="crewConfig"
               @crew-add="handleCrewAdd"
@@ -63,7 +62,6 @@
       
       computed: {
           ...mapGetters('user', ['userProfile']),
-          ...mapGetters('crew', ['isLoading']),
           
           vesselName() {
               return this.$route.params.id || ''
@@ -72,10 +70,6 @@
           crewMembers() {
               const vesselId = this.$route.params.id
               return this.$store.getters['crew/getCrewByVessel'](vesselId) || []
-          },
-          
-          loading() {
-              return this.isLoading
           }
       },
       
