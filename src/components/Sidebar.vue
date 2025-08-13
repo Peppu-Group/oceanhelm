@@ -37,7 +37,7 @@ export default {
                 this.$router.push({ name: 'crewroute' });
             }
         },
-        getMaintenance() {
+        getMaintenance(action) {
             if (action == 'maintenance') {
                 this.$router.push({ name: 'maintenanceroute' })
             }
@@ -46,10 +46,12 @@ export default {
             // console.log(item)
         },
         onAction(item) {
+            console.log(item.action)
             let action = item.action;
             this.crewManage(action);
             this.helpSupport(action);
             this.updateCompanyInfo(action);
+            this.getMaintenance(action);
         },
         onItemClick(item) {
 
