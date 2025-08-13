@@ -1,31 +1,34 @@
 <template>
-    <div class="page-header d-flex justify-content-between align-items-center">
-        <h2 style="margin-left: 20px;">{{ name }}</h2>
-        <div class="d-flex">
-            <button class="btn btn-outline-primary me-2" @click="addUser()" v-if="this.userProfile.role == 'owner'">
-                <i class="bi bi-bell"></i>
-                <span class="badge bg-danger">1</span>
-            </button>
-            <button class="btn btn-outline-primary" @click="loggedIn()">
-                <i class="bi bi-person-circle"></i>
-            </button>
-        </div>
-    </div>
+    <DashHead 
+      :name="name"
+      :user-profile="userProfile"
+      @add-user="addUser"
+      @logged-in="loggedIn"
+    />
 </template>
 
 <script>
 import supabase from '../supabase'
 import { mapGetters, mapActions } from 'vuex';
+import { DashHead } from 'oceanhelm'
 
 export default {
     name: 'DashHeader',
-    props: ['name'],
+
+    props: {
+    name: String,
+  },
+
+    components: {
+    DashHead
+  },
 
     computed: {
         ...mapGetters('user', ['userProfile', 'userRoleDescription']),
+        ...mapGetters('vessel', ['allVessels']),
         vessels() {
-            return this.$store.getters['vessel/allVessels'];
-        },
+      return this.allVessels
+    },
     },
 
     methods: {
