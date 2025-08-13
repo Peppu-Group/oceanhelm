@@ -9,141 +9,40 @@
 
     <!-- Sidebar -->
     <Sidebar />
-    <!-- Page Content -->
     <div id="content">
         <div class="container">
-            <div class="header">
+            <!-- Header -->
+            <div class="a-header">
                 <h1>Activity Logs</h1>
                 <p>Monitor and track all system activities in real-time</p>
             </div>
-
-            <div class="controls">
-                <div class="search-box">
-                    <input type="text" placeholder="Search activities, users, or actions..." v-model="searchTerm"
-                        @input="filterLogs">
-                </div>
-                <select class="filter-select" v-model="selectedFilter" @change="filterLogs">
-                    <option value="all">All Activities</option>
-                    <option value="login">Login</option>
-                    <option value="logout">Logout</option>
-                    <option value="create">Create</option>
-                    <option value="update">Update</option>
-                    <option value="delete">Delete</option>
-                    <option value="view">View</option>
-                </select>
-                <button class="btn btn-primary" @click="refreshLogs">
-                    🔄 Refresh
-                </button>
-                <button class="btn btn-secondary" @click="downloadReport">
-                    📥 Download Report
-                </button>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Total Activities</h3>
-                    <div class="value">{{ totalActivities }}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Today's Activities</h3>
-                    <div class="value">{{ todayActivities }}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Active Users</h3>
-                    <div class="value">{{ activeUsers }}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Important</h3>
-                    <div class="badge-danger">Logs are deleted at the end of every month, please download a copy</div>
-                </div>
-            </div>
-
-            <div class="logs-container">
-                <div class="logs-header">
-                    <h2>Recent Activities</h2>
-                </div>
-
-                <div v-if="loading" class="loading">
-                    <div class="spinner"></div>
-                    <p>Loading activity logs...</p>
-                </div>
-
-                <div v-else-if="filteredLogs.length === 0" class="no-logs">
-                    <h3>No activities found</h3>
-                    <p>Try adjusting your search or filter criteria</p>
-                </div>
-
-                <div v-else>
-                    <table class="logs-table">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>User Name</th>
-                                <th>Action</th>
-                                <th>Details</th>
-                                <th>Section</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="log in paginatedLogs" :key="log.id">
-                                <td>{{ formatDate(log.timestamp) }}</td>
-                                <td>
-                                    <div>{{ log.user_name }}</div>
-                                    <small style="color: gray">{{ log.email }}</small>
-                                </td>
-
-                                <td>
-                                    <span class="activity-badge" :class="getBadgeClass(log.action)">
-                                        {{ log.action }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {{ log.details.status }}
-                                    <div v-for="(change, key) in log.details.information" :key="key">
-                                        <strong>{{ key }}: </strong><small style="color: gray">{{ change.from || "" }} → {{
-                                            change.to || change }}</small>
-                                    </div>
-                                </td>
-                                <td>{{ log.table_name }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div class="pagination">
-                        <button @click="currentPage--" :disabled="currentPage === 1">
-                            Previous
-                        </button>
-                        <button v-for="page in totalPages" :key="page" @click="currentPage = page"
-                            :class="{ active: currentPage === page }">
-                            {{ page }}
-                        </button>
-                        <button @click="currentPage++" :disabled="currentPage === totalPages">
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <ActivityLogs :loading="loading" :searchTerm="searchTerm" :selectedFilter="selectedFilter" :logs="filteredLogs"
+                :paginatedLogs="paginatedLogs" :totalActivities="totalActivities" :todayActivities="todayActivities"
+                :activeUsers="activeUsers" :totalPages="totalPages" :currentPage="currentPage"
+                @update:searchTerm="searchTerm = $event; filterLogs()"
+                @update:selectedFilter="selectedFilter = $event; filterLogs()" @refresh="refreshLogs"
+                @download="downloadReport" @change-page="changePage" />
         </div>
     </div>
 </template>
-
+  
 <script>
+import { ActivityLogs } from "oceanhelm";
 import Sidebar from '../components/Sidebar.vue';
-import { mapGetters } from 'vuex';
-import { getActivityLogs } from '@/helpers/activityLogger';
+import { getActivityLogs } from "@/helpers/activityLogger";
 
 export default {
-    name: 'LogView',
-    components: { Sidebar },
+    name: "LogView",
+    components: { ActivityLogs, Sidebar },
     data() {
         return {
             loading: false,
-            searchTerm: '',
-            selectedFilter: 'all',
+            searchTerm: "",
+            selectedFilter: "all",
             currentPage: 1,
             logsPerPage: 10,
             logs: [],
-            filteredLogs: []
+            filteredLogs: [],
         };
     },
     computed: {
@@ -152,110 +51,85 @@ export default {
         },
         todayActivities() {
             const today = new Date();
-            return this.logs.filter(log => {
-                const logDate = new Date(log.timestamp);
-                return logDate.toDateString() === today.toDateString();
-            }).length;
+            return this.logs.filter(
+                (log) => new Date(log.timestamp).toDateString() === today.toDateString()
+            ).length;
         },
         activeUsers() {
-            const uniqueUsers = new Set(this.logs.map(log => log.user));
-            return uniqueUsers.size;
-        },
-        criticalActions() {
-            return this.logs.filter(log =>
-                log.action === 'delete' || log.status === 'failed'
-            ).length;
+            return new Set(this.logs.map((log) => log.user)).size;
         },
         totalPages() {
             return Math.ceil(this.filteredLogs.length / this.logsPerPage);
         },
         paginatedLogs() {
             const start = (this.currentPage - 1) * this.logsPerPage;
-            const end = start + this.logsPerPage;
-            return this.filteredLogs.slice(start, end);
-        }
+            return this.filteredLogs.slice(start, start + this.logsPerPage);
+        },
     },
     methods: {
         filterLogs() {
             let filtered = [...this.logs];
-
-            // Apply search filter
             if (this.searchTerm) {
                 const term = this.searchTerm.toLowerCase();
-                filtered = filtered.filter(log =>
-                    log.user_name.toLowerCase().includes(term) ||
-                    log.action.toLowerCase().includes(term) ||
-                    log.table_name.toLowerCase().includes(term)
+                filtered = filtered.filter(
+                    (log) =>
+                        log.user_name.toLowerCase().includes(term) ||
+                        log.action.toLowerCase().includes(term) ||
+                        log.table_name.toLowerCase().includes(term)
                 );
             }
-
-            // Apply category filter
-            if (this.selectedFilter !== 'all') {
-                filtered = filtered.filter(log =>
-                    log.action === this.selectedFilter
-                );
+            if (this.selectedFilter !== "all") {
+                filtered = filtered.filter((log) => log.action === this.selectedFilter);
             }
-
-            this.filteredLogs = filtered.sort((a, b) =>
-                new Date(b.timestamp) - new Date(a.timestamp)
+            this.filteredLogs = filtered.sort(
+                (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
             );
             this.currentPage = 1;
         },
-        formatDate(timestamp) {
-            return new Date(timestamp).toLocaleString();
-        },
-        getBadgeClass(action) {
-            const classes = {
-                'login': 'badge-login',
-                'logout': 'badge-logout',
-                'create': 'badge-create',
-                'update': 'badge-update',
-                'delete': 'badge-delete',
-                'view': 'badge-view'
-            };
-            return classes[action] || 'badge-view';
-        },
         async refreshLogs() {
             this.loading = true;
-            // Simulate API call
             setTimeout(async () => {
-                this.loading = false;
                 this.logs = await getActivityLogs();
                 this.filterLogs();
+                this.loading = false;
             }, 1000);
         },
         downloadReport() {
             const csvContent = this.generateCSV();
-            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const blob = new Blob([csvContent], { type: "text/csv" });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
-            a.download = `activity-report-${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `activity-report-${new Date()
+                .toISOString()
+                .split("T")[0]}.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
         },
         generateCSV() {
-            const headers = ['Timestamp', 'User', 'Action', 'Details', 'Section'];
-            const rows = this.filteredLogs.map(log => [
-                this.formatDate(log.timestamp),
-                log.user_name ,
+            const headers = ["Timestamp", "User", "Action", "Details", "Section"];
+            const rows = this.filteredLogs.map((log) => [
+                new Date(log.timestamp).toLocaleString(),
+                log.user_name,
                 log.action,
                 log.details.status,
-                log.table_name
+                log.table_name,
             ]);
-
-            const csvContent = [headers, ...rows]
-                .map(row => row.map(cell => `"${cell}"`).join(','))
-                .join('\n');
-
-            return csvContent;
-        }
+            return [headers, ...rows]
+                .map((row) => row.map((cell) => `"${cell}"`).join(","))
+                .join("\n");
+        },
+        changePage(page) {
+            if (page > 0 && page <= this.totalPages) {
+                this.currentPage = page;
+            }
+        },
     },
     async mounted() {
-            this.logs = await getActivityLogs();
-            this.filterLogs();
-    }
-}
+        this.logs = await getActivityLogs();
+        this.filterLogs();
+    },
+};
 </script>
 
 <style scoped>
