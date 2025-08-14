@@ -116,7 +116,7 @@ export default {
                     // Encode session and redirect to subdomain
                     let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
                     const encoded = encodeURIComponent(JSON.stringify(session));
-                    window.location.href = `${resp.url}/receive-session?session=${encoded}`;
+                    window.location.href = `${resp.url}/session?session=${encoded}`;
                 })
             } else {
                 alert('Please enter all 8 characters of the company code.');

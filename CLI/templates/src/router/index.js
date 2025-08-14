@@ -13,6 +13,7 @@ import VoyageView from '../views/VoyageView.vue'
 import NewReq from '../views/NewReq.vue'
 import ManageCertifications from '../views/ManageCertifications.vue'
 import LogView from '../views/LogView.vue'
+import SessionView from '../views/SessionView.vue'
 
 
 const router = createRouter({
@@ -83,6 +84,11 @@ const router = createRouter({
       name: 'logview',
       component: LogView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/session',
+      name: 'Session',
+      component: SessionView
     },
     {
       path: '/:pathMatch(.*)*',
