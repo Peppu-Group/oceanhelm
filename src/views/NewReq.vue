@@ -1,36 +1,35 @@
 <template>
-  <RequisitionSystem
-    :user-profile="userProfile"
-    :user-role="userRole"
-    :requisitions="requisitions"
-    :vessels="vessels"
-    @submit-requisition="handleSubmitRequisition"
-    @submit-info-response="handleSubmitInfoResponse"
-    @approve-requisition="handleApproveRequisition"
-    @decline-requisition="handleDeclineRequisition"
-    @info-requisition="handleInfoRequisition"
-    @create-po="handleCreatePO"
-    @open-po="handleOpenPO"
-    @finish-po="handleFinishPO"
-    @accept-delivery="handleAcceptDelivery"
-  >
-    <template #sidebar>
-      <Sidebar />
-    </template>
-  </RequisitionSystem>
+  <!-- Wave background -->
+  <div class="wave-bg"></div>
+
+  <!-- Sidebar Toggle Button -->
+  <button class="toggle-btn" id="sidebarToggle">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <Sidebar />
+  <div id="content">
+    <RequisitionSystem :user-profile="userProfile" :user-role="userRole" :requisitions="requisitions" :vessels="vessels"
+      @submit-requisition="handleSubmitRequisition" @submit-info-response="handleSubmitInfoResponse"
+      @approve-requisition="handleApproveRequisition" @decline-requisition="handleDeclineRequisition"
+      @info-requisition="handleInfoRequisition" @create-po="handleCreatePO" @open-po="handleOpenPO"
+      @finish-po="handleFinishPO" @accept-delivery="handleAcceptDelivery">
+    </RequisitionSystem>
+  </div>
 </template>
 
 <script>
-import { RequisitionSystem }  from 'oceanhelm';
+import { RequisitionSystem } from 'oceanhelm';
 import Sidebar from '../components/Sidebar.vue';
 import html2pdf from 'html2pdf.js';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'NewReq',
-  components: { 
+  components: {
     RequisitionSystem,
-    Sidebar 
+    Sidebar
   },
 
   data() {
@@ -154,11 +153,11 @@ export default {
         icon: 'warning'
       }).then((result) => {
         if (result.isConfirmed) {
-          const updatedRequisition = { 
-            ...requisition, 
-            status: 'declined', 
-            declinedBy: this.userProfile.role, 
-            rejectionReason: result.value 
+          const updatedRequisition = {
+            ...requisition,
+            status: 'declined',
+            declinedBy: this.userProfile.role,
+            rejectionReason: result.value
           };
           this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
             this.$swal.fire({
@@ -197,11 +196,11 @@ export default {
         icon: 'question'
       }).then((result) => {
         if (result.isConfirmed) {
-          const updatedRequisition = { 
-            ...requisition, 
-            status: 'info-requested', 
-            infoRequestedBy: this.userProfile.role, 
-            requestedInfo: result.value 
+          const updatedRequisition = {
+            ...requisition,
+            status: 'info-requested',
+            infoRequestedBy: this.userProfile.role,
+            requestedInfo: result.value
           };
           this.$store.dispatch('requisitions/updateRequisition', updatedRequisition).then(() => {
             this.$swal.fire({
@@ -250,16 +249,16 @@ export default {
           const shipping = document.getElementById('vendor-shipping').value.trim();
           const poDate = new Date().toLocaleDateString();
           const poApproved = 'PO Owner';
-          
+
           // Validation
           if (!company || !contact || !email || !phone || !address) {
             this.$swal.showValidationMessage('Please fill in all required fields (*)');
             return false;
           }
 
-          return { 
-            company, contact, email, phone, address, tax, shipping, 
-            id: reqId, poDate, poApproved 
+          return {
+            company, contact, email, phone, address, tax, shipping,
+            id: reqId, poDate, poApproved
           };
         }
       });
@@ -267,7 +266,7 @@ export default {
       if (vendor) {
         // Update vendor info in store
         this.$store.dispatch('requisitions/updateVendor', vendor);
-        
+
         // Get the component reference and update it
         const requisitionComponent = this.$children[0];
         if (requisitionComponent) {
@@ -284,7 +283,7 @@ export default {
       if (requisitionComponent) {
         // Set printing mode
         requisitionComponent.setPrintingMode(true);
-        
+
         // Switch to PO tab and update details
         const requisition = this.requisitions.find(r => r.id === id);
         requisitionComponent.updatePODetails(requisition);
@@ -292,7 +291,7 @@ export default {
 
         // Wait for DOM to render
         await this.$nextTick();
-        
+
         const element = document.getElementById('po-content');
         if (!element) {
           console.error('PO element not found');
@@ -499,3 +498,19 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+#content {
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    padding: 20px;
+    padding-left: 40px;
+}
+
+#content.active {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+</style>

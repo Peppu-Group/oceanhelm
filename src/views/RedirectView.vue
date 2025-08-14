@@ -69,7 +69,7 @@ export default {
                 });
 
             // redirect ask code before routing.
-            this.redirectDash()
+            this.redirectCode()
         }
     }
 

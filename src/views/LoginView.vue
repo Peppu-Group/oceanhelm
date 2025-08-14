@@ -212,8 +212,6 @@ export default {
               password: this.form.password
             });
 
-            console.log(data.session, data.session.refresh_token)
-
             if (error) {
               Swal.fire({
                 title: "An error ocurred",
@@ -223,7 +221,7 @@ export default {
               this.resetForm();
               return { success: false, error };
             }
-            this.$router.push({ name: 'dashboard' })
+            this.$router.push({ name: 'code' });
             return { success: true, data };
           } catch (err) {
             // console.log(err)
