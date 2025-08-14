@@ -119,6 +119,10 @@ const router = createRouter({
       path: '/get-code',
       name: 'code',
       component: CompanyCode
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
     }
   ]
 })
