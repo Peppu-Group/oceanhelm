@@ -17,39 +17,37 @@
 </template>
 
 <script>
-import supabase from '../supabase'
-
 export default {
     name: 'Session',
 
-    methods: {
-    redirectCode() {
-        return this.$router.push({ name: 'code' });
-    },
-},
-
     async mounted() {
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session) {
-            const user = session.user;
-            // Step 5: Create the user's profile
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: user.id,
-                    full_name: user.user_metadata.fullName,
-                    company_id: user.user_metadata.company_id,
-                    role: user.user_metadata.role,
-                    vessel: user.user_metadata.vessel,
-                    categories: user.user_metadata.categories
-                });
-
-            // redirect dashboard
-            // ask for code and continue process
-
-            this.redirectCode()
+        if (this.$route.query.session) {
+            let code = this.useSessionFromQuery();
+            // store code in localStorage.
+            localStorage.setItem('sb-qltidnqgczccstukalgy-auth-token', code);
+            this.redirectDash();
         }
+    },
+
+    methods: {
+        useSessionFromQuery() {
+            const raw = this.$route.query.session;
+            if (!raw) return null;
+
+            try {
+                // Decode twice in case it's double URL encoded
+                let decoded = decodeURIComponent(decodeURIComponent(raw));
+
+                // Parse normally
+                return JSON.parse(decoded);
+            } catch (err) {
+                console.error('Failed to parse session:', err, raw);
+                return null;
+            }
+        },
+        redirectDash() {
+            return this.$router.push({ name: 'dashboard' });
+        },
     }
 
 }

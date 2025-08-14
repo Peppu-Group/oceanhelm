@@ -97,14 +97,15 @@ export default {
             const { data, error } = await supabase
                 .from('code')
                 .select('*')
-                .eq('code', codeValue);
+                .eq('code', codeValue)
+                .maybeSingle(); // returns null if no row found
 
             if (error) {
                 console.error('Error fetching code row:', error);
-                return [];
+                return null;
             }
 
-            return data; // always an array, possibly empty
+            return data; // object or null
         },
 
         submitCode() {
@@ -114,12 +115,25 @@ export default {
                     // check if company-id matches
                     // redirect to home page
                     // Encode session and redirect to subdomain
-                    let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
-                    const encoded = encodeURIComponent(JSON.stringify(session));
-                    window.location.href = `${resp.url}/session?session=${encoded}`;
+                    if (resp) {
+                        let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
+                        const encoded = encodeURIComponent(JSON.stringify(session));
+                        console.log(resp)
+                        window.location.href = `${resp.url}/session?session=${encoded}`;
+                    } else {
+                        Swal.fire({
+                            title: 'Incorrect code',
+                            text: 'The code you have entered is either incorrect or your firm does not have an account with us. Kindly mail marine@peppubuild.com for help',
+                            icon: 'error'
+                        });
+                    }
                 })
             } else {
-                alert('Please enter all 8 characters of the company code.');
+                Swal.fire({
+                    title: 'Incomplete code',
+                    text: 'Please enter all 8 characters of your company code.',
+                    icon: 'error'
+                });
             }
         }
     }
