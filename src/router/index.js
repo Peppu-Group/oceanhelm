@@ -18,6 +18,7 @@ import NewReq from '../views/NewReq.vue'
 import ManageCertifications from '../views/ManageCertifications.vue'
 import LogView from '../views/LogView.vue'
 import ResetPassword from '../views/ResetPassword.vue'
+import CompanyCode from '../views/CompanyCode.vue'
 
 
 const router = createRouter({
@@ -113,6 +114,11 @@ const router = createRouter({
       path: '/reset-password',
       name: 'resetpassword',
       component: ResetPassword
+    },
+    {
+      path: '/get-code',
+      name: 'code',
+      component: CompanyCode
     }
   ]
 })

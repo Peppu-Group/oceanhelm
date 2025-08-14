@@ -212,6 +212,8 @@ export default {
               password: this.form.password
             });
 
+            console.log(data.session, data.session.refresh_token)
+
             if (error) {
               Swal.fire({
                 title: "An error ocurred",

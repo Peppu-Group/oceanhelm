@@ -26,8 +26,8 @@ export default {
     name: 'Redirect',
 
     methods: {
-    redirectDash() {
-        return this.$router.push({ name: 'dashboard' });
+    redirectCode() {
+        return this.$router.push({ name: 'code' });
     },
 },
 
@@ -49,7 +49,9 @@ export default {
                 });
 
             // redirect dashboard
-            this.redirectDash()
+            // ask for code and continue process
+
+            this.redirectCode()
         }
     }
 
