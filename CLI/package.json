@@ -1,0 +1,10 @@
+{
+    "name": "oceanhelm-cli",
+    "version": "1.0.0",
+    "bin": {
+        "oceanhelm": "bin/index.js"
+    },
+    "dependencies": {
+        "fs-extra": "^11.3.1"
+    }
+}
