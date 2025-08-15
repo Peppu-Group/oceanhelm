@@ -206,7 +206,7 @@ export default {
                                     vessel: formValues.vessel || null,
                                     categories: formValues.categories || []
                                 },
-                                emailRedirectTo: 'https://marine.peppubuild.com/subredirect'
+                                emailRedirectTo: 'https://oceanhelmtech.com/subredirect'
                             }
                         });
 

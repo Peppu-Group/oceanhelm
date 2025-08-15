@@ -133,7 +133,7 @@ export default {
 
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(this.resetEmail, {
-          redirectTo: 'https://marine.peppubuild.com/reset-password'
+          redirectTo: 'https://oceanhelmtech.com/reset-password'
         });
 
         this.isLoading = false;
@@ -173,7 +173,7 @@ export default {
                   fullName: this.form.fullName,
                   company_name: this.form.companyName 
                 },
-                emailRedirectTo: 'https://marine.peppubuild.com/redirect'
+                emailRedirectTo: 'https://oceanhelmtech.com/redirect'
               }
             });
 

@@ -22,9 +22,13 @@ export default {
 
     async mounted() {
         if (this.$route.query.session) {
-            let code = this.useSessionFromQuery();
-            // store code in localStorage.
-            localStorage.setItem('sb-qltidnqgczccstukalgy-auth-token', code);
+            const code = this.useSessionFromQuery();
+            localStorage.setItem('sb-qltidnqgczccstukalgy-auth-token', JSON.stringify(code));
+
+            // Remove `session` from query without reloading
+            const { session, ...rest } = this.$route.query;
+            this.$router.replace({ query: rest });
+
             this.redirectDash();
         }
     },

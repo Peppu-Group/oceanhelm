@@ -93,11 +93,12 @@ export default {
             this.showPassword = !this.showPassword;
         },
 
-        async getCodeRow(codeValue) {
+        async getCodeRow(codeValue, name) {
             const { data, error } = await supabase
                 .from('code')
                 .select('*')
                 .eq('code', codeValue)
+                .eq('company_name', name)
                 .maybeSingle(); // returns null if no row found
 
             if (error) {
@@ -110,15 +111,15 @@ export default {
 
         submitCode() {
             const fullCode = this.code.join('');
+            let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
+            let name = JSON.parse(session).user.user_metadata.company_name;
             if (fullCode.length === 8) {
-                this.getCodeRow(fullCode).then((resp) => {
+                this.getCodeRow(fullCode, name).then((resp) => {
                     // check if company-id matches
                     // redirect to home page
                     // Encode session and redirect to subdomain
                     if (resp) {
-                        let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
                         const encoded = encodeURIComponent(JSON.stringify(session));
-                        console.log(resp)
                         window.location.href = `${resp.url}/session?session=${encoded}`;
                     } else {
                         Swal.fire({

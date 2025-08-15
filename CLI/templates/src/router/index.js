@@ -103,7 +103,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!data?.user) {
-      window.location.href = 'https://marine.peppubuild.com/login';
+      window.location.href = 'https://oceanhelmtech.com/login';
       return;
     }
 
