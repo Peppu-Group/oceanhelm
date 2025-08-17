@@ -114,7 +114,13 @@ export default {
             let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
             let name = JSON.parse(session).user.user_metadata.company_name;
             if (fullCode.length === 8) {
-                this.getCodeRow(fullCode, name).then((resp) => {
+                if (fullCode === import.meta.env.VITE_COMPANY_CODE) {
+                    // store code in localstorage
+                    localStorage.setItem('company-code', fullCode)
+                    // push to dashboard
+                    this.$router.push({ name: 'dashboard' });
+                } else {
+                    this.getCodeRow(fullCode, name).then((resp) => {
                     // check if company-id matches
                     // redirect to home page
                     // Encode session and redirect to subdomain
@@ -129,6 +135,7 @@ export default {
                         });
                     }
                 })
+                }
             } else {
                 Swal.fire({
                     title: 'Incomplete code',

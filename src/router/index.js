@@ -130,9 +130,14 @@ const router = createRouter({
 // Global navigation guard
 router.beforeEach(async (to, from, next) => {
   const { data, error } = await supabase.auth.getUser();
+  const companyCode = localStorage.getItem('company-code')
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (!data?.user) {
+      return next('/login');
+    }
+
+    if (!companyCode || companyCode !== import.meta.env.VITE_COMPANY_CODE) {
       return next('/login');
     }
 
