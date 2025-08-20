@@ -3,22 +3,22 @@
         <header>
             <h1>OceanHelm</h1>
         </header>
-  
+
         <OceanHelmMaintenance :vessel-info="vesselInfo" :tasks="tasks" :vessel-crew="vesselCrew" :company-info="companyInfo"
-            :user-profile="userProfile" @dashboard-navigate="handleDashboardNavigate" @load-checklist="handleLoadChecklist"
-            @save-schedule="handleSaveSchedule" @update-task="handleUpdateTask" @upload-file="handleUploadFile"
-            @delete-evidence="handleDeleteEvidence" @access-denied="handleAccessDenied" @show-message="handleShowMessage"
+            :user-profile="userProfile" @dashboard-navigate="handleDashboardNavigate" @save-schedule="handleSaveSchedule"
+            @update-task="handleUpdateTask" @upload-file="handleUploadFile" @delete-evidence="handleDeleteEvidence"
+            @access-denied="handleAccessDenied" @show-message="handleShowMessage"
             @generate-checklist="handleGenerateChecklist" />
     </div>
-  </template>
+</template>
   
-  <script>
-  import axios from 'axios';
-  import supabase from '../supabase';
-  import { mapGetters, mapActions } from 'vuex';
-  import { OceanHelmMaintenance } from 'oceanhelm'
-  
-  export default {
+<script>
+import axios from 'axios';
+import supabase from '../supabase';
+import { mapGetters, mapActions } from 'vuex';
+import { OceanHelmMaintenance } from 'oceanhelm'
+
+export default {
     data() {
         return {
             vesselInfo: []
@@ -45,20 +45,46 @@
     },
     async mounted() {
         const vesselId = this.$route.params.id;
-  
+
         // Load required data
         await this.loadTasks(vesselId);
+
+        // load vesselInfo
+        let vesselInfo = this.vessels.find(v => v.registrationNumber === vesselId);
+        this.vesselInfo = vesselInfo;
     },
     methods: {
         ...mapActions('tasks', ['loadTasks', 'addTask', 'updateTask']),
-  
+
         handleDashboardNavigate() {
             this.$router.push('/app/dashboard');
         },
+        showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: message,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#d33'
+            });
+        },
+        showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success...',
+                text: message,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#d33'
+            });
+        },
+        handleLoadChecklist(component) {
+            this.handleGenerateChecklist(component);
+        },
         async handleGenerateChecklist({ component, callback }) {
             try {
-                const checklist = this.checklist(component);
-                callback(checklist);
+                this.checklist(component).then((checklist) => {
+                    callback(checklist);
+                })
             } catch (error) {
                 console.error('Error generating checklist:', error);
                 callback([]);
@@ -77,7 +103,7 @@
                 'lastPerformed',
                 'assignedTo'
             ];
-  
+
             for (const field of requiredFields) {
                 if (!this.form[field]) {
                     Swal.fire({
@@ -88,7 +114,7 @@
                     return false;
                 }
             }
-  
+
             return true;
         },
         async handleSaveSchedule({ taskData, file, callback }) {
@@ -98,12 +124,12 @@
                     vesselId: this.$route.params.id,
                     task: taskData
                 });
-  
+
                 // Handle file upload if present
                 if (file) {
                     await this.handleFileUpload(file, taskData.component);
                 }
-  
+
                 callback(true);
                 this.showSuccess('Schedule saved successfully');
             } catch (error) {
@@ -112,19 +138,20 @@
                 this.showError('Failed to save schedule');
             }
         },
-  
+
         async handleUpdateTask({ updateData, file, callback }) {
+            const updateTask = updateData;
             try {
                 await this.updateTask({
                     vesselId: this.$route.params.id,
-                    updateData
+                    updateTask
                 });
-  
+
                 let updatedAfter = null;
                 if (file) {
                     updatedAfter = await this.handleFileUpload(file, updateData.component);
                 }
-  
+
                 callback(true, updatedAfter);
                 this.showSuccess('Task updated successfully');
             } catch (error) {
@@ -133,7 +160,7 @@
                 this.showError('Failed to update task');
             }
         },
-  
+
         async handleUploadFile({ file, callback }) {
             // Push Image 
             const randomText = Math.random().toString(36).substring(2, 8);
@@ -144,22 +171,22 @@
                     cacheControl: '3600',
                     upsert: true
                 });
-  
+
             if (data) {
                 const filePath = data.path;
-  
+
                 const { data: publicUrlData, error: urlError } = supabase
                     .storage
                     .from('company-files')
                     .getPublicUrl(filePath);
-  
+
                 if (urlError) {
                     console.error('Failed to get public URL', urlError);
                     return;
                 }
-  
+
                 const publicUrl = publicUrlData.publicUrl;
-  
+
                 // Update the task's logo with the public URL
                 const { error: updateError } = await supabase
                     .from('tasks')
@@ -167,21 +194,22 @@
                     .eq('company_id', companyId)
                     .eq('vessel', this.$route.params.id)
                     .eq('component', currentTask);
-  
+
                 this.tasks[taskIndex].after = publicUrl;
-  
+
                 if (updateError) console.error('Update failed', error);
             }
         },
+
         cleanAndParseAIResponse(text) {
             // Step 1: Replace smart quotes with straight quotes
             text = text
                 .replace(/[‘’]/g, "'")   // smart apostrophes
                 .replace(/[“”]/g, '"');  // smart double quotes
-  
+
             // Step 2: Convert single quotes around keys to double quotes
             text = text.replace(/([{,]\s*)'([^']+?)'\s*:/g, '$1"$2":');
-  
+
             // Step 3: Convert single quotes around string values to double quotes
             // only when the value doesn't contain inner single quotes (to avoid breaking apostrophes)
             text = text.replace(/:\s*'([^']*?)'/g, (match, p1) => {
@@ -189,7 +217,7 @@
                 if (p1.includes("'")) return match; // skip if value contains apostrophes
                 return `: "${p1}"`;
             });
-  
+
             // Step 4: Attempt parsing
             try {
                 return JSON.parse(text);
@@ -198,6 +226,7 @@
                 return null;
             }
         },
+
         async checklist(mainType) {
             try {
                 const res = await axios.post(`https://proctoredserver.peppubuild.com/promptai`, {
@@ -205,7 +234,7 @@
                 });
                 let result = res.data.result;
                 let content = '';
-  
+
                 try {
                     const match = result.match(/```(?:\w*\n)?([\s\S]*?)```/);
                     content = match ? match[1] : result; // If no match, fallback to using the full result
@@ -213,7 +242,7 @@
                     console.error("Failed to extract code block:", error);
                     content = result;
                 }
-  
+
                 const theContent = this.cleanAndParseAIResponse(content)
                 return theContent;
             } catch (err) {
@@ -253,7 +282,7 @@
                         if (callback) callback(null);
                     }
                 });
-  
+
             } else if (type === 'error') {
                 Swal.fire({
                     title: title,
@@ -261,7 +290,7 @@
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
-  
+
             } else {
                 Swal.fire({
                     title: title || '',
@@ -273,18 +302,18 @@
         },
         async handleDeleteEvidence({ currentTask, callback }) {
             let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
-  
+
             if (taskIndex !== -1) {
                 const url = this.after;
                 const match = url.match(/tasks\/.+$/);
-  
+
                 if (match) {
                     const filePath = match;
                     const { data, error: deleteError } = await supabase
                         .storage
                         .from('company-files')
                         .remove([filePath]);
-  
+
                     if (deleteError) {
                         console.error('Error deleting file:', deleteError);
                     } else {
@@ -301,15 +330,14 @@
             }
         }
     }
+
+};
+</script>
   
-  };
-  </script>
-  
-  <style scoped>
-  
-  .container {
+<style scoped>
+.container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-  }
-  </style>
+}
+</style>
