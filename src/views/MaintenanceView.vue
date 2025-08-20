@@ -139,12 +139,12 @@ export default {
             }
         },
 
-        async handleUpdateTask({ updateData, file, callback }) {
-            const updateTask = updateData;
+        async handleUpdateTask({ updateData, file, callback, tasks }) {
             try {
                 await this.updateTask({
                     vesselId: this.$route.params.id,
-                    updateTask
+                    updateTask: updateData,
+                    tasks
                 });
 
                 let updatedAfter = null;
