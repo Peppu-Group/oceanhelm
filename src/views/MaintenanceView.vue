@@ -127,11 +127,10 @@ export default {
 
                 // Handle file upload if present
                 if (file) {
-                    await this.handleFileUpload(file, taskData.component);
+                    await this.handleUploadFile(file, taskData.component);
                 }
 
                 callback(true);
-                this.showSuccess('Schedule saved successfully');
             } catch (error) {
                 console.error('Error saving schedule:', error);
                 callback(false);
@@ -149,7 +148,7 @@ export default {
 
                 let updatedAfter = null;
                 if (file) {
-                    updatedAfter = await this.handleFileUpload(file, updateData.component);
+                    updatedAfter = await this.handleUploadFile(file, updateData.component);
                 }
 
                 callback(true, updatedAfter);
@@ -161,7 +160,8 @@ export default {
             }
         },
 
-        async handleUploadFile({ file, callback }) {
+        async handleUploadFile({ file, currentTask }) {
+            let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
             // Push Image 
             const randomText = Math.random().toString(36).substring(2, 8);
             let companyId = localStorage.getItem('company_id');
