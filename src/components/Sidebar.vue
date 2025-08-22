@@ -46,7 +46,6 @@ export default {
             // console.log(item)
         },
         onAction(item) {
-            console.log(item.action)
             let action = item.action;
             this.crewManage(action);
             this.helpSupport(action);
@@ -251,7 +250,6 @@ export default {
             if (file) {
                 this.selectedLogoFile = file;
                 // Generate a temporary preview
-                // this.previewLogo = URL.createObjectURL(file);
                 // You can now use this.selectedLogoFile in your Supabase upload
                 // Example: this.uploadLogoToSupabase(this.selectedLogoFile);
                 let companyId = localStorage.getItem('company_id');
@@ -283,7 +281,7 @@ export default {
                         .update({ logo: publicUrl })
                         .eq('id', companyId);
 
-                    this.company.logo = publicUrl;
+                    this.company.logo = URL.createObjectURL(file);
 
                     if (updateError) console.error('Update failed', error);
                 }
