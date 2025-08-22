@@ -141,7 +141,7 @@
             const { data, error } = await supabase.storage
                 .from('company-files')
                 .upload(`tasks/${companyId}-${randomText}.png`, file, {
-                    cacheControl: '3600',
+                    cacheControl: 0,
                     upsert: true
                 });
   

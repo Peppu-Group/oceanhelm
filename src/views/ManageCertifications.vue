@@ -193,7 +193,7 @@ export default {
                 const { data, error } = await supabase.storage
                     .from('company-files')
                     .upload(`certifications/${cert_id}.png`, file, {
-                        cacheControl: '3600',
+                        cacheControl: 0,
                         upsert: true
                     });
 
