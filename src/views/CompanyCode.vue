@@ -98,7 +98,7 @@ export default {
                 .from('code')
                 .select('*')
                 .eq('code', codeValue)
-                .eq('company_name', name)
+                .or(`company_name.eq.${name},company_id.eq.${name}`)
                 .maybeSingle(); // returns null if no row found
 
             if (error) {
@@ -117,8 +117,6 @@ export default {
             let company_id = metadata?.company_id;
 
             let name = company_name ?? company_id;
-
-            console.log(name)
 
             if (fullCode.length === 8) {
                 if (fullCode === import.meta.env.VITE_COMPANY_CODE) {
