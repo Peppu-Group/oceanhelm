@@ -118,6 +118,8 @@ export default {
 
             let name = company_name ?? company_id;
 
+            console.log(name)
+
             if (fullCode.length === 8) {
                 if (fullCode === import.meta.env.VITE_COMPANY_CODE) {
                     // store code in localstorage
