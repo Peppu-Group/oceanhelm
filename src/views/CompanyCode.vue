@@ -29,7 +29,8 @@
 </template>
 
 <script>
-import supabase from '../supabase'
+import supabase from '../supabase';
+import { validate as isUUID } from "uuid";
 
 export default {
     name: 'Code',
@@ -94,11 +95,19 @@ export default {
         },
 
         async getCodeRow(codeValue, name) {
+            let filter;
+            if (isUUID(name)) {
+                // If it's a UUID, check both company_id and company_name
+                filter = `company_id.eq.${name}`;
+            } else {
+                // If it's just a text company name
+                filter = `company_name.eq.${name}`;
+            }
             const { data, error } = await supabase
                 .from('code')
                 .select('*')
                 .eq('code', codeValue)
-                .or(`company_name.eq.${name},company_id.eq.${name}`)
+                .or(filter)
                 .maybeSingle(); // returns null if no row found
 
             if (error) {

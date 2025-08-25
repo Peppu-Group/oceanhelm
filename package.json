@@ -19,6 +19,7 @@
     "jspdf-autotable": "^5.0.2",
     "oceanhelm": "^0.0.5",
     "papaparse": "^5.5.3",
+    "uuid": "^11.1.0",
     "vue": "^3.3.4",
     "vue-router": "^4.2.2",
     "vuex": "^4.0.2"
