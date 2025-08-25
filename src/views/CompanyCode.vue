@@ -112,7 +112,12 @@ export default {
         submitCode() {
             const fullCode = this.code.join('');
             let session = localStorage.getItem('sb-qltidnqgczccstukalgy-auth-token');
-            let name = JSON.parse(session).user.user_metadata.company_name;
+            let metadata = JSON.parse(session)?.user?.user_metadata;
+            let company_name = metadata?.company_name;
+            let company_id = metadata?.company_id;
+
+            let name = company_name ?? company_id;
+
             if (fullCode.length === 8) {
                 if (fullCode === import.meta.env.VITE_COMPANY_CODE) {
                     // store code in localstorage
@@ -121,20 +126,20 @@ export default {
                     this.$router.push({ name: 'dashboard' });
                 } else {
                     this.getCodeRow(fullCode, name).then((resp) => {
-                    // check if company-id matches
-                    // redirect to home page
-                    // Encode session and redirect to subdomain
-                    if (resp) {
-                        const encoded = encodeURIComponent(JSON.stringify(session));
-                        window.location.href = `${resp.url}/session?session=${encoded}`;
-                    } else {
-                        Swal.fire({
-                            title: 'Incorrect code',
-                            text: 'The code you have entered is either incorrect or your firm does not have an account with us. Kindly mail marine@peppubuild.com for help',
-                            icon: 'error'
-                        });
-                    }
-                })
+                        // check if company-id matches
+                        // redirect to home page
+                        // Encode session and redirect to subdomain
+                        if (resp) {
+                            const encoded = encodeURIComponent(JSON.stringify(session));
+                            window.location.href = `${resp.url}/session?session=${encoded}`;
+                        } else {
+                            Swal.fire({
+                                title: 'Incorrect code',
+                                text: 'The code you have entered is either incorrect or your firm does not have an account with us. Kindly mail marine@peppubuild.com for help',
+                                icon: 'error'
+                            });
+                        }
+                    })
                 }
             } else {
                 Swal.fire({
