@@ -599,7 +599,7 @@ export default {
             return this.checklists.filter(item => item.completed);
         },
         progress() {
-            return Math.round((this.completedCount.length / this.checklists.length) * 100);
+            return Math.round((this.completedCount.length / this.checklists.length) * 100) || 0;
         },
         checklistButtonLabel() {
             return this.lastSection === 'schedule' ? 'Approve Maintenance' : 'Save Checklist';
