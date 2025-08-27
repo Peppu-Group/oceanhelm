@@ -215,7 +215,7 @@ export default {
             if (error) {
               Swal.fire({
                 title: "An error ocurred",
-                text: error,
+                text: error.message,
                 icon: "error"
               });
               this.resetForm();
