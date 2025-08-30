@@ -66,7 +66,7 @@
                                 </li>
                             </ul>
 
-                            <div v-if="after">
+                            <div v-if="after && !showAddTaskButton">
                                 <label>Upload Image Evidence</label>
                                 <ul class="checklist">
                                     <li class="checklist-item">
@@ -90,7 +90,7 @@
                                 </ul>
                             </div>
 
-                            <div class="form-group" v-else :key="refreshKey || 'default'">
+                            <div class="form-group" v-else-if="!showAddTaskButton" :key="refreshKey || 'default'">
                                 <label>Upload Image Evidence</label>
                                 <p>You can only upload one image evidence here.</p>
                                 <div class="attachment-area">
@@ -1042,7 +1042,7 @@ export default {
                     const { data, error } = await supabase.storage
                         .from('company-files')
                         .upload(`tasks/${companyId}-${randomText}.png`, file, {
-                            cacheControl: '3600',
+                            cacheControl: 0,
                             upsert: true
                         });
 
