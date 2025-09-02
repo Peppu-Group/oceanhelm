@@ -19,6 +19,7 @@ import ManageCertifications from '../views/ManageCertifications.vue'
 import LogView from '../views/LogView.vue'
 import ResetPassword from '../views/ResetPassword.vue'
 import CompanyCode from '../views/CompanyCode.vue'
+import VesselLog from '../views/VesselLog.vue'
 
 
 const router = createRouter({
@@ -119,6 +120,12 @@ const router = createRouter({
       path: '/get-code',
       name: 'code',
       component: CompanyCode
+    },
+    {
+      path: '/vessel-log',
+      name: 'VesselLog',
+      component: VesselLog,
+      meta: { requiresAuth: true }
     },
     {
       path: '/:pathMatch(.*)*',
