@@ -42,6 +42,11 @@ export default {
                 this.$router.push({ name: 'maintenanceroute' })
             }
         },
+        getVesselLog(action) {
+            if (action == 'vessel-log') {
+                this.$router.push({ name: 'VesselLog' })
+            }
+        },
         onNavigate(item) {
             // console.log(item)
         },
@@ -51,6 +56,7 @@ export default {
             this.helpSupport(action);
             this.updateCompanyInfo(action);
             this.getMaintenance(action);
+            this.getVesselLog(action);
         },
         onItemClick(item) {
 
