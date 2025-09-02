@@ -163,7 +163,7 @@ export default {
       }
     },
 
-    async changeDate(vessel) {
+    async changeDate(registrationNumber) {
       const currentDateTime = new Date();
       const currentDateTimeString = currentDateTime.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
 
@@ -256,19 +256,28 @@ export default {
         let statusChangePayload = {
           date: formValues.datetime,
           reason: formValues.reason,
-          registrationNumber: vessel.registrationNumber
+          registrationNumber: registrationNumber
         }
-        // await this.markInactive(statusChangePayload);
+        await this.markInactive(statusChangePayload);
       }
     },
 
     toIsoWithOffset(dateStr) {
       const date = new Date(dateStr);
-      const offsetMinutes = -date.getTimezoneOffset(); // flip sign
-      const sign = offsetMinutes >= 0 ? "+" : "-";
+      const offsetMinutes = date.getTimezoneOffset(); // minutes to *subtract* from local to get UTC
+      const sign = offsetMinutes <= 0 ? "+" : "-";
       const hours = String(Math.floor(Math.abs(offsetMinutes) / 60)).padStart(2, "0");
       const minutes = String(Math.abs(offsetMinutes) % 60).padStart(2, "0");
-      return date.toISOString().replace("Z", `${sign}${hours}:${minutes}`);
+
+      // Build local ISO string without UTC conversion
+      const yyyy = date.getFullYear();
+      const MM = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      const HH = String(date.getHours()).padStart(2, "0");
+      const mm = String(date.getMinutes()).padStart(2, "0");
+      const ss = String(date.getSeconds()).padStart(2, "0");
+
+      return `${yyyy}-${MM}-${dd}T${HH}:${mm}:${ss}${sign}${hours}:${minutes}`;
     },
 
     // Handle vessel status toggle event
@@ -435,7 +444,7 @@ export default {
             // Prepare the complete status change data
             const statusChangePayload = {
               registrationNumber: vessel.registrationNumber,
-              newStatus: newStatus,
+              status: newStatus,
               date: formValues.datetime,
               reason: formValues.reason,
             };
@@ -443,7 +452,6 @@ export default {
             // Call the appropriate method based on new status
             let response;
             response = await this.markInactive(statusChangePayload);
-            console.log(formValues.datetime)
             if (response) {
               console.log(response)
               // Swal.close();
