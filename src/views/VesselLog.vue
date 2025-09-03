@@ -392,7 +392,15 @@ export default {
         },
         formatTime(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleTimeString();
+
+            // add 60 minutes (in ms) to adjust for UTC+1
+            date.setMinutes(date.getMinutes() + 60);
+
+            return date.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false // use 24-hour format, set to true if you want AM/PM
+            });
         },
         getDurationHours(startDateString, endDateString) {
             const start = new Date(startDateString);
