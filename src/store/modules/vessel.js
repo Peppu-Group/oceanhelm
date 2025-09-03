@@ -57,6 +57,7 @@ export default {
         if (!activeCycle.subActions) {
           activeCycle.subActions = [];
         }
+        console.log(vessel)
         activeCycle.subActions.push(subAction);
       }
     },
@@ -130,7 +131,9 @@ export default {
       if (vesselIndex !== -1) {
         const vessel = state.vessels[vesselIndex];
         if (vessel && vessel.cycle) {
-          const subAction = vessel.cycle.find(sa => sa.id === subActionId)
+          const subAction = vessel.cycle
+            ?.flatMap(cycle => cycle.subActions || [])
+            .find(sa => sa.id === subActionId);
 
           if (subAction) {
             subAction.endDate = endDate;

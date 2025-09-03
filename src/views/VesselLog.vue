@@ -308,11 +308,13 @@ export default {
             if (!startDateTime) return;
 
             // Gather all existing subAction IDs from all vessels and cycles
-            const existingIds = originalVessels.flatMap(v =>
-                (v.cycle || []).flatMap(cycle =>
+
+            let existingIds = [];
+            if (originalVessel && Array.isArray(originalVessel.cycle)) {
+                existingIds = originalVessel.cycle.flatMap(cycle =>
                     (cycle.subActions || []).map(sub => sub.id || 0)
-                )
-            );
+                );
+            }
             const newId = Math.max(...existingIds, 0) + 1;
             // Create the new sub-action object (index will be assigned automatically)
             const newSubAction = {
@@ -323,6 +325,8 @@ export default {
                 id: newId,
                 endDate: null
             };
+
+            console.log(newSubAction)
 
             // Update the store using registration number
             this.$store.dispatch('vessel/addSubAction', {
