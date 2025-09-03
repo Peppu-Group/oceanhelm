@@ -141,7 +141,7 @@ export default {
                     name: vessel.name,
                     status: vessel.mainStatus,
                     startDate: vessel.startDate,
-                    endDate: null, // Main status doesn't have end date
+                    endDate: vessel.endDate, // Main status doesn't have end date
                     isMainVessel: true,
                     vesselId: vessel.registrationNumber
                 });
@@ -149,7 +149,7 @@ export default {
                 // Add sub-action rows
                 vessel.subActions.forEach((subAction, index) => {
                     flattened.push({
-                        id: index + 1,
+                        id: subAction.id,
                         name: subAction.name,
                         status: subAction.status,
                         startDate: subAction.startDate,
@@ -164,30 +164,43 @@ export default {
             return flattened;
         },
         vessels() {
-            return this.$store.getters['vessel/allVessels'].map((vessel, index) => ({
-                registrationNumber: vessel.registrationNumber || `REG${String(index + 1).padStart(3, '0')}`,
-                name: vessel.name || "Unnamed Vessel",
-                mainStatus: vessel.status || "inactive",
-                startDate: vessel.date
-                    ? new Date(vessel.date).toISOString().slice(0, 16)
-                    : new Date().toISOString().slice(0, 16),
+            return this.$store.getters['vessel/allVessels'].flatMap((vessel, index) =>
+                (vessel.cycle || []).map((cycle, cycleIndex) => ({
+                    registrationNumber:
+                        vessel.registrationNumber,
+                    name: vessel.name,
 
-                subActions: vessel.cycle
-                    ? vessel.cycle.map((cycle, subIndex) => ({
-                        name: cycle.name || "Unknown Action",
-                        status: cycle.status || "unknown",
-                        startDate: cycle.startDate
-                            ? new Date(cycle.startDate).toISOString().slice(0, 16)
-                            : new Date().toISOString().slice(0, 16),
-                        endDate: cycle.endDate
-                            ? new Date(cycle.endDate).toISOString().slice(0, 16)
-                            : null
-                    }))
-                    : []
-            }));
+                    // From cycle
+                    mainStatus: cycle.mainStatus,
+                    startDate: cycle.startDate
+                        ? new Date(cycle.startDate).toISOString().slice(0, 16)
+                        : new Date().toISOString().slice(0, 16),
+                    endDate: cycle.endDate
+                        ? new Date(cycle.endDate).toISOString().slice(0, 16)
+                        : null,
+
+                    // SubActions inside this cycle
+                    subActions: Array.isArray(cycle.subActions)
+                        ? cycle.subActions.map((subAction, subIndex) => ({
+                            id: subAction.id || Number(`${index + 1}${cycleIndex + 1}${subIndex + 1}`),
+                            name: subAction.name || "Unknown Action",
+                            status: subAction.status || "unknown",
+                            startDate: subAction.startDate
+                                ? new Date(subAction.startDate).toISOString().slice(0, 16)
+                                : new Date().toISOString().slice(0, 16),
+                            endDate: subAction.endDate
+                                ? new Date(subAction.endDate).toISOString().slice(0, 16)
+                                : null,
+                            vesselId:
+                                vessel.registrationNumber ||
+                                `REG${String(index + 1).padStart(3, '0')}`
+                        }))
+                        : []
+                }))
+            );
         }
     },
-   async mounted() {
+    async mounted() {
         // Initialize sidebar toggle functionality
         this.initializeSidebarToggle();
         // fetch vessels
@@ -224,20 +237,6 @@ export default {
             // Find the original vessel from the store using registration number
             const originalVessels = this.$store.getters['vessel/allVessels'];
             const originalVessel = originalVessels.find(v => v.registrationNumber === vesselItem.vesselId);
-
-            if (!originalVessel) return;
-
-            // Double-check the vessel's main status
-            if (originalVessel.status !== 'Active') {
-                await Swal.fire({
-                    title: 'Cannot Add Sub-Action',
-                    text: 'This vessel cycle is already complete. Sub-actions can only be added to active vessels.',
-                    icon: 'warning',
-                    confirmButtonText: 'Understood',
-                    confirmButtonColor: '#0d6efd'
-                });
-                return;
-            }
 
             // Multi-step form using SweetAlert2
             const { value: subActionName } = await Swal.fire({
@@ -308,12 +307,13 @@ export default {
 
             if (!startDateTime) return;
 
-            // Generate new ID for sub-action
+            // Gather all existing subAction IDs from all vessels and cycles
             const existingIds = originalVessels.flatMap(v =>
-                (v.cycle || []).map(c => c.id || 0)
+                (v.cycle || []).flatMap(cycle =>
+                    (cycle.subActions || []).map(sub => sub.id || 0)
+                )
             );
             const newId = Math.max(...existingIds, 0) + 1;
-
             // Create the new sub-action object (index will be assigned automatically)
             const newSubAction = {
                 name: subActionName,

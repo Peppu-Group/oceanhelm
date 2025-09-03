@@ -51,11 +51,13 @@ export default {
     },
     ADD_SUB_ACTION(state, { vesselIndex, subAction }) {
       const vessel = state.vessels[vesselIndex];
-      if (vessel) {
-        if (!vessel.cycle) {
-          vessel.cycle = [];
+      const activeCycle = vessel.cycle.find(c => c.mainStatus === "Active");
+
+      if (activeCycle) {
+        if (!activeCycle.subActions) {
+          activeCycle.subActions = [];
         }
-        vessel.cycle.push(subAction);
+        activeCycle.subActions.push(subAction);
       }
     },
     END_SUB_ACTION(state, { vesselIndex, subActionId, endDate }) {
@@ -84,7 +86,15 @@ export default {
         const existingCycle = state.vessels[vesselIndex].cycle || [];
 
         // Add new subAction to existing cycle
-        const updatedCycle = [...existingCycle, subAction];
+        const updatedCycle = existingCycle.map(cycle => {
+          if (cycle.mainStatus === "Active") {
+            return {
+              ...cycle,
+              subActions: [...(cycle.subActions || []), subAction]
+            };
+          }
+          return cycle;
+        });
 
         const { data, error } = await supabase
           .from('vessels')
