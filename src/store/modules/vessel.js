@@ -48,11 +48,100 @@ export default {
       state.vessels = state.vessels.filter(v => v.registrationNumber !== id);
       localStorage.setItem('vessel', JSON.stringify(state.vessels));
       Swal.fire('Deleted!', 'The vessel has been deleted.', 'success');
+    },
+    ADD_SUB_ACTION(state, { vesselIndex, subAction }) {
+      const vessel = state.vessels[vesselIndex];
+      if (vessel) {
+        if (!vessel.cycle) {
+          vessel.cycle = [];
+        }
+        vessel.cycle.push(subAction);
+      }
+    },
+    END_SUB_ACTION(state, { vesselIndex, subActionId, endDate }) {
+      const vessel = state.vessels[vesselIndex];
+      if (vessel && vessel.cycle) {
+        const subAction = vessel.cycle.find(sa => sa.id === subActionId)
+
+        if (subAction) {
+          subAction.endDate = endDate;
+        }
+      }
     }
   },
   actions: {
     setVessels({ commit }, vessels) {
       commit('SET_VESSELS', vessels);
+    },
+    async addSubAction({ commit, state }, { vesselRegistrationNumber, subAction }) {
+      const vesselIndex = state.vessels.findIndex(v =>
+        v.registrationNumber === vesselRegistrationNumber
+      );
+
+      if (vesselIndex !== -1) {
+        // Update in Supabase
+        // Get existing cycle from the vessel in state
+        const existingCycle = state.vessels[vesselIndex].cycle || [];
+
+        // Add new subAction to existing cycle
+        const updatedCycle = [...existingCycle, subAction];
+
+        const { data, error } = await supabase
+          .from('vessels')
+          .update({ cycle: updatedCycle })
+          .eq('registration_number', vesselRegistrationNumber);
+
+        if (error) {
+          await Swal.fire({
+            title: 'Sub-Action not Added',
+            icon: 'error',
+            text: error.message,
+            timer: 2500,
+            showConfirmButton: false,
+            toast: true,
+          });
+        } else {
+          commit('ADD_SUB_ACTION', { vesselIndex, subAction });
+          await Swal.fire({
+            title: 'Sub-Action Added!',
+            icon: 'success',
+            timer: 2500,
+            showConfirmButton: false,
+            toast: true,
+          });
+        }
+      }
+    },
+    async endSubAction({ state }, { vesselId, subActionId, endDate }) {
+      const vesselIndex = state.vessels.findIndex(v =>
+        (v.registrationNumber) === vesselId
+      );
+
+      if (vesselIndex !== -1) {
+        const vessel = state.vessels[vesselIndex];
+        if (vessel && vessel.cycle) {
+          const subAction = vessel.cycle.find(sa => sa.id === subActionId)
+
+          if (subAction) {
+            subAction.endDate = endDate;
+
+            const { data, error } = await supabase
+              .from('vessels')
+              .update({ cycle: vessel.cycle })
+              .eq('registration_number', vesselId);
+
+            if (error) {
+              await Swal.fire({
+                title: 'An error occurred',
+                text: 'Could not complete sub action',
+                icon: 'error',
+                text: error.message,
+                showConfirmButton: false,
+              });
+            }
+          }
+        }
+      }
     },
     async addVessel({ commit }, vessel) {
       const { data: { session } } = await supabase.auth.getSession();
@@ -128,7 +217,10 @@ export default {
         draft: vessel.draft,
         gross: vessel.gross,
         net: vessel.net,
-        certifications: vessel.certifications
+        certifications: vessel.certifications,
+        date: vessel.date,
+        reason: vessel.reason,
+        cycle: vessel.cycle
       }));
 
       commit('SET_VESSELS', simplifiedVessels);
@@ -166,9 +258,9 @@ export default {
       }
     },
     async updateVesselCert({ rootState }, { cert, id }) {
-      let email = rootState.company.company.email  ;
+      let email = rootState.company.company.email;
 
-       // Attach email to each certificate
+      // Attach email to each certificate
       const cert_with_email = cert.map(c => ({
         ...c,
         email
@@ -176,7 +268,7 @@ export default {
       // Update in Supabase
       const { data, error } = await supabase
         .from('vessels')
-        .update({ certifications: cert_with_email  })
+        .update({ certifications: cert_with_email })
         .eq('registration_number', id);
     },
     async deleteVessel({ commit }, id) {
@@ -216,9 +308,9 @@ export default {
     },
 
 
-    markInactive: async ({ state, commit }, registrationNumber) => {
+    markInactive: async ({ state, commit }, statusChangePayload) => {
       const vessels = [...state.vessels];
-      const index = vessels.findIndex(v => v.registrationNumber === registrationNumber);
+      const index = vessels.findIndex(v => v.registrationNumber === statusChangePayload.registrationNumber);
       if (index === -1) return;
 
       // Toggle status
@@ -238,11 +330,16 @@ export default {
         if (error) {
           console.error('Error fetching profile:', error);
         } else {
+          // Make a shallow copy of the payload
+          const updatePayload = { ...statusChangePayload };
+
+          // Remove registrationNumber only from the copy
+          delete updatePayload.registrationNumber;
           // Update in Supabase
           const { data, error } = await supabase
             .from('vessels')
-            .update({ status: newStatus })
-            .eq('registration_number', registrationNumber)
+            .update(updatePayload)
+            .eq('registration_number', statusChangePayload.registrationNumber)
 
           if (error) {
             Swal.fire({
@@ -252,26 +349,28 @@ export default {
             });
             return;
           } else {
+            commit('SET_VESSELS', vessels);
             // Update in local state
+          }
+          if (statusChangePayload.status) {
             vessels[index].status = newStatus;
             await logActivity({
               id: profile.company_id,
               action: 'update',
               table: 'vessel',
               details: {
-                status: `Changed the status of vessel, with registration number: ${registrationNumber} to ${newStatus}`
+                status: `Changed the status of vessel, with registration number: ${statusChangePayload.registrationNumber} to ${newStatus}`
               }
             });
-            commit('SET_VESSELS', vessels);
 
             // Optional success message
-            if (newStatus === 'Active') {
-              Swal.fire({
-                title: 'Vessel Active!',
-                text: 'Your vessel is now active.',
-                icon: 'success'
-              });
-            }
+            Swal.fire({
+              title: `Vessel ${newStatus}!`,
+              text: `Your vessel is now ${newStatus}.`,
+              icon: 'success'
+            });
+          } else {
+            vessels[index].date = statusChangePayload.date;
           }
         }
       }

@@ -260,7 +260,10 @@
                         </div>
 
                         <div class="action-buttons">
-                            <button type="button" class="btn btn-primary" @click.prevent="saveSchedule"
+                            <button type="button" class="btn btn-primary" @click.prevent="saveDraft">
+                                Save Draft
+                            </button>
+                            <button type="button" class="btn btn-success" @click.prevent="saveSchedule"
                                 :disabled="isSaving">
                                 {{ isSaving ? 'Saving...' : 'Save Schedule' }}
                             </button>
@@ -314,6 +317,8 @@
                                     <td>
                                         <button @click="printMaintenance(task.component)" v-if="task.status === 'Completed'"
                                             class="status-action">Print</button>
+                                        <button @click="showDraft(task.component)" v-else-if="task.status === 'Draft'"
+                                            class="status-action">Continue</button>
                                         <button @click="showMaintenance(task.component)" v-else
                                             class="status-action">Start</button>
                                     </td>
@@ -562,6 +567,13 @@ export default {
         'form.recurrence': 'calculateNextDue',
         'form.nextDue': function (newDate) {
             this.calculateRemainingDays();
+        },
+        activeSection(newSection, oldSection) {
+            // Reset form when leaving schedule section
+            if (oldSection === 'schedule' && newSection !== 'schedule') {
+                this.resetForm();
+                this.currentDraftId = null;
+            }
         }
     },
     computed: {
@@ -569,10 +581,10 @@ export default {
         filteredTasks() {
             let result = [...this.tasks];
             if (this.activeFilter === 'all') {
-                result = result.filter(task => task.status === 'Overdue' || task.status === 'Soon' || task.status === 'Completed');
+                result = result.filter(task => task.status === 'Draft' || task.status === 'Soon' || task.status === 'Completed' || task.status === 'Overdue');
             }
             else if (this.activeFilter === 'due') {
-                result = result.filter(task => task.status === 'Overdue' || task.status === 'Soon');
+                result = result.filter(task => task.status === 'Overdue' || task.status === 'Soon' || task.status === 'Draft');
             } else if (this.activeFilter === 'completed') {
                 result = result.filter(task => task.status === 'Completed');
             }
@@ -747,6 +759,14 @@ export default {
                 this.activeSection = 'maintenance';
             }
         },
+        async showDraft(taskComponent) {
+            if (this.deepAccess()) {
+                const tasks = this.tasks;
+                const task = tasks.find(t => t.component === taskComponent);
+                this.form = task;
+                this.activeSection = 'schedule';
+            }
+        },
         printMaintenance(taskComponent) {
             const tasks = this.tasks;
             const task = tasks.find(t => t.component === taskComponent);
@@ -871,6 +891,31 @@ export default {
             this.form.remainingDays = `${diffDays} Days`;
         },
 
+        async saveDraft() {
+            // Create a copy of form data
+            const taskData = { ...this.form };
+
+            // Replace component with custom value if "other" was selected
+            if (this.form.component === 'Other' && this.form.customComponent) {
+                taskData.component = this.form.customComponent;
+            }
+
+            taskData.status = 'Draft'
+
+            await this.$store.dispatch('tasks/addDraft', {
+                vesselId: this.$route.params.id,
+                task: taskData
+            });
+
+
+            // Also update current task in localStorage (optional)
+            // localStorage.setItem('currentTask', taskData.component);
+            // Then reset
+            this.resetForm();
+            // push to maintenance section
+            this.activeSection = 'inventory';
+        },
+
         async saveSchedule() {
             // the captain or owner is shown an initial checklist where they can add or remove checklist.
             // then save the checklist.
@@ -889,6 +934,7 @@ export default {
             if (this.form.component === 'Other' && this.form.customComponent) {
                 taskData.component = this.form.customComponent;
             }
+            console.log(taskData.status)
             // perform validation
             // validate that the component isn't already in maintenance.
             const tasksData = localStorage.getItem(`tasks-${id}`) || '[]';
@@ -1204,10 +1250,10 @@ export default {
                         this.after = null;
                         this.tasks[taskIndex].after = null;
                         this.fileText = 'Drag and drop files here or',
-                        this.fileattachments = {};
+                            this.fileattachments = {};
                         this.refreshKey += 1;
-                       // this.$refs.fileInput.value = ''; // reset file input
-                                                // update supabase
+                        // this.$refs.fileInput.value = ''; // reset file input
+                        // update supabase
                         // this.updateVesselCert(this.certifications);
                     }
                 }
@@ -1460,7 +1506,7 @@ textarea {
 
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 10px;
     margin-top: 20px;
 }
@@ -1677,8 +1723,8 @@ textarea {
     background-color: #4dffd0;
 }
 
-.status-badge.soon {
-    background-color: #ffa500;
+.status-badge.draft {
+    background-color: var(--dashsecondary-color);
 }
 
 .status-badge.completed {

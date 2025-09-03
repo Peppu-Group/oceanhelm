@@ -23,6 +23,13 @@ export default {
       state.tasksByVessel[vesselId] = tasks;
       localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(tasks));
     },
+    ADD_DRAFT(state, { vesselId, task }) {
+      if (!state.tasksByVessel[vesselId]) {
+        state.tasksByVessel[vesselId] = [];
+      }
+      state.tasksByVessel[vesselId].push(task);
+      localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(state.tasksByVessel[vesselId]));
+    },
     ADD_TASK(state, { vesselId, task, rootState }) {
       if (!state.tasksByVessel[vesselId]) {
         state.tasksByVessel[vesselId] = [];
@@ -100,6 +107,70 @@ export default {
       }));
 
       commit('SET_TASKS', { vesselId, tasks: simplifiedTasks });
+    },
+    async addDraft({ commit }, { vesselId, task }) {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        const user = session.user;
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          const companyId = profile.company_id;
+          const { data, error } = await supabase
+            .from('tasks')
+            .insert([
+              {
+                task_name: task.taskName,
+                email: task.email || null,
+                description: task.description,
+                maintenance_type: task.maintenanceType,
+                component: task.component,
+                estimated_hours: task.estimatedHours,
+                assigned_to: task.assignedTo,
+                recurrence: task.recurrence,
+                last_performed: task.lastPerformed || null,
+                next_due: task.nextDue || null,
+                reminder_days: task.reminderDays,
+                estimated_duration: task.estimatedDuration,
+                notes: task.notes,
+                status: task.status,
+                remaining_days: task.reminderDays,
+                attachments: task.attachments.file,
+                checklist_progress: task.checklistProgress,
+                vessel: vesselId,
+                company_id: companyId
+              }
+            ], { returning: 'minimal' }
+            );
+
+          if (error) {
+            // tell user about error.
+            errorMessage(error)
+          } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'add',
+              table: 'draft maintenance',
+              details: {
+                status: `Created a new draft task for maintenance`, information: {
+                  task_name: task.taskName,
+                  description: task.description, vessel: vesselId
+                }
+              }
+            });
+            commit('ADD_DRAFT', { vesselId, task });
+          }
+        }
+      } else {
+        // router push to login
+      }
     },
     async addTask({ commit, rootState }, { vesselId, task }) {
       const { data: { session } } = await supabase.auth.getSession();
