@@ -343,12 +343,37 @@ export default {
         if (error) {
           console.error('Error fetching profile:', error);
         } else {
-          // Make a shallow copy of the payload
-          const updatePayload = { ...statusChangePayload };
+          const vessel = vessels[index];
 
-          // Remove registrationNumber only from the copy
+          // Ensure cycles array exists
+          if (!vessel.cycle) {
+            vessel.cycle = [];
+          }
+
+          // Check for active cycle
+          const activeCycle = vessel.cycle.find(c => c.mainStatus === 'Active');
+
+          if (activeCycle) {
+            // Close the active cycle
+            activeCycle.mainStatus = 'Inactive';
+            activeCycle.endDate = new Date().toISOString().slice(0, 16);
+          } else {
+            // Start a new active cycle
+            vessel.cycle.push({
+              mainStatus: 'Active',
+              startDate: new Date().toISOString().slice(0, 16),
+              endDate: null,
+              subActions: []
+            });
+          }
+
+          // Build update payload
+          const updatePayload = {
+            ...statusChangePayload,
+            cycle: vessel.cycle
+          };
           delete updatePayload.registrationNumber;
-          // Update in Supabase
+
           const { data, error } = await supabase
             .from('vessels')
             .update(updatePayload)
