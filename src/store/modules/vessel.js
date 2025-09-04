@@ -346,26 +346,34 @@ export default {
           const vessel = vessels[index];
 
           // Ensure cycles array exists
-          if (!vessel.cycle) {
-            vessel.cycle = [];
-          }
-
-          // Check for active cycle
-          const activeCycle = vessel.cycle.find(c => c.mainStatus === 'Active');
-
-          if (activeCycle) {
-            // Close the active cycle
-            activeCycle.mainStatus = 'Inactive';
-            activeCycle.endDate = new Date().toISOString().slice(0, 16);
+          if (!vessel.cycle || vessel.cycle.length === 0) {
+            vessel.cycle = [
+              {
+                mainStatus: currentStatus,
+                startDate: statusChangePayload.date,
+                endDate: currentStatus === 'Inactive' ? statusChangePayload.date : null,
+                subActions: []
+              }
+            ];
           } else {
-            // Start a new active cycle
-            vessel.cycle.push({
-              mainStatus: 'Active',
-              startDate: new Date().toISOString().slice(0, 16),
-              endDate: null,
-              subActions: []
-            });
+            // Check for active cycle
+            const activeCycle = vessel.cycle.find(c => c.mainStatus === 'Active');
+
+            if (activeCycle) {
+              // Close the active cycle
+              activeCycle.mainStatus = 'Inactive';
+              activeCycle.endDate = statusChangePayload.date;
+            } else {
+              // Start a new active cycle
+              vessel.cycle.push({
+                mainStatus: 'Active',
+                startDate: statusChangePayload.date,
+                endDate: null,
+                subActions: []
+              });
+            }
           }
+
 
           // Build update payload
           const updatePayload = {
