@@ -1,0 +1,35 @@
+---
+# https://vitepress.dev/reference/default-theme-home-page
+layout: home
+
+hero:
+  name: "OceanHelm's Blog"
+  text: "Smart Maritime Software"
+  tagline: Marine operations digitalization, update on global maritime news and OceanHelm.
+  image:
+    src: /img/logo.png
+    alt: VitePress
+  actions:
+    - theme: brand
+      text: Markdown Examples
+      link: /markdown-examples
+    - theme: alt
+      text: API Examples
+      link: /api-examples
+
+---
+
+## Latest Posts
+
+<script setup>
+import { data as posts } from './.vitepress/posts.data.ts'
+</script>
+
+<div class="posts-grid">
+  <div v-for="post in posts" :key="post.slug" class="post-card">
+    <img v-if="post.image" :src="post.image" :alt="post.title" />
+    <h3><a :href="post.url">{{ post.title }}</a></h3>
+    <p>{{ post.description }}</p>
+    <small>{{ post.date.string }}</small>
+  </div>
+</div>
