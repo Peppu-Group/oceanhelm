@@ -11,10 +11,10 @@ hero:
     alt: VitePress
   actions:
     - theme: brand
-      text: Markdown Examples
+      text: Latest Posts
       link: /markdown-examples
     - theme: alt
-      text: API Examples
+      text: Try OceanHelm
       link: /api-examples
 
 ---

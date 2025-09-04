@@ -6,11 +6,11 @@ export default defineConfig({
   description: "OceanHelm's blog, update on smart maritime news.",
   head: [
     // Favicon
-    ['link', { rel: 'icon', href: 'https://www.peppubuild.com/favicon.ico' }],
+    ['link', { rel: 'icon', href: 'https://peppubuild.com/oceanhelm.jpeg' }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: 'https://www.peppubuild.com/favicon.ico',
+    logo: 'https://peppubuild.com/oceanhelm.jpeg',
     nav: [
       { text: 'Home', link: '/' },
       {
