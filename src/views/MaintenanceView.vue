@@ -943,7 +943,7 @@ export default {
             // Check for duplicate component
             const hasDuplicateComponent = tasks.some(task => task.component === taskData.component);
 
-            if (hasDuplicateComponent) {
+            if (hasDuplicateComponent && taskData.status !== 'Draft') {
                 Swal.fire({
                     icon: 'error',
                     title: 'Duplicate Component',
@@ -954,6 +954,8 @@ export default {
                     }
                 });
                 return; // Stop further execution
+            } else if (taskData.status == 'Draft') {
+                
             } else {
                 // Remove the customComponent field before saving
                 delete taskData.customComponent;
