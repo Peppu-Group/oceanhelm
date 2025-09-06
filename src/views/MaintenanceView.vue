@@ -285,6 +285,7 @@
                                     @click="setFilter('completed')">Completed</button>
                                 <input type="text" v-model="searchQuery" placeholder="Search..." />
                             </div>
+                            <button class="print-schedule" @click="printSchedule()">Print Schedule</button>
                         </div>
 
                         <!-- Task Table -->
@@ -498,6 +499,7 @@
 import axios from 'axios';
 import supabase from '../supabase';
 import { mapGetters } from 'vuex';
+import { jsPDF } from "jspdf";
 
 export default {
     data() {
@@ -592,9 +594,9 @@ export default {
             if (this.searchQuery) {
                 const query = this.searchQuery.toLowerCase();
                 result = result.filter(task =>
-                    task.equipment.toLowerCase().includes(query) ||
-                    task.taskName.toLowerCase().includes(query) ||
-                    task.assignedTo.toLowerCase().includes(query)
+                    task.equipment?.toLowerCase().includes(query) ||
+                    task.taskName?.toLowerCase().includes(query) ||
+                    task.assignedTo?.toLowerCase().includes(query)
                 );
             }
 
@@ -683,6 +685,45 @@ export default {
                 });
                 return false;
             }
+        },
+        printSchedule() {
+            const doc = new jsPDF({
+                orientation: 'landscape', // Use landscape for better table display
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Get the specific table element
+            const tableElement = document.querySelector('.task-table');
+
+            if (!tableElement) {
+                console.error('Task table not found');
+                return;
+            }
+
+            // Add title
+            doc.setFontSize(16);
+            doc.text('Maintenance Schedule', 15, 20);
+
+            // Add generation date
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 15, 30);
+
+            // Convert HTML table to PDF
+            doc.html(tableElement, {
+                callback: function (doc) {
+                    // Save the PDF
+                    doc.save('maintenance-schedule.pdf');
+                },
+                x: 15,
+                y: 40,
+                width: 260, // Adjust based on your table width
+                windowWidth: tableElement.scrollWidth,
+                html2canvas: {
+                    scale: 0.295, // Adjust scale to fit content
+                    useCORS: true
+                }
+            });
         },
         deleteTask(taskId) {
             this.checklists = this.checklists.filter(checklist => checklist.id !== taskId);
@@ -955,7 +996,7 @@ export default {
                 });
                 return; // Stop further execution
             } else if (taskData.status == 'Draft') {
-                
+
             } else {
                 // Remove the customComponent field before saving
                 delete taskData.customComponent;
@@ -2075,6 +2116,17 @@ textarea {
 .type-predictive {
     background: #d1ecf1;
     color: #0c5460;
+}
+
+.print-schedule {
+    margin-left: auto;
+
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 /* Print Styles */
