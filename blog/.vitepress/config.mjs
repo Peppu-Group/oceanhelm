@@ -1,4 +1,20 @@
 import { defineConfig } from 'vitepress'
+import fs from 'fs'
+import path from 'path'
+
+function getSidebarPosts(dirPath, baseRoute = '') {
+  const files = fs.readdirSync(dirPath)
+
+  return files
+    .filter(file => file.endsWith('.md'))
+    .map(file => {
+      const name = file.replace('.md', '')
+      return {
+        text: name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), // Pretty name
+        link: path.posix.join(baseRoute, name === 'index' ? '' : name)
+      }
+    })
+}
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -16,22 +32,19 @@ export default defineConfig({
       {
         text: 'Product',
         items: [
-          { text: 'OceanHelm Features', link: '/item-1' },
-          { text: 'OceanHelm News', link: '/item-2' }
+          { text: 'OceanHelm Features', link: '#' },
+          { text: 'OceanHelm News', link: '#' }
         ]
       },
-      { text: 'News', link: '/markdown-examples' },
-      { text: 'Changelog', link: '/markdown-examples' },
+      { text: 'News', link: '#' },
+      { text: 'Changelog', link: '#' },
       { text: 'Try OceanHelm', link: 'https://oceanhelmtech.com' }
     ],
 
     sidebar: [
       {
-        text: 'Examples',
-        items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
+        text: 'Posts',
+        items: getSidebarPosts(path.resolve(__dirname, '../posts'), '/posts/')
       }
     ],
 

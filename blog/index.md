@@ -11,11 +11,11 @@ hero:
     alt: VitePress
   actions:
     - theme: brand
-      text: Latest Posts
-      link: /markdown-examples
+      text: Latest Post
+      link: /posts/digitalizing-vessel-operations-tracking
     - theme: alt
       text: Try OceanHelm
-      link: /api-examples
+      link: https://www.oceanhelmtech.com
 
 ---
 
