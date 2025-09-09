@@ -1076,17 +1076,61 @@ export default {
             const existingItem = this.inventoryData.find(entry =>
                 entry.id === item.id && entry.location === location && entry.vessel === vessel
             );
+
+            const itemAvailable = this.inventoryData.find(entry =>
+                entry.id === item.id && entry.location === newLocation && entry.vessel === item.vessel
+            );
+
+            // Prevent moving to the same location/vessel
             if (existingItem && existingItem.location === newLocation && existingItem.vessel === item.vessel) {
                 Swal.fire({
-                    title: 'Chose a different product',
-                    text: 'You cannot move an item to the same location. Either you change location, vessel, or try the stock in action.',
+                    title: 'Choose a different product',
+                    text: 'You cannot move an item to the same location. Either change location, vessel, or try stock-in action.',
                     icon: 'info',
                     timer: 2000,
                     showConfirmButton: false
                 });
+                return;
+            }
+
+            // Always update the source item (subtract stock)
+            const id = item.id;
+            const sourceStockData = {
+                status: this.getStockStatus(
+                    existingItem.currentStock - transferQuantity,
+                    existingItem.minStock,
+                    existingItem.maxStock
+                ),
+                currentStock: existingItem.currentStock - transferQuantity,
+                value: existingItem.value - parseInt(item.value)
+            };
+
+            const actionType = {
+                action: 'transfer',
+                initialQuantity: parseInt(sourceStockData.currentStock) + parseInt(transferQuantity),
+                finalQuantity: sourceStockData.currentStock,
+                to: [item.vessel, newLocation]
+            };
+
+            const sourcePayload = { id, location, vessel, stockData: sourceStockData, actionType };
+            this.$store.dispatch('inventory/updateInventory', sourcePayload);
+
+            // Handle the destination
+            if (itemAvailable) {
+                // Destination already exists → update
+                const newStockData = {
+                    status: this.getStockStatus(
+                        itemAvailable.currentStock + transferQuantity,
+                        itemAvailable.minStock,
+                        itemAvailable.maxStock
+                    ),
+                    currentStock: itemAvailable.currentStock + transferQuantity,
+                    value: itemAvailable.value + parseInt(item.value)
+                };
+                this.updateInventory(item.id, newStockData, newLocation, item.vessel, 'stock-in');
             } else {
-                // Create full new item with copied fields
-                let inventory = {
+                // Destination doesn’t exist → create
+                const inventory = {
                     itemId: item.id,
                     itemname: existingItem.itemName,
                     value: parseInt(item.value),
@@ -1097,31 +1141,10 @@ export default {
                     lastupdated: new Date().toISOString().split('T')[0],
                     location: newLocation,
                     maxStock: existingItem.maxStock,
-                    minStock: existingItem.minStock,
-                }
-
-                this.$store.dispatch('inventory/addInventory', inventory);
-
-                let id = item.id;
-                let stockData = {
-                    status: this.getStockStatus(existingItem.currentStock - transferQuantity, existingItem.minStock, existingItem.maxStock),
-                    currentStock: existingItem.currentStock - transferQuantity,
-                    value: existingItem.value - parseInt(item.value)
-                }
-                let action = 'transfer';
-
-                let actionType = {
-                    action: action,
-                    initialQuantity: parseInt(stockData.currentStock) + parseInt(transferQuantity),
-                    finalQuantity: stockData.currentStock,
-                    to: [inventory.vessel, inventory.location]
+                    minStock: existingItem.minStock
                 };
-
-                const payload = { id, location, vessel, stockData, actionType };
-                this.$store.dispatch('inventory/updateInventory', payload);
+                this.$store.dispatch('inventory/addInventory', inventory);
             }
-
-            // Optionally recalculate `status` for both entries
         },
         transferItem(item) {
             Swal.fire({
