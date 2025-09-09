@@ -544,7 +544,8 @@ export default {
                     item.itemName.toLowerCase().includes(search) ||
                     item.category.toLowerCase().includes(search) ||
                     item.vessel.toLowerCase().includes(search) ||
-                    item.id.toLowerCase().includes(search)
+                    item.id.toLowerCase().includes(search) ||
+                    item.location.toLowerCase().includes(search)
                 );
             }
 
