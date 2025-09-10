@@ -400,6 +400,7 @@ export default {
           }
           if (statusChangePayload.status) {
             vessels[index].status = newStatus;
+            vessels[index].date = statusChangePayload.date;
             await logActivity({
               id: profile.company_id,
               action: 'update',
