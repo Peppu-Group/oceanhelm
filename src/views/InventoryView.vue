@@ -609,7 +609,6 @@ export default {
 
             // Process each inventory item
             this.filteredInventory.forEach(item => {
-                // Skip if actionType is missing or not an array
                 if (!Array.isArray(item.actionType)) return;
 
                 item.actionType.forEach(action => {
@@ -629,13 +628,12 @@ export default {
                     if (action.action === 'transfer' && action.to) {
                         results.push({
                             partNumber: item.id,
-                            vessel: action.to[0], // destination vessel
-                            location: action.to[1], // destination location
+                            vessel: action.to[0],
+                            location: action.to[1],
                             actionType: 'transfer (received)',
-                            initialQuantity: 0, // receiving location starts with 0
+                            initialQuantity: 0,
                             finalQuantity:
-                                item.actionType.find(a => a === action).initialQuantity -
-                                action.finalQuantity, // transferred quantity
+                                item.actionType.find(a => a === action).initialQuantity - action.finalQuantity,
                             date: action.date,
                             isTransferDestination: true
                         });
@@ -643,10 +641,24 @@ export default {
                 });
             });
 
-
             // Sort by date in ascending order
-            return results.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const sorted = results.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // Filter out "transfer (received)" if followed immediately by "transfer (topup)"
+            const filtered = sorted.filter((row, idx, arr) => {
+                if (
+                    row.actionType === "transfer (received)" &&
+                    arr[idx + 1] &&
+                    arr[idx + 1].actionType === "transfer (topup)"
+                ) {
+                    return false; // remove this row
+                }
+                return true;
+            });
+
+            return filtered;
         }
+
     },
     watch: {
         selectedTab(newTab) {
@@ -936,7 +948,7 @@ export default {
         updateInventory(id, stockData, location, vessel, action) {
             let initialQuantity;
 
-            if (action === 'stock-in') {
+            if (action === 'stock-in' || action === 'transfer (topup)') {
                 initialQuantity =
                     parseInt(stockData.currentStock) - parseInt(stockData.quantityReceived);
             } else {
@@ -1125,9 +1137,10 @@ export default {
                         itemAvailable.maxStock
                     ),
                     currentStock: itemAvailable.currentStock + transferQuantity,
+                    quantityReceived: transferQuantity,
                     value: itemAvailable.value + parseInt(item.value)
                 };
-                this.updateInventory(item.id, newStockData, newLocation, item.vessel, 'stock-in');
+                this.updateInventory(item.id, newStockData, newLocation, item.vessel, 'transfer (topup)');
             } else {
                 // Destination doesn’t exist → create
                 const inventory = {
