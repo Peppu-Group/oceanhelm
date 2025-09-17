@@ -318,9 +318,9 @@
                                     <td>
                                         <button @click="printMaintenance(task.component)" v-if="task.status === 'Completed'"
                                             class="status-action">Print</button>
-                                        <button @click="showDraft(task.component)" v-else-if="task.status === 'Draft'"
+                                        <button @click="showDraft(task.id)" v-else-if="task.status === 'Draft'"
                                             class="status-action">Continue</button>
-                                        <button @click="showMaintenance(task.component)" v-else
+                                        <button @click="showMaintenance(task.component, task.id)" v-else
                                             class="status-action">Start</button>
                                     </td>
                                 </tr>
@@ -500,6 +500,7 @@ import axios from 'axios';
 import supabase from '../supabase';
 import { mapGetters } from 'vuex';
 import { jsPDF } from "jspdf";
+import { v4 as uuidv4 } from 'uuid';
 
 export default {
     data() {
@@ -533,6 +534,7 @@ export default {
             checklists: [],
             isLoading: false,
             form: {
+                id: '',
                 taskName: '',
                 description: '',
                 maintenanceType: '',
@@ -601,9 +603,6 @@ export default {
             }
 
             return result;
-        },
-        getName() {
-            return this.currentTask;
         },
         getVesselCrew() {
             let vesselName = this.vesselInfo.name;
@@ -777,10 +776,10 @@ export default {
                     this.isLoading = false; // End loading regardless of success or failure
                 });
         },
-        async showMaintenance(taskComponent) {
+        async showMaintenance(taskComponent, id) {
             if (this.deepAccess()) {
                 const tasks = this.tasks;
-                const task = tasks.find(t => t.component === taskComponent);
+                const task = tasks.find(t => t.id === id);
 
                 if (task && task.checklistProgress) {
                     this.checklists = [...task.checklistProgress];
@@ -792,19 +791,20 @@ export default {
                 // Remove the file attachment form, replace with delete button first.
                 this.after = task.after;
                 // Also update current task in localStorage (optional)
-                localStorage.setItem('currentTask', taskComponent);
-                this.currentTask = taskComponent;
+                localStorage.setItem('currentTask', id);
+                this.currentTask = id;
                 // save the lastsection, to edit button text
                 this.lastSection = 'inventory';
 
                 this.activeSection = 'maintenance';
             }
         },
-        async showDraft(taskComponent) {
+        async showDraft(id) {
             if (this.deepAccess()) {
                 const tasks = this.tasks;
-                const task = tasks.find(t => t.component === taskComponent);
+                const task = tasks.find(t => t.id === id);
                 this.form = task;
+                this.currentTask = id;
                 this.activeSection = 'schedule';
             }
         },
@@ -943,11 +943,26 @@ export default {
 
             taskData.status = 'Draft'
 
-            await this.$store.dispatch('tasks/addDraft', {
-                vesselId: this.$route.params.id,
-                task: taskData
-            });
+            // check if draft is already present. if present in DB, do an update. 
+            let currentTask = this.currentTask;
+            let taskIndex = this.tasks.findIndex(task => task.id === currentTask && task.taskName === this.form.taskName && task.component === this.form.component);
 
+            if (taskIndex !== -1) {
+                // update DRAFT this.tasks[taskIndex]
+                taskData.id = this.tasks[taskIndex].id;
+                console.log(this.tasks)
+                await this.$store.dispatch('tasks/updateDraft', {
+                    vesselId: this.$route.params.id,
+                    task: taskData,
+                    tasks: this.tasks
+                });
+            } else {
+                taskData.id = uuidv4();
+                await this.$store.dispatch('tasks/addDraft', {
+                    vesselId: this.$route.params.id,
+                    task: taskData
+                });
+            }
 
             // Also update current task in localStorage (optional)
             // localStorage.setItem('currentTask', taskData.component);
@@ -975,31 +990,49 @@ export default {
             if (this.form.component === 'Other' && this.form.customComponent) {
                 taskData.component = this.form.customComponent;
             }
-            console.log(taskData.status)
             // perform validation
             // validate that the component isn't already in maintenance.
             const tasksData = localStorage.getItem(`tasks-${id}`) || '[]';
             const tasks = JSON.parse(tasksData);
             taskData.email = this.company.email;
             // Check for duplicate component
-            const hasDuplicateComponent = tasks.some(task => task.component === taskData.component);
+            const hasDraft = tasks.some(task => task.id === taskData.id);
 
-            if (hasDuplicateComponent && taskData.status !== 'Draft') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Duplicate Component',
-                    text: `A task with the component "${taskData.component}" already exists in maintenance`,
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        confirmButton: 'swal2-confirm'
-                    }
+            if (hasDraft) {
+                taskData.status = 'Soon'
+                // Remove the customComponent field before saving
+                delete taskData.customComponent;
+                let taskIndex = this.tasks.findIndex(
+                    task =>
+                        task.id === taskData.id
+                );
+                this.tasks[taskIndex] = { ...taskData };
+
+                console.log(this.tasks)
+
+                await this.$store.dispatch('tasks/updateDraft', {
+                    vesselId: this.$route.params.id,
+                    task: taskData,
+                    tasks: this.tasks
                 });
-                return; // Stop further execution
-            } else if (taskData.status == 'Draft') {
+
+                // load maintenance checklist
+                this.loadChecklist(taskData.component);
+
+                // save the lastsection, to edit button text
+                this.lastSection = 'schedule';
+                // Also update current task in localStorage (optional)
+                localStorage.setItem('currentTask', taskData.id);
+                // Then reset
+                this.resetForm();
+                // push to maintenance section
+                this.activeSection = 'maintenance';
 
             } else {
                 // Remove the customComponent field before saving
                 delete taskData.customComponent;
+
+                taskData.id = uuidv4();
 
                 const file = taskData.attachments.file;
 
@@ -1039,7 +1072,7 @@ export default {
                         .update({ attachments: publicUrl })
                         .eq('company_id', companyId)
                         .eq('vessel', this.$route.params.id)
-                        .eq('component', taskData.component);
+                        .eq('id', taskData.id);
 
                     if (updateError) console.error('Update failed', error);
                 }
@@ -1050,7 +1083,7 @@ export default {
                 // save the lastsection, to edit button text
                 this.lastSection = 'schedule';
                 // Also update current task in localStorage (optional)
-                localStorage.setItem('currentTask', taskData.component);
+                localStorage.setItem('currentTask', taskData.id);
                 // Then reset
                 this.resetForm();
                 // push to maintenance section
@@ -1095,7 +1128,7 @@ export default {
             let id = this.$route.params.id;
             // get current task id from localstorage.
             let currentTask = localStorage.getItem('currentTask');
-            let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
+            let taskIndex = this.tasks.findIndex(task => task.id === currentTask);
 
             if (taskIndex !== -1) {
                 const allCompleted = this.checklists.every(item => item.completed);
@@ -1110,7 +1143,7 @@ export default {
                 let updateTask = {
                     checklistProgress: this.tasks[taskIndex].checklistProgress,
                     status: this.tasks[taskIndex].status,
-                    component: currentTask,
+                    id: currentTask,
                     after: this.after
                 }
                 await this.$store.dispatch('tasks/updateTask', {
@@ -1156,7 +1189,7 @@ export default {
                             .update({ after: publicUrl })
                             .eq('company_id', companyId)
                             .eq('vessel', this.$route.params.id)
-                            .eq('component', currentTask);
+                            .eq('id', currentTask);
 
                         this.tasks[taskIndex].after = publicUrl;
 
@@ -1274,7 +1307,7 @@ export default {
         },
         async deleteEvidence() {
             let currentTask = localStorage.getItem('currentTask');
-            let taskIndex = this.tasks.findIndex(task => task.component === currentTask);
+            let taskIndex = this.tasks.findIndex(task => task.id === currentTask);
 
             if (taskIndex !== -1) {
                 const url = this.after;
