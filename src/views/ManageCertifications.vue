@@ -194,7 +194,6 @@ export default {
                     .from('company-files')
                     .upload(`certifications/${cert_id}.png`, file, {
                         cacheControl: 0,
-                        upsert: true
                     });
 
                 if (data) {
@@ -217,13 +216,13 @@ export default {
                         expiry_date: this.newCert.expiry_date,
                         image: this.newCert.image
                     });
-                    // add the public URL to cert.
-                    const updatedCerts = this.certifications.map(cert => ({
-                        id: cert_id,
-                        name: cert.name,
-                        expiry_date: cert.expiry_date,
-                        image: publicUrl
-                    }));
+
+                    // update only the new cert with the public URL
+                    const updatedCerts = this.certifications.map(cert =>
+                        cert.id === cert_id
+                            ? { ...cert, image: publicUrl } // update only matching cert
+                            : cert // keep others unchanged
+                    );
 
                     // update supabase
                     this.updateVesselCert(updatedCerts);
