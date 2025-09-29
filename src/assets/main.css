@@ -93,6 +93,19 @@ Swal section - Enhanced Beautiful Styling
   box-sizing: border-box !important;
 }
 
+.swal2-select-2 {
+  width: 100% !important;
+  padding: 14px 16px !important;
+  margin-bottom: 20px !important;
+  border: 2px solid #e1e8ed !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  background: #fafbfc !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-sizing: border-box !important;
+}
+
 .swal2-select:focus {
   border-color: #349940 !important;
   outline: none !important;
