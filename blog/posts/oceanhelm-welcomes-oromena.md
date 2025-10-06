@@ -2,7 +2,7 @@
 title: "OceanHelm Welcomes Oromena"
 slug: "oceanhelm-welcomes-oromena"
 date: 2025-10-06
-image: https://github.com/user-attachments/assets/781be894-e7b1-492e-8d09-88ba41d9df1c
+image: https://github.com/user-attachments/assets/3000ef34-b5b0-49c8-bf6c-bed604f4856f
 description: "OceanHelm welcomes first pilot customer, Oromena"
 ---
 
