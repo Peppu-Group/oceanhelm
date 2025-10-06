@@ -8,10 +8,10 @@ Thanks for wanting to contribute to **Chiaka's Birthday Gift Registry**! Your ti
 
 1. **Fork** the repository to your personal account.
 2. **Create a branch** for your work. Use a clear name, for example:
-   - `feature/your-feature-name`
+   - `feature/feature-name`
    - `fix/description-of-fix`
    ```bash
-   git checkout -b feature/your-feature-name
+   git checkout -b feature/feature-name
    ```
 3. **Make your changes** on that branch.
 4. **Test locally on your device** before submitting a Pull Request (PR). Run the project's tests and confirm manual checks as appropriate for your change.
