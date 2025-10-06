@@ -5,6 +5,7 @@ date: 2025-10-06
 image: https://github.com/user-attachments/assets/3000ef34-b5b0-49c8-bf6c-bed604f4856f
 description: "OceanHelm welcomes first pilot customer, Oromena"
 ---
+![OceanHelm x Oromena](https://github.com/user-attachments/assets/3000ef34-b5b0-49c8-bf6c-bed604f4856f "OceanHelm Welcomes Oromena")
 
 OceanHelm welcomes our new customer, [Oromena](https://oromena.com/).
 
