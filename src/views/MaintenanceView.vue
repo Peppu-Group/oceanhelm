@@ -394,6 +394,10 @@
                     <div class="section-title">🔧 Maintenance Tasks</div>
                     <div v-for="task in maintenanceTasks" :key="task.taskName"
                         :class="['task-item', getTaskStatusClass(task)]">
+                        <div>
+                            <div class="task-title">Before Task Image: </div>
+                            <img :src="task.attachments" alt="Before task image" class="w-full rounded-xl" @load="onImageLoad" @error="onImageLoad" />
+                        </div>
 
                         <div class="task-header">
                             <div>
@@ -466,8 +470,13 @@
                                 </div>
                             </div>
                         </div>
+                        <div>
+                            <div class="task-title">After Task Image: </div>
+                            <img :src="task.after" alt="After task image" class="w-full rounded-xl" @load="onImageLoad" @error="onImageLoad" />
+                        </div>
                     </div>
                 </div>
+
 
                 <div class="section">
                     <div class="section-title">📋 Recommendations</div>
@@ -564,6 +573,9 @@ export default {
                 day: 'numeric'
             }),
             reportId: 'MT-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+            imagesLoaded: 0,
+            totalImages: 2, // Update this based on how many images you have
+            showReport: false
         };
     },
     watch: {
@@ -671,6 +683,12 @@ export default {
         grantAccess(vessel) {
             if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel)) {
                 return true
+            }
+        },
+        onImageLoad() {
+            this.imagesLoaded++;
+            if (this.imagesLoaded >= this.totalImages) {
+                this.showReport = true;
             }
         },
         deepAccess() {
