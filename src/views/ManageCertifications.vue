@@ -26,7 +26,12 @@
                 <div class="certifications-grid">
                     <div v-for="(cert, index) in certifications" :key="index" class="certification-card">
                         <div class="cert-image-container">
-                            <img :src="cert.image" :alt="cert.name" class="cert-image">
+                            <div v-if="cert.isPdf" class="cert-pdf-display">
+                                <i class="bi bi-file-pdf" style="font-size: 64px; color: #dc3545;"></i>
+                                <span class="pdf-label">PDF Certificate</span>
+                                <a :href="cert.image" target="_blank" class="view-pdf-btn">View PDF</a>
+                            </div>
+                            <img v-else :src="cert.image" :alt="cert.name" class="cert-image">
                             <button @click="removeCertification(index)" class="remove-cert-btn"
                                 title="Remove certification">×</button>
                         </div>
@@ -73,15 +78,19 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="certImage">Certificate Image:</label>
+                                <label for="certImage">Certificate File (PDF or Image):</label>
                                 <div class="image-input-container">
-                                    <input type="file" id="certImage" @change="handleImageUpload" accept="image/*"
+                                    <input type="file" id="certImage" @change="handleFileUpload" accept="image/*,.pdf"
                                         class="form-input-file">
-                                    <div class="image-preview" v-if="newCert.image">
-                                        <img :src="newCert.image" alt="Preview" class="preview-image">
+                                    <div class="file-preview" v-if="newCert.image">
+                                        <img v-if="!newCert.isPdf" :src="newCert.image" alt="Preview" class="preview-image">
+                                        <div v-else class="pdf-preview">
+                                            <i class="bi bi-file-pdf" style="font-size: 48px; color: #dc3545;"></i>
+                                            <p>{{ newCert.fileName }}</p>
+                                        </div>
                                     </div>
                                     <div v-else class="image-placeholder">
-                                        <span>No image selected</span>
+                                        <span>No file selected (PNG, JPG, or PDF)</span>
                                     </div>
                                 </div>
                             </div>
@@ -119,7 +128,9 @@ export default {
             newCert: {
                 name: '',
                 expiry_date: '',
-                image: ''
+                image: '',
+                isPdf: false,
+                fileName: ''
             }
         }
     },
@@ -173,15 +184,17 @@ export default {
                 return v.toString(16);
             });
         },
+
         async addCertification() {
             if (this.newCert.name && this.newCert.expiry_date) {
                 this.saving = true;
                 const file = this.imgFile;
-                // Set default image if none provided
+
+                // Check if file is provided
                 if (!this.newCert.image) {
                     Swal.fire({
                         title: "Missing info",
-                        text: `Please add image proof`,
+                        text: `Please add file proof`,
                         icon: "error"
                     });
                     this.saving = false;
@@ -190,9 +203,13 @@ export default {
 
                 let cert_id = this.generateUUIDv4();
 
+                // Get file extension
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const fileName = `certifications/${cert_id}.${fileExtension}`;
+
                 const { data, error } = await supabase.storage
                     .from('company-files')
-                    .upload(`certifications/${cert_id}.png`, file, {
+                    .upload(fileName, file, {
                         cacheControl: 0,
                     });
 
@@ -206,6 +223,7 @@ export default {
 
                     if (urlError) {
                         console.error('Failed to get public URL', urlError);
+                        this.saving = false;
                         return;
                     }
 
@@ -214,7 +232,9 @@ export default {
                         id: cert_id,
                         name: this.newCert.name,
                         expiry_date: this.newCert.expiry_date,
-                        image: this.newCert.image
+                        image: publicUrl,
+                        isPdf: this.newCert.isPdf,
+                        fileUrl: publicUrl
                     });
 
                     // update only the new cert with the public URL
@@ -225,7 +245,7 @@ export default {
                     );
 
                     // update supabase
-                    this.updateVesselCert(updatedCerts);
+                    await this.updateVesselCert(updatedCerts);
 
                     this.closeModal();
                 }
@@ -244,7 +264,12 @@ export default {
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     let cert_id = this.certifications[index].id;
-                    const filePath = `certifications/${cert_id}.png`;
+
+                    // Get the file URL to determine extension
+                    const fileUrl = this.certifications[index].image || this.certifications[index].fileUrl;
+                    const urlParts = fileUrl.split('.');
+                    const fileExtension = urlParts[urlParts.length - 1].split('?')[0]; // Remove query params
+                    const filePath = `certifications/${cert_id}.${fileExtension}`;
 
                     const { data, error: deleteError } = await supabase
                         .storage
@@ -262,15 +287,35 @@ export default {
             })
         },
 
-        handleImageUpload(event) {
+        handleFileUpload(event) {
             const file = event.target.files[0];
             this.imgFile = file;
+
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.newCert.image = e.target.result;
-                };
-                reader.readAsDataURL(file);
+                const fileType = file.type;
+                this.newCert.fileName = file.name;
+
+                if (fileType === 'application/pdf') {
+                    // Handle PDF
+                    this.newCert.isPdf = true;
+                    this.newCert.image = 'pdf'; // Just set a flag that file is selected
+                } else if (fileType.startsWith('image/')) {
+                    // Handle images
+                    this.newCert.isPdf = false;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.newCert.image = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    Swal.fire({
+                        title: "Invalid file type",
+                        text: "Please upload only PDF or image files (PNG, JPG, JPEG)",
+                        icon: "error"
+                    });
+                    this.newCert.image = '';
+                    this.newCert.isPdf = false;
+                }
             }
         },
 
@@ -281,6 +326,8 @@ export default {
                 name: '',
                 expiry_date: '',
                 image: '',
+                isPdf: false,
+                fileName: ''
             };
         }
     }
@@ -459,7 +506,7 @@ export default {
     background: #f8f9fa;
 }
 
-.image-preview {
+.file-preview {
     margin-top: 10px;
 }
 
@@ -468,6 +515,22 @@ export default {
     max-height: 100px;
     border-radius: 6px;
     border: 2px solid #e9ecef;
+}
+
+.pdf-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+}
+
+.pdf-preview p {
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .image-placeholder {
