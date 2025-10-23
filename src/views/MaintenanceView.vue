@@ -12,7 +12,41 @@
                 </button>
             </nav>
             <div class="content" v-show="!showReport">
-                <!-- Dashboard Direct -->
+                <!-- Corrective Maintenance-->
+                <section :class="['form-section', { active: activeSection === 'corrective' }]"
+                    v-show="activeSection === 'corrective'">
+                    <h2>Unplanned Maintenance</h2>
+
+                    <div class="form-group">
+                        <label for="task-name">Task Name</label>
+                        <input type="text" id="task-name" v-model="maintenance.taskName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-description">Description</label>
+                        <textarea id="task-description" v-model="maintenance.description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-equipment">Equipment</label>
+                        <input type="text" v-model="maintenance.equipment" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="next-due">Maintenance Date</label>
+                        <input type="date" id="next-due" v-model="maintenance.date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="next-due">Next Maintenance</label>
+                        <input type="date" id="next-due" v-model="maintenance.nextDue" required>
+                    </div>
+
+                    <button type="button" class="btn btn-success" @click.prevent="correctiveMaintenance()"
+                        :disabled="isSaving">
+                        Finish Maintenance
+                    </button>
+                </section>
                 <!-- Maintenance Tasks Form -->
                 <section :class="['form-section', { active: activeSection === 'maintenance' }]"
                     v-show="activeSection === 'maintenance'">
@@ -396,7 +430,8 @@
                         :class="['task-item', getTaskStatusClass(task)]">
                         <div>
                             <div class="task-title">Before Task Image: </div>
-                            <img :src="task.attachments" alt="Before task image" class="w-full rounded-xl" @load="onImageLoad" @error="onImageLoad" />
+                            <img :src="task.attachments" alt="Before task image" class="w-full rounded-xl"
+                                @load="onImageLoad" @error="onImageLoad" />
                         </div>
 
                         <div class="task-header">
@@ -472,7 +507,8 @@
                         </div>
                         <div>
                             <div class="task-title">After Task Image: </div>
-                            <img :src="task.after" alt="After task image" class="w-full rounded-xl" @load="onImageLoad" @error="onImageLoad" />
+                            <img :src="task.after" alt="After task image" class="w-full rounded-xl" @load="onImageLoad"
+                                @error="onImageLoad" />
                         </div>
                     </div>
                 </div>
@@ -529,6 +565,7 @@ export default {
             activeSection: 'inventory',
             sections: [
                 { id: 'schedule', name: 'Schedule', icon: '📅' },
+                { id: 'corrective', name: 'Corrective Maintenance', icon: '⚡' },
                 { id: 'inventory', name: 'All Maintenance', icon: '♻️' },
                 {
                     id: 'dashboard', name: 'Dashboard', icon: '☰', onClick: () => {
@@ -542,6 +579,14 @@ export default {
             vesselInfo: [],
             checklists: [],
             isLoading: false,
+            maintenance: {
+                id: '',
+                taskName: '',
+                description: '',
+                nextDue: '',
+                date: '',
+                equipment: ''
+            },
             form: {
                 id: '',
                 taskName: '',
@@ -684,6 +729,48 @@ export default {
             if (this.userProfile.role == 'owner' || this.userProfile.role == 'staff' || (this.userProfile.role == 'captain' && this.userProfile.vessel == vessel)) {
                 return true
             }
+        },
+        async correctiveMaintenance() {
+            this.isSaving = true;
+            let taskData = {
+                id: uuidv4(),
+                taskName: this.maintenance.taskName,
+                description: this.maintenance.description,
+                maintenanceType: 'Corrective',
+                component: this.maintenance.equipment,
+                priority: 'High',
+                dueDate: this.maintenance.date,
+                estimatedHours: null,
+                assignedTo: this.userProfile.full_name,
+                recurrence: null,
+                lastPerformed: null,
+                nextDue: this.maintenance.nextDue,
+                notifyEmail: true,
+                notifySms: true,
+                reminderDays: '1',
+                estimatedDuration: null,
+                checklistProgress: [
+                    {
+                        id: 1,
+                        text: this.maintenance.description,
+                        completed: true
+                    }
+                ],
+                notes: '',
+                status: 'Completed',
+                email: '',
+                remainingDays: null,
+                attachments: {}
+            }
+            await this.$store.dispatch('tasks/addTask', {
+                vesselId: this.$route.params.id,
+                task: taskData
+            });
+                        
+            // reset form
+            this.resetMaintenance();
+            // send user to maintenance
+            this.activeSection = 'inventory'
         },
         onImageLoad() {
             this.imagesLoaded++;
@@ -1106,6 +1193,18 @@ export default {
                 this.resetForm();
                 // push to maintenance section
                 this.activeSection = 'maintenance';
+            }
+        },
+
+        // reset corrective maintenance
+        resetMaintenance() {
+            this.maintenance = {
+                id: '',
+                taskName: '',
+                description: '',
+                nextDue: '',
+                date: '',
+                equipment: ''
             }
         },
 

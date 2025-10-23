@@ -49,7 +49,7 @@ export default {
           due_date: task.nextDue,
           assigned_by: `${companyInfo.name}'s HR`,
           description: task.description,
-          email: crewInfo.email,
+          email: 'ukpaiugochiibem@gmail.com' || crewInfo.email,
           operations_email: companyInfo.email,
           operations_phone: companyInfo.phoneNumber
         };
