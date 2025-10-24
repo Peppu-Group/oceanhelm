@@ -67,6 +67,13 @@ export default {
         console.error('Try block failed:', error);
       }
     },
+    ADD_CORRECTIVE(state, { vesselId, task, rootState }) {
+      if (!state.tasksByVessel[vesselId]) {
+        state.tasksByVessel[vesselId] = [];
+      }
+      state.tasksByVessel[vesselId].push(task);
+      localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(state.tasksByVessel[vesselId]));
+    },
     DELETE_TASK(state, { vesselId, taskId }) {
       state.tasksByVessel[vesselId] = state.tasksByVessel[vesselId].filter(t => t.id !== taskId);
       localStorage.setItem(`tasks-${vesselId}`, JSON.stringify(state.tasksByVessel[vesselId]));
@@ -233,6 +240,62 @@ export default {
               }
             });
             commit('ADD_TASK', { vesselId, task, rootState });
+          }
+        }
+      } else {
+        // router push to login
+      }
+    },
+    async addCorrective({ commit, rootState }, { vesselId, task }) {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        const user = session.user;
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          const companyId = profile.company_id;
+          const { data, error } = await supabase
+            .from('tasks')
+            .insert([
+              {
+                id: task.id,
+                task_name: task.taskName,
+                description: task.description,
+                maintenance_type: task.maintenanceType,
+                component: task.component,
+                assigned_to: task.assignedTo,
+                status: task.status,
+                checklist_progress: task.checklistProgress,
+                vessel: vesselId,
+                recurrence: task.recurrence,
+                company_id: companyId
+              }
+            ], { returning: 'minimal' }
+            );
+
+          if (error) {
+            // tell user about error.
+            errorMessage(error)
+          } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'add',
+              table: 'corrective maintenance',
+              details: {
+                status: `Added a new task for maintenance`, information: {
+                  task_name: task.taskName,
+                  description: task.description, vessel: vesselId
+                }
+              }
+            });
+            commit('ADD_CORRECTIVE', { vesselId, task, rootState });
           }
         }
       } else {

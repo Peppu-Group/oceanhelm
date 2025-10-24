@@ -37,11 +37,6 @@
                         <input type="date" id="next-due" v-model="maintenance.date" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="next-due">Next Maintenance</label>
-                        <input type="date" id="next-due" v-model="maintenance.nextDue" required>
-                    </div>
-
                     <button type="button" class="btn btn-success" @click.prevent="correctiveMaintenance()"
                         :disabled="isSaving">
                         Finish Maintenance
@@ -738,13 +733,12 @@ export default {
                 description: this.maintenance.description,
                 maintenanceType: 'Corrective',
                 component: this.maintenance.equipment,
+                recurrence: 'Corrective Maintenance',
                 priority: 'High',
                 dueDate: this.maintenance.date,
                 estimatedHours: null,
                 assignedTo: this.userProfile.full_name,
-                recurrence: null,
                 lastPerformed: null,
-                nextDue: this.maintenance.nextDue,
                 notifyEmail: true,
                 notifySms: true,
                 reminderDays: '1',
@@ -762,11 +756,11 @@ export default {
                 remainingDays: null,
                 attachments: {}
             }
-            await this.$store.dispatch('tasks/addTask', {
+            await this.$store.dispatch('tasks/addCorrective', {
                 vesselId: this.$route.params.id,
                 task: taskData
             });
-                        
+
             // reset form
             this.resetMaintenance();
             // send user to maintenance
