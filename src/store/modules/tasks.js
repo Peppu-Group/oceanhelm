@@ -302,6 +302,69 @@ export default {
         // router push to login
       }
     },
+    async editTask({ commit }, { vesselId, task, tasks }) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const user = session.user;
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('company_id')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          const updatePayload =
+          {
+            task_name: task.taskName,
+            email: task.email || null,
+            description: task.description,
+            maintenance_type: task.maintenanceType,
+            component: task.component,
+            estimated_hours: task.estimatedHours,
+            assigned_to: task.assignedTo,
+            recurrence: task.recurrence,
+            last_performed: task.lastPerformed || null,
+            next_due: task.nextDue || null,
+            reminder_days: task.reminderDays,
+            estimated_duration: task.estimatedDuration,
+            notes: task.notes,
+            status: task.status,
+            remaining_days: task.reminderDays,
+            attachments: task.attachments?.file || null,
+            checklist_progress: task.checklistProgress,
+            vessel: vesselId
+          }
+          // Update in Supabase. we need a method to compare vesselId and component.
+          const { data, error } = await supabase
+            .from('tasks')
+            .update(updatePayload)
+            .eq('vessel', vesselId)
+            .eq('id', task.id);
+
+          if (error) {
+            // tell user about error.
+            errorMessage(error)
+          } else {
+            await logActivity({
+              id: profile.company_id,
+              action: 'update',
+              table: 'maintenance edit',
+              details: {
+                status: `edited task for maintenance`, information: {
+                  task_name: task.taskName,
+                  description: task.description, vessel: vesselId
+                }
+              }
+            });
+            commit('SET_TASKS', { vesselId, tasks });
+          }
+        }
+      } else {
+        // router push to login
+      }
+    },
     async updateDraft({ commit }, { vesselId, task, tasks }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {

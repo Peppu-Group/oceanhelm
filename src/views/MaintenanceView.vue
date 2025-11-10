@@ -769,7 +769,7 @@ export default {
                         task.id === taskData.id
                 );
                 this.tasks[taskIndex] = { ...taskData };
-                await this.$store.dispatch('tasks/updateDraft', {
+                await this.$store.dispatch('tasks/editTask', {
                     vesselId: this.$route.params.id,
                     task: taskData,
                     tasks: this.tasks
