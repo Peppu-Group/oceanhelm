@@ -3,7 +3,7 @@ title: "Human Error vs Natural Disaster: The Case of Oil Spills in Nigeria"
 slug: "human-error-vs-natural-disaster"
 date: 2025-11-10
 image: https://github.com/user-attachments/assets/4340806d-be6f-4c01-a754-f5dd8fb5ce82
-description: `Human error exceeds natural disaster in Nigeria's oil spill`
+description: "Human error exceeds natural disaster in Nigeria's oil spill"
 ---
 
 # Table of Contents
