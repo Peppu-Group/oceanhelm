@@ -345,6 +345,7 @@
                                         </span>
                                     </td>
                                     <td>
+                                        <button @click="editMaintenance(task.id)" class="status-action-edit">Edit</button>
                                         <button @click="printMaintenance(task.component)" v-if="task.status === 'Completed'"
                                             class="status-action">Print</button>
                                         <button @click="showDraft(task.id)" v-else-if="task.status === 'Draft'"
@@ -727,6 +728,9 @@ export default {
         },
         async correctiveMaintenance() {
             this.isSaving = true;
+            const id = this.$route.params.id;
+            const tasksData = localStorage.getItem(`tasks-${id}`) || '[]';
+            const tasks = JSON.parse(tasksData);
             let taskData = {
                 id: uuidv4(),
                 taskName: this.maintenance.taskName,
@@ -756,10 +760,26 @@ export default {
                 remainingDays: null,
                 attachments: {}
             }
-            await this.$store.dispatch('tasks/addCorrective', {
-                vesselId: this.$route.params.id,
-                task: taskData
-            });
+            // Check for duplicate component
+            const hasDraft = tasks.some(task => task.id === this.currentTask);
+            if (hasDraft) {
+                taskData.id = this.currentTask
+                let taskIndex = this.tasks.findIndex(
+                    task =>
+                        task.id === taskData.id
+                );
+                this.tasks[taskIndex] = { ...taskData };
+                await this.$store.dispatch('tasks/updateDraft', {
+                    vesselId: this.$route.params.id,
+                    task: taskData,
+                    tasks: this.tasks
+                });
+            } else {
+                await this.$store.dispatch('tasks/addCorrective', {
+                    vesselId: this.$route.params.id,
+                    task: taskData
+                });
+            }
 
             // reset form
             this.resetMaintenance();
@@ -1107,8 +1127,6 @@ export default {
                 );
                 this.tasks[taskIndex] = { ...taskData };
 
-                console.log(this.tasks)
-
                 await this.$store.dispatch('tasks/updateDraft', {
                     vesselId: this.$route.params.id,
                     task: taskData,
@@ -1443,6 +1461,27 @@ export default {
                         // update supabase
                         // this.updateVesselCert(this.certifications);
                     }
+                }
+            }
+        },
+        editMaintenance(id) {
+            if (this.deepAccess()) {
+                const tasks = this.tasks;
+                const task = tasks.find(t => t.id === id);
+                if (task.maintenanceType !== 'Corrective') {
+                    this.form = task;
+                    this.currentTask = id;
+                    this.activeSection = 'schedule';
+                } else {
+                    this.maintenance = {
+                        id: task.id,
+                        taskName: task.taskName,
+                        description: task.description,
+                        date: task.nextDue,
+                        equipment: task.component
+                    }
+                    this.currentTask = id;
+                    this.activeSection = 'corrective';
                 }
             }
         }
@@ -1792,6 +1831,16 @@ textarea {
     color: white;
     font-weight: bold;
     font-size: 0.85rem;
+    background-color: var(--maitprimary);
+}
+
+.status-action-edit {
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-bottom: 5px;
     background-color: var(--maitprimary);
 }
 
