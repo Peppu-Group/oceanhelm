@@ -1465,24 +1465,22 @@ export default {
             }
         },
         editMaintenance(id) {
-            if (this.deepAccess()) {
-                const tasks = this.tasks;
-                const task = tasks.find(t => t.id === id);
-                if (task.maintenanceType !== 'Corrective') {
-                    this.form = task;
-                    this.currentTask = id;
-                    this.activeSection = 'schedule';
-                } else {
-                    this.maintenance = {
-                        id: task.id,
-                        taskName: task.taskName,
-                        description: task.description,
-                        date: task.nextDue,
-                        equipment: task.component
-                    }
-                    this.currentTask = id;
-                    this.activeSection = 'corrective';
+            const tasks = this.tasks;
+            const task = tasks.find(t => t.id === id);
+            if (task.maintenanceType !== 'Corrective') {
+                this.form = task;
+                this.currentTask = id;
+                this.activeSection = 'schedule';
+            } else {
+                this.maintenance = {
+                    id: task.id,
+                    taskName: task.taskName,
+                    description: task.description,
+                    date: task.nextDue,
+                    equipment: task.component
                 }
+                this.currentTask = id;
+                this.activeSection = 'corrective';
             }
         }
     }
