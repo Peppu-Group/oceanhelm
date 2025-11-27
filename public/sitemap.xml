@@ -23,4 +23,18 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://oceanhelmtech.com/contact</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://oceanhelmtech.com/pricing</loc>
+    <lastmod>2025-11-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>
