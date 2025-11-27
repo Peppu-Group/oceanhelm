@@ -3,6 +3,8 @@ import supabase from '../supabase'
 import store from '../store'
 
 import HomeView from '../views/HomeView.vue'
+import ContactUs from '../views/ContactUs.vue'
+import PricingView from '../views/PricingView.vue'
 import MaintenanceView from '../views/MaintenanceView.vue'
 import DashboardView from '../views/DashboardView.vue'
 import CrewView from '../views/CrewView.vue'
@@ -29,6 +31,16 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: ContactUs
+    },
+    {
+      path: '/pricing',
+      name: 'pricing',
+      component: PricingView
     },
     {
       path: '/app/maintenance/:id',
