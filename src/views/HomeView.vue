@@ -9,7 +9,8 @@
       <p itemprop="description">Streamline maintenance, optimize inventory, and enhance vessel communication with our
         comprehensive maritime management platform. Built by maritime professionals for maritime professionals.</p>
       <div class="hero-buttons">
-        <a href="/contact?intent=demo" @click.prevent="contactDemo()" class="primary-button" aria-label="Request a demo of OceanHelm maritime software">Request Demo</a>
+        <a href="/contact?intent=demo" @click.prevent="contactDemo()" class="primary-button"
+          aria-label="Request a demo of OceanHelm maritime software">Request Demo</a>
         <a href="/app/dashboard" class="secondary-button" aria-label="Get started with OceanHelm">Get Started</a>
       </div>
     </div>
@@ -21,7 +22,8 @@
       <div class="section-header">
         <p class="section-label">Core Capabilities</p>
         <h2>Comprehensive Maritime Management Solutions</h2>
-        <p class="section-intro">OceanHelm provides integrated tools for every aspect of maritime fleet operations, from preventive maintenance scheduling to regulatory compliance tracking.</p>
+        <p class="section-intro">OceanHelm provides integrated tools for every aspect of maritime fleet operations, from
+          preventive maintenance scheduling to regulatory compliance tracking.</p>
       </div>
       <div class="features-grid">
         <article class="feature-card" itemscope itemtype="https://schema.org/Service">
@@ -32,7 +34,10 @@
             </svg>
           </div>
           <h3 itemprop="name">Maintenance Management</h3>
-          <p itemprop="description">Plan, track, and optimize maintenance workflows with our intuitive preventive maintenance system. Schedule planned maintenance, receive automated alerts for upcoming tasks, track maintenance history, and manage spare parts consumption. Our system helps reduce unplanned downtime by up to 42% through proactive maintenance scheduling.</p>
+          <p itemprop="description">Plan, track, and optimize maintenance workflows with our intuitive preventive
+            maintenance system. Schedule planned maintenance, receive automated alerts for upcoming tasks, track
+            maintenance history, and manage spare parts consumption. Our system helps reduce unplanned downtime by up to
+            42% through proactive maintenance scheduling.</p>
         </article>
 
         <article class="feature-card" itemscope itemtype="https://schema.org/Service">
@@ -43,7 +48,10 @@
             </svg>
           </div>
           <h3 itemprop="name">Requisition Processing</h3>
-          <p itemprop="description">Simplify procurement with digital requisition forms, multi-level approval workflows, and real-time order tracking. Eliminate paper-based processes and reduce procurement cycle time. Track requisitions from submission to delivery, manage vendor quotes, and maintain complete audit trails for compliance requirements.</p>
+          <p itemprop="description">Simplify procurement with digital requisition forms, multi-level approval workflows,
+            and real-time order tracking. Eliminate paper-based processes and reduce procurement cycle time. Track
+            requisitions from submission to delivery, manage vendor quotes, and maintain complete audit trails for
+            compliance requirements.</p>
         </article>
 
         <article class="feature-card" itemscope itemtype="https://schema.org/Service">
@@ -53,7 +61,10 @@
             </svg>
           </div>
           <h3 itemprop="name">Inventory Management</h3>
-          <p itemprop="description">Track spare parts, consumables, and equipment with real-time inventory control across your entire fleet. Set minimum stock levels and receive automatic reorder alerts to prevent stockouts. Generate detailed inventory reports, track usage patterns, and optimize your spare parts inventory to reduce carrying costs by up to 29%.</p>
+          <p itemprop="description">Track spare parts, consumables, and equipment with real-time inventory control across
+            your entire fleet. Set minimum stock levels and receive automatic reorder alerts to prevent stockouts.
+            Generate detailed inventory reports, track usage patterns, and optimize your spare parts inventory to reduce
+            carrying costs by up to 29%.</p>
         </article>
 
         <article class="feature-card" itemscope itemtype="https://schema.org/Service">
@@ -64,7 +75,10 @@
             </svg>
           </div>
           <h3 itemprop="name">Crew Management</h3>
-          <p itemprop="description">Manage crew records, certifications, and assignments across your entire fleet. Track crew qualifications, monitor certificate expiration dates, and ensure compliance with maritime regulations. The system works offline and automatically syncs crew updates between vessels and shore offices when connectivity is restored.</p>
+          <p itemprop="description">Manage crew records, certifications, and assignments across your entire fleet. Track
+            crew qualifications, monitor certificate expiration dates, and ensure compliance with maritime regulations.
+            The system works offline and automatically syncs crew updates between vessels and shore offices when
+            connectivity is restored.</p>
         </article>
 
         <article class="feature-card" itemscope itemtype="https://schema.org/Service">
@@ -77,7 +91,9 @@
             </svg>
           </div>
           <h3 itemprop="name">Voyage Management</h3>
-          <p itemprop="description">Efficiently manage vessel logistics and positioning across your entire fleet. Track vessel locations, monitor voyage progress, and manage sign-in/sign-out procedures. Generate comprehensive timesheet reports for crew and vessel operations, ensuring accurate billing and operational transparency.</p>
+          <p itemprop="description">Efficiently manage vessel logistics and positioning across your entire fleet. Track
+            vessel locations, monitor voyage progress, and manage sign-in/sign-out procedures. Generate comprehensive
+            timesheet reports for crew and vessel operations, ensuring accurate billing and operational transparency.</p>
         </article>
 
         <article class="feature-card" itemscope itemtype="https://schema.org/Service">
@@ -89,7 +105,10 @@
             </svg>
           </div>
           <h3 itemprop="name">Compliance Management</h3>
-          <p itemprop="description">Stay ahead of regulatory requirements by tracking vessel certifications, crew qualifications, and compliance deadlines. Receive timely alerts for certificate expirations, maintain audit-ready documentation, and ensure operational integrity across your fleet. Maintain 98%+ compliance rates with ISM Code, SOLAS, and other maritime regulations.</p>
+          <p itemprop="description">Stay ahead of regulatory requirements by tracking vessel certifications, crew
+            qualifications, and compliance deadlines. Receive timely alerts for certificate expirations, maintain
+            audit-ready documentation, and ensure operational integrity across your fleet. Maintain 98%+ compliance rates
+            with ISM Code, SOLAS, and other maritime regulations.</p>
         </article>
       </div>
     </div>
@@ -99,7 +118,8 @@
   <section class="video-section" aria-label="Product demonstration video">
     <div class="container">
       <h2 class="text-center mb-4">See OceanHelm in Action</h2>
-      <p class="text-center mb-4">Watch how maritime companies are transforming their operations with OceanHelm's comprehensive fleet management platform.</p>
+      <p class="text-center mb-4">Watch how maritime companies are transforming their operations with OceanHelm's
+        comprehensive fleet management platform.</p>
       <div class="video-container">
         <div class="video-wrapper">
           <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/OykxpTlZhhc"
@@ -121,12 +141,16 @@
             <h2>Designed For Maritime Operations</h2>
             <p>
               OceanHelm provides a comprehensive, easy-to-use platform that connects all aspects of your fleet management
-              into one unified system. Our cloud-based maritime software works seamlessly both online and offline, ensuring you have access to
+              into one unified system. Our cloud-based maritime software works seamlessly both online and offline,
+              ensuring you have access to
               critical operational information wherever you are—whether onboard vessels or at shore-based offices.
             </p>
             <p>
-              Built by experienced maritime professionals for maritime professionals, our solution addresses the unique challenges of
-              vessel operations including intermittent connectivity, regulatory compliance requirements, and the need for real-time data synchronization across distributed fleets. From offshore support vessels to cargo ships, OceanHelm adapts to your specific operational needs.
+              Built by experienced maritime professionals for maritime professionals, our solution addresses the unique
+              challenges of
+              vessel operations including intermittent connectivity, regulatory compliance requirements, and the need for
+              real-time data synchronization across distributed fleets. From offshore support vessels to cargo ships,
+              OceanHelm adapts to your specific operational needs.
             </p>
 
             <div class="platform-features">
@@ -183,16 +207,23 @@
       <div class="section-header text-center mb-5">
         <p class="section-label">Why Choose OceanHelm</p>
         <h2>Results That Matter to Your Bottom Line</h2>
-        <p class="section-intro">Our clients experience significant improvements in operational efficiency, cost savings, and regulatory compliance. OceanHelm helps maritime companies reduce downtime, optimize inventory costs, and make data-driven decisions that improve profitability.</p>
+        <p class="section-intro">Our clients experience significant improvements in operational efficiency, cost savings,
+          and regulatory compliance. OceanHelm helps maritime companies reduce downtime, optimize inventory costs, and
+          make data-driven decisions that improve profitability.</p>
       </div>
 
       <div class="row align-items-center">
         <div class="col-lg-6 mb-4 mb-lg-0">
           <h3>Transform Your Maritime Operations</h3>
-          <p>Maritime companies using OceanHelm experience significant improvements across all operational metrics. Our comprehensive platform helps fleet managers reduce maintenance costs through predictive maintenance, optimize inventory levels to minimize carrying costs, and ensure regulatory compliance to avoid costly penalties and operational disruptions.</p>
-          
-          <p>From small vessel operators to large shipping companies, OceanHelm scales to meet your needs. Our cloud-based architecture ensures you always have access to the latest features and security updates, while our offline-first design means critical operations continue even without internet connectivity.</p>
-          
+          <p>Maritime companies using OceanHelm experience significant improvements across all operational metrics. Our
+            comprehensive platform helps fleet managers reduce maintenance costs through predictive maintenance, optimize
+            inventory levels to minimize carrying costs, and ensure regulatory compliance to avoid costly penalties and
+            operational disruptions.</p>
+
+          <p>From small vessel operators to large shipping companies, OceanHelm scales to meet your needs. Our cloud-based
+            architecture ensures you always have access to the latest features and security updates, while our
+            offline-first design means critical operations continue even without internet connectivity.</p>
+
           <div class="row">
             <div class="col-6 mb-3">
               <div class="stat-item">
@@ -239,13 +270,16 @@
       </div>
       <article class="testimonial-card" itemscope itemtype="https://schema.org/Review">
         <div class="testimonial-text" itemprop="reviewBody">
-          "OceanHelm has revolutionized how we manage our fleet operations. The maintenance scheduling and inventory tracking
+          "OceanHelm has revolutionized how we manage our fleet operations. The maintenance scheduling and inventory
+          tracking
           features have saved us countless hours and significantly reduced our operational costs. The ability to share
-          data seamlessly between vessels and our shore office has been a game-changer for our operations. We've seen a dramatic improvement in our preventive maintenance compliance and a significant reduction in emergency repairs."
+          data seamlessly between vessels and our shore office has been a game-changer for our operations. We've seen a
+          dramatic improvement in our preventive maintenance compliance and a significant reduction in emergency repairs."
         </div>
         <div class="testimonial-author" itemprop="author" itemscope itemtype="https://schema.org/Person">
           <div class="author-image">
-            <img src="../assets/oromena.png" alt="Engr. Emmanuel Ukoh, Marine Superintendent at Oromena" width="60" height="60" loading="lazy">
+            <img src="../assets/oromena.png" alt="Engr. Emmanuel Ukoh, Marine Superintendent at Oromena" width="60"
+              height="60" loading="lazy">
           </div>
           <div class="author-info">
             <h4 itemprop="name">Engr. Emmanuel Ukoh</h4>
@@ -261,23 +295,26 @@
   <section class="about-section">
     <div class="container">
       <h2>About OceanHelm Maritime Management Software</h2>
-      <p>OceanHelm is a comprehensive cloud-based maritime fleet management platform designed specifically for vessel operators, ship managers, and maritime companies operating in challenging environments. Our software solution helps streamline daily operations, from preventive maintenance scheduling to spare parts inventory control, requisition processing, and regulatory compliance management.</p>
-      
-      <p>Founded by experienced marine engineers and software developers, OceanHelm was built to address the unique challenges faced by maritime operations—including intermittent connectivity, stringent regulatory requirements, and the critical importance of minimizing vessel downtime. Whether you're managing offshore support vessels, cargo ships, tankers, or passenger ferries, our platform adapts to your specific operational requirements.</p>
-      
-      <h3>Why Maritime Companies Choose OceanHelm</h3>
-      <p>Unlike generic maintenance management software, OceanHelm was built from the ground up specifically for maritime operations. We understand the unique challenges of vessel management, including the need for offline functionality, compliance with international maritime regulations (ISM Code, SOLAS, MARPOL), and the critical importance of maintaining operational continuity in remote locations.</p>
-      
-      <p>Our platform serves maritime companies across Nigeria, West Africa, and internationally, helping them achieve operational excellence through digital transformation. With features specifically designed for the maritime industry—such as planned maintenance systems (PMS), spare parts management, crew certification tracking, and voyage management—OceanHelm provides everything you need to run efficient, compliant maritime operations.</p>
-    </div>
-  </section>
+      <p>OceanHelm is a comprehensive cloud-based maritime fleet management platform designed specifically for vessel
+        operators, ship managers, and maritime companies operating in challenging environments. Our software solution
+        helps streamline daily operations, from preventive maintenance scheduling to spare parts inventory control,
+        requisition processing, and regulatory compliance management.</p>
 
-  <!-- CTA Section -->
-  <section class="cta" id="demo">
-    <div class="container">
-      <h2>Ready to Transform Your Maritime Operations?</h2>
-      <p>Schedule a personalized demo today and discover how OceanHelm can help your fleet operate more efficiently, reduce costs, and maintain regulatory compliance. Join maritime companies across Nigeria and West Africa that trust OceanHelm for their fleet management needs.</p>
-      <a href="/contact?intent=demo" @click.prevent="contactDemo()" class="primary-button" aria-label="Request a personalized demo">Request Demo</a>
+      <p>Founded by experienced marine engineers and software developers, OceanHelm was built to address the unique
+        challenges faced by maritime operations—including intermittent connectivity, stringent regulatory requirements,
+        and the critical importance of minimizing vessel downtime. Whether you're managing offshore support vessels, cargo
+        ships, tankers, or passenger ferries, our platform adapts to your specific operational requirements.</p>
+
+      <h3>Why Maritime Companies Choose OceanHelm</h3>
+      <p>Unlike generic maintenance management software, OceanHelm was built from the ground up specifically for maritime
+        operations. We understand the unique challenges of vessel management, including the need for offline
+        functionality, compliance with international maritime regulations (ISM Code, SOLAS, MARPOL), and the critical
+        importance of maintaining operational continuity in remote locations.</p>
+
+      <p>Our platform serves maritime companies across Nigeria, West Africa, and internationally, helping them achieve
+        operational excellence through digital transformation. With features specifically designed for the maritime
+        industry—such as planned maintenance systems (PMS), spare parts management, crew certification tracking, and
+        voyage management—OceanHelm provides everything you need to run efficient, compliant maritime operations.</p>
     </div>
   </section>
 
@@ -465,6 +502,12 @@ body {
   background: linear-gradient(135deg, rgba(13, 92, 145, 0.9) 0%, rgba(4, 57, 94, 0.8) 100%), url("https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000") center/cover no-repeat;
   color: white;
   padding: 180px 0 100px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
   text-align: center;
 }
 
@@ -945,25 +988,6 @@ body {
   }
 }
 
-/* CTA Section */
-.cta {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  padding: 80px 0;
-  color: white;
-  text-align: center;
-}
-
-.cta h2 {
-  font-size: 36px;
-  margin-bottom: 20px;
-}
-
-.cta p {
-  font-size: 18px;
-  max-width: 600px;
-  margin: 0 auto 40px;
-}
-
 .video-container {
   display: flex;
   justify-content: center;
@@ -1008,4 +1032,5 @@ body {
     padding-bottom: 56.25%;
     /* Maintain 16:9 on mobile */
   }
-}</style>
+}
+</style>
