@@ -19,6 +19,13 @@
     <priority>1.0</priority>
   </url>
 
+  <url>
+    <loc>https://oceanhelmtech.com/features/</loc>
+    <lastmod>2025-12-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
   <!-- Main Product/Service Pages -->
   <url>
     <loc>https://oceanhelmtech.com/pricing/</loc>
