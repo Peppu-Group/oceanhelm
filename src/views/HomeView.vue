@@ -1,16 +1,16 @@
 <template>
   <!-- Header -->
   <NavBar />
+
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero" itemscope itemtype="https://schema.org/WebPage">
     <div class="container">
-      <h2>Smart Maritime Software<br>For Modern Fleets</h2>
-      <p>Streamline maintenance, optimize inventory, and enhance vessel communication with our maritime management
-        platform.</p>
+      <h1 itemprop="name">Smart Maritime Software For Modern Fleets</h1>
+      <p itemprop="description">Streamline maintenance, optimize inventory, and enhance vessel communication with our
+        comprehensive maritime management platform. Built by maritime professionals for maritime professionals.</p>
       <div class="hero-buttons">
-        <a @click="contactDemo()" class="primary-button">Request
-          Demo</a><!-- Add swal button that sends email to oceanhelmtech.com -->
-        <a href="/app/dashboard" class="secondary-button">Get Started</a>
+        <a href="/contact?intent=demo" @click.prevent="contactDemo()" class="primary-button" aria-label="Request a demo of OceanHelm maritime software">Request Demo</a>
+        <a href="/app/dashboard" class="secondary-button" aria-label="Get started with OceanHelm">Get Started</a>
       </div>
     </div>
   </section>
@@ -19,55 +19,56 @@
   <section class="features" id="features">
     <div class="container">
       <div class="section-header">
-        <h3>Core Capabilities</h3>
-        <h2>Comprehensive Maritime Management</h2>
+        <p class="section-label">Core Capabilities</p>
+        <h2>Comprehensive Maritime Management Solutions</h2>
+        <p class="section-intro">OceanHelm provides integrated tools for every aspect of maritime fleet operations, from preventive maintenance scheduling to regulatory compliance tracking.</p>
       </div>
       <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
+        <article class="feature-card" itemscope itemtype="https://schema.org/Service">
+          <div class="feature-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path
                 d="M19.5 12c0-.34-.03-.66-.07-.99l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.51-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0014 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.33-.07.66-.07.99s.03.66.07.99l-2.11 1.63c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.51.39 1.06.73 1.69.98l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.25 1.17-.59 1.69-.98l2.49 1c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.63c.04-.33.07-.65.07-.99zm-7.5 4c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z" />
             </svg>
           </div>
-          <h3>Maintenance Management</h3>
-          <p>Plan, track, and optimize maintenance workflows with our intuitive system. Get alerts, schedule tasks, and
-            keep detailed maintenance histories for all equipment.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
+          <h3 itemprop="name">Maintenance Management</h3>
+          <p itemprop="description">Plan, track, and optimize maintenance workflows with our intuitive preventive maintenance system. Schedule planned maintenance, receive automated alerts for upcoming tasks, track maintenance history, and manage spare parts consumption. Our system helps reduce unplanned downtime by up to 42% through proactive maintenance scheduling.</p>
+        </article>
+
+        <article class="feature-card" itemscope itemtype="https://schema.org/Service">
+          <div class="feature-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path
                 d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z" />
             </svg>
           </div>
-          <h3>Requisition Processing</h3>
-          <p>Simplify procurement with digital requisition forms, approval workflows, and order tracking. Eliminate
-            paperwork and streamline your supply chain.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
+          <h3 itemprop="name">Requisition Processing</h3>
+          <p itemprop="description">Simplify procurement with digital requisition forms, multi-level approval workflows, and real-time order tracking. Eliminate paper-based processes and reduce procurement cycle time. Track requisitions from submission to delivery, manage vendor quotes, and maintain complete audit trails for compliance requirements.</p>
+        </article>
+
+        <article class="feature-card" itemscope itemtype="https://schema.org/Service">
+          <div class="feature-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z" />
             </svg>
           </div>
-          <h3>Inventory Management</h3>
-          <p>Track parts, supplies, and equipment with real-time inventory control. Set minimum stock levels, receive
-            automatic alerts, and generate detailed reports.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
+          <h3 itemprop="name">Inventory Management</h3>
+          <p itemprop="description">Track spare parts, consumables, and equipment with real-time inventory control across your entire fleet. Set minimum stock levels and receive automatic reorder alerts to prevent stockouts. Generate detailed inventory reports, track usage patterns, and optimize your spare parts inventory to reduce carrying costs by up to 29%.</p>
+        </article>
+
+        <article class="feature-card" itemscope itemtype="https://schema.org/Service">
+          <div class="feature-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24">
               <path
                 d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm-2 20h-4v-1h4v1zm3.25-3H6.75V4h10.5v14z" />
             </svg>
           </div>
-          <h3>Crew Management</h3>
-          <p>Easily manage crew records and assignments across fleets. Automatically sync updates between vessels and
-            shore when connectivity is restored.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
+          <h3 itemprop="name">Crew Management</h3>
+          <p itemprop="description">Manage crew records, certifications, and assignments across your entire fleet. Track crew qualifications, monitor certificate expiration dates, and ensure compliance with maritime regulations. The system works offline and automatically syncs crew updates between vessels and shore offices when connectivity is restored.</p>
+        </article>
+
+        <article class="feature-card" itemscope itemtype="https://schema.org/Service">
+          <div class="feature-icon" aria-hidden="true">
             <svg viewBox="0 0 64 64" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
               <path
                 d="M2 42l4 8h52l4-8-8-4v-8H10v8l-8 4zM32 10c-1.1 0-2 .9-2 2v6H14v4h36v-4H34v-6c0-1.1-.9-2-2-2zm0-6c-2.2 0-4 1.8-4 4v2h8v-2c0-2.2-1.8-4-4-4z" />
@@ -75,151 +76,155 @@
                 d="M10 54c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6zm44 0c-1.1 0-2 .9-2 2s.9 2 2 2c3.31 0 6-2.69 6-6h4c0 5.52-4.48 10-10 10s-10-4.48-10-10h4c0 3.31 2.69 6 6 6z" />
             </svg>
           </div>
-          <h3>Voyage Management</h3>
-          <p>Easily manage logistics and positioning of all the vessels in your fleet. Understand when a vessel signs in
-            or out, get timesheet report.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">
+          <h3 itemprop="name">Voyage Management</h3>
+          <p itemprop="description">Efficiently manage vessel logistics and positioning across your entire fleet. Track vessel locations, monitor voyage progress, and manage sign-in/sign-out procedures. Generate comprehensive timesheet reports for crew and vessel operations, ensuring accurate billing and operational transparency.</p>
+        </article>
+
+        <article class="feature-card" itemscope itemtype="https://schema.org/Service">
+          <div class="feature-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M20 2H4C2.9 2 2 2.9 2 4v17.17c0 .53.21 1.04.59 1.41.38.38.89.59 1.41.59.26 0 .51-.05.75-.15L12 20.25l7.25 2.77c.24.1.49.15.75.15.52 0 1.03-.21 1.41-.59.38-.37.59-.88.59-1.41V4c0-1.1-.9-2-2-2zm0 17.17l-6.25-2.39a1.01 1.01 0 0 0-.75 0L4 19.17V4h16v15.17z" />
               <path d="M7 9h10v2H7zM7 13h7v2H7z" />
             </svg>
           </div>
-          <h3>Compliance Management</h3>
-          <p>Stay ahead of regulatory demands by effortlessly tracking vessel certifications, crew qualifications, and
-            compliance deadlines. Receive timely alerts for expirations, ensure audit readiness, and maintain operational
-            integrity across your fleet.</p>
-        </div>
+          <h3 itemprop="name">Compliance Management</h3>
+          <p itemprop="description">Stay ahead of regulatory requirements by tracking vessel certifications, crew qualifications, and compliance deadlines. Receive timely alerts for certificate expirations, maintain audit-ready documentation, and ensure operational integrity across your fleet. Maintain 98%+ compliance rates with ISM Code, SOLAS, and other maritime regulations.</p>
+        </article>
       </div>
     </div>
   </section>
 
   <!-- Video Section -->
-  <div class="video-container">
-    <div class="video-wrapper">
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/OykxpTlZhhc?si=lsJye9oRAbBPlsH7"
-        title="YouTube video player" frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <section class="video-section" aria-label="Product demonstration video">
+    <div class="container">
+      <h2 class="text-center mb-4">See OceanHelm in Action</h2>
+      <p class="text-center mb-4">Watch how maritime companies are transforming their operations with OceanHelm's comprehensive fleet management platform.</p>
+      <div class="video-container">
+        <div class="video-wrapper">
+          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/OykxpTlZhhc"
+            title="OceanHelm Maritime Fleet Management Software Demo" frameborder="0" loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
   <!-- Platform Overview -->
   <section class="platform" id="platform">
     <div class="container">
       <div class="row align-items-center">
-        <!-- Text content -->
         <div class="col-lg-6">
           <div class="platform-content">
-            <h3>Our Platform</h3>
+            <p class="section-label">Our Platform</p>
             <h2>Designed For Maritime Operations</h2>
             <p>
               OceanHelm provides a comprehensive, easy-to-use platform that connects all aspects of your fleet management
-              into one unified system. Our software works seamlessly both online and offline, ensuring you have access to
-              critical information wherever you are.
+              into one unified system. Our cloud-based maritime software works seamlessly both online and offline, ensuring you have access to
+              critical operational information wherever you are—whether onboard vessels or at shore-based offices.
             </p>
             <p>
-              Built by maritime professionals for maritime professionals, our solution addresses the unique challenges of
-              vessel operations.
+              Built by experienced maritime professionals for maritime professionals, our solution addresses the unique challenges of
+              vessel operations including intermittent connectivity, regulatory compliance requirements, and the need for real-time data synchronization across distributed fleets. From offshore support vessels to cargo ships, OceanHelm adapts to your specific operational needs.
             </p>
 
             <div class="platform-features">
               <div class="platform-feature d-flex mb-2">
-                <div class="check-icon me-2">
+                <div class="check-icon me-2" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="24" height="24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                   </svg>
                 </div>
-                <p class="mb-0">Works offline with automatic synchronization</p>
+                <p class="mb-0">Works offline with automatic cloud synchronization when connectivity returns</p>
               </div>
               <div class="platform-feature d-flex mb-2">
-                <div class="check-icon me-2">
+                <div class="check-icon me-2" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="24" height="24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                   </svg>
                 </div>
-                <p class="mb-0">Secure cloud-based data storage with encryption</p>
+                <p class="mb-0">Secure cloud-based data storage with military-grade encryption</p>
               </div>
               <div class="platform-feature d-flex mb-2">
-                <div class="check-icon me-2">
+                <div class="check-icon me-2" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="24" height="24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                   </svg>
                 </div>
-                <p class="mb-0">Mobile-friendly interface for on-the-go access</p>
+                <p class="mb-0">Mobile-friendly responsive interface for on-the-go access from any device</p>
               </div>
               <div class="platform-feature d-flex mb-2">
-                <div class="check-icon me-2">
+                <div class="check-icon me-2" aria-hidden="true">
                   <svg viewBox="0 0 24 24" width="24" height="24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                   </svg>
                 </div>
-                <p class="mb-0">Customizable dashboards and reporting tools</p>
+                <p class="mb-0">Customizable dashboards and comprehensive reporting tools for data-driven decisions</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Image content -->
         <div class="col-lg-6">
           <div class="platform-image text-center">
-            <img src="https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000"
-              alt="Marine Nexus Platform Dashboard" class="img-fluid">
+            <img src="../assets/shipp.png"
+              alt="OceanHelm maritime fleet management platform dashboard showing maintenance schedules, inventory tracking, and vessel status overview"
+              class="img-fluid" width="800" height="600" loading="lazy">
           </div>
         </div>
       </div>
     </div>
   </section>
 
-
   <!-- Benefits Section -->
   <section class="benefits" id="benefits">
     <div class="container">
       <div class="section-header text-center mb-5">
-        <h3>Why Choose Us</h3>
-        <h2>Results That Matter</h2>
+        <p class="section-label">Why Choose OceanHelm</p>
+        <h2>Results That Matter to Your Bottom Line</h2>
+        <p class="section-intro">Our clients experience significant improvements in operational efficiency, cost savings, and regulatory compliance. OceanHelm helps maritime companies reduce downtime, optimize inventory costs, and make data-driven decisions that improve profitability.</p>
       </div>
 
       <div class="row align-items-center">
-        <!-- Text Content -->
         <div class="col-lg-6 mb-4 mb-lg-0">
-          <h2>Transform Your Maritime Operations</h2>
-          <p>Our clients experience significant improvements in operational efficiency, cost savings, and compliance.
-            MarineNexus helps you reduce downtime, optimize inventory, and make data-driven decisions.</p>
+          <h3>Transform Your Maritime Operations</h3>
+          <p>Maritime companies using OceanHelm experience significant improvements across all operational metrics. Our comprehensive platform helps fleet managers reduce maintenance costs through predictive maintenance, optimize inventory levels to minimize carrying costs, and ensure regulatory compliance to avoid costly penalties and operational disruptions.</p>
+          
+          <p>From small vessel operators to large shipping companies, OceanHelm scales to meet your needs. Our cloud-based architecture ensures you always have access to the latest features and security updates, while our offline-first design means critical operations continue even without internet connectivity.</p>
+          
           <div class="row">
             <div class="col-6 mb-3">
               <div class="stat-item">
                 <div class="stat-number">37%</div>
-                <div class="stat-label">Reduction in Maintenance Costs</div>
+                <div class="stat-label">Average Reduction in Maintenance Costs</div>
               </div>
             </div>
             <div class="col-6 mb-3">
               <div class="stat-item">
                 <div class="stat-number">42%</div>
-                <div class="stat-label">Decrease in Unplanned Downtime</div>
+                <div class="stat-label">Decrease in Unplanned Vessel Downtime</div>
               </div>
             </div>
             <div class="col-6 mb-3">
               <div class="stat-item">
                 <div class="stat-number">29%</div>
-                <div class="stat-label">Inventory Cost Savings</div>
+                <div class="stat-label">Inventory Carrying Cost Savings</div>
               </div>
             </div>
             <div class="col-6 mb-3">
               <div class="stat-item">
                 <div class="stat-number">98%</div>
-                <div class="stat-label">Compliance Rate</div>
+                <div class="stat-label">Regulatory Compliance Rate</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Image -->
         <div class="col-lg-6 text-center">
-          <img src="https://drive.google.com/thumbnail?id=1rNjyOMILpTrkL-q-1T-gKL-aEpKjBn1s&sz=w1000"
-            alt="Marine vessel operations" class="img-fluid rounded shadow">
+          <img src="../assets/background.jpg"
+            alt="Modern maritime vessel operations showing efficient fleet management with digital technology"
+            class="img-fluid rounded shadow" width="800" height="600" loading="lazy">
         </div>
       </div>
     </div>
@@ -229,25 +234,41 @@
   <section class="testimonials" id="testimonials">
     <div class="container">
       <div class="section-header">
-        <h3>Testimonials</h3>
-        <h2>What Our Clients Say</h2>
+        <p class="section-label">Testimonials</p>
+        <h2>What Our Clients Say About OceanHelm</h2>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-text">
-          "OceanHelm has revolutionized how we manage our fleet. The maintenance scheduling and inventory tracking
+      <article class="testimonial-card" itemscope itemtype="https://schema.org/Review">
+        <div class="testimonial-text" itemprop="reviewBody">
+          "OceanHelm has revolutionized how we manage our fleet operations. The maintenance scheduling and inventory tracking
           features have saved us countless hours and significantly reduced our operational costs. The ability to share
-          data between vessels and our shore office has been a game-changer for our operations."
+          data seamlessly between vessels and our shore office has been a game-changer for our operations. We've seen a dramatic improvement in our preventive maintenance compliance and a significant reduction in emergency repairs."
         </div>
-        <div class="testimonial-author">
+        <div class="testimonial-author" itemprop="author" itemscope itemtype="https://schema.org/Person">
           <div class="author-image">
-            <img src="../assets/oromena.png" alt="Captain James Miller">
+            <img src="../assets/oromena.png" alt="Engr. Emmanuel Ukoh, Marine Superintendent at Oromena" width="60" height="60" loading="lazy">
           </div>
           <div class="author-info">
-            <h4>Engr. Emmanuel Ukoh</h4>
-            <p>Marine Superintendent Oromena.</p>
+            <h4 itemprop="name">Engr. Emmanuel Ukoh</h4>
+            <p itemprop="jobTitle">Marine Superintendent, Oromena Maritime Services</p>
           </div>
         </div>
-      </div>
+        <meta itemprop="reviewRating" content="5">
+      </article>
+    </div>
+  </section>
+
+  <!-- About Section (Added for SEO) -->
+  <section class="about-section">
+    <div class="container">
+      <h2>About OceanHelm Maritime Management Software</h2>
+      <p>OceanHelm is a comprehensive cloud-based maritime fleet management platform designed specifically for vessel operators, ship managers, and maritime companies operating in challenging environments. Our software solution helps streamline daily operations, from preventive maintenance scheduling to spare parts inventory control, requisition processing, and regulatory compliance management.</p>
+      
+      <p>Founded by experienced marine engineers and software developers, OceanHelm was built to address the unique challenges faced by maritime operations—including intermittent connectivity, stringent regulatory requirements, and the critical importance of minimizing vessel downtime. Whether you're managing offshore support vessels, cargo ships, tankers, or passenger ferries, our platform adapts to your specific operational requirements.</p>
+      
+      <h3>Why Maritime Companies Choose OceanHelm</h3>
+      <p>Unlike generic maintenance management software, OceanHelm was built from the ground up specifically for maritime operations. We understand the unique challenges of vessel management, including the need for offline functionality, compliance with international maritime regulations (ISM Code, SOLAS, MARPOL), and the critical importance of maintaining operational continuity in remote locations.</p>
+      
+      <p>Our platform serves maritime companies across Nigeria, West Africa, and internationally, helping them achieve operational excellence through digital transformation. With features specifically designed for the maritime industry—such as planned maintenance systems (PMS), spare parts management, crew certification tracking, and voyage management—OceanHelm provides everything you need to run efficient, compliant maritime operations.</p>
     </div>
   </section>
 
@@ -255,8 +276,8 @@
   <section class="cta" id="demo">
     <div class="container">
       <h2>Ready to Transform Your Maritime Operations?</h2>
-      <p>Schedule a personalized demo today and discover how OceanHelm can help your fleet operate more efficiently.</p>
-      <a @click="contactDemo()" class="primary-button">Request Demo</a>
+      <p>Schedule a personalized demo today and discover how OceanHelm can help your fleet operate more efficiently, reduce costs, and maintain regulatory compliance. Join maritime companies across Nigeria and West Africa that trust OceanHelm for their fleet management needs.</p>
+      <a href="/contact?intent=demo" @click.prevent="contactDemo()" class="primary-button" aria-label="Request a personalized demo">Request Demo</a>
     </div>
   </section>
 
@@ -402,7 +423,6 @@ button:hover {
   background-color: #0f5e04;
 }
 
-/* These Bootstrap overrides are optional but help match your color scheme */
 .text-primary {
   color: var(--primary) !important;
 }
@@ -440,77 +460,6 @@ body {
   padding: 0 20px;
 }
 
-/* Header & Navigation */
-header {
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: fixed;
-  width: 100%;
-  z-index: 1000;
-}
-
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 0;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-}
-
-.logo img {
-  height: 40px;
-  margin-right: 10px;
-}
-
-.logo h1 {
-  color: var(--primary-dark);
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.logo span {
-  color: var(--secondary);
-}
-
-nav ul {
-  display: flex;
-  list-style: none;
-}
-
-nav li {
-  margin-left: 25px;
-}
-
-nav a {
-  text-decoration: none;
-  color: var(--dark);
-  font-weight: 600;
-  font-size: 16px;
-  transition: color 0.3s;
-}
-
-nav a:hover {
-  color: var(--primary);
-}
-
-.cta-button {
-  background-color: var(--primary);
-  color: white;
-  padding: 10px 24px;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: background-color 0.3s;
-}
-
-.cta-button:hover {
-  background-color: var(--primary-dark);
-  color: white;
-}
-
 /* Hero Section */
 .hero {
   background: linear-gradient(135deg, rgba(13, 92, 145, 0.9) 0%, rgba(4, 57, 94, 0.8) 100%), url("https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000") center/cover no-repeat;
@@ -519,7 +468,7 @@ nav a:hover {
   text-align: center;
 }
 
-.hero h2 {
+.hero h1 {
   font-size: 48px;
   font-weight: 700;
   margin-bottom: 20px;
@@ -528,7 +477,7 @@ nav a:hover {
 
 .hero p {
   font-size: 20px;
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto 40px;
 }
 
@@ -580,25 +529,36 @@ nav a:hover {
 .section-header {
   text-align: center;
   margin-bottom: 60px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.section-header h3 {
+.section-label {
   color: var(--primary);
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 2px;
   margin-bottom: 10px;
+  font-weight: 600;
 }
 
 .section-header h2 {
   font-size: 36px;
   font-weight: 700;
   color: var(--dark);
+  margin-bottom: 15px;
+}
+
+.section-intro {
+  font-size: 18px;
+  color: var(--gray);
+  margin-top: 15px;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 30px;
 }
 
@@ -817,6 +777,172 @@ nav a:hover {
 .author-info p {
   font-size: 14px;
   color: var(--gray);
+}
+
+/* About Section - Enhanced Version */
+.about-section {
+  position: relative;
+  padding: 120px 0;
+  background-color: var(--light);
+  overflow: hidden;
+}
+
+/* Decorative background elements */
+.about-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(52, 153, 64, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.about-section::after {
+  content: '';
+  position: absolute;
+  bottom: -40%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(52, 153, 64, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.about-section .container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+}
+
+.about-section h2 {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 15px;
+}
+
+.about-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 2px;
+}
+
+.about-section h3 {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--primary);
+  margin-top: 60px;
+  margin-bottom: 25px;
+  position: relative;
+  padding-left: 25px;
+}
+
+.about-section h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 40px;
+  background: linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%);
+  border-radius: 3px;
+}
+
+.about-section p {
+  font-size: 17px;
+  color: var(--dark);
+  line-height: 1.9;
+  margin-bottom: 25px;
+  background: white;
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(13, 92, 145, 0.08);
+  border-left: 4px solid var(--primary);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-section p:hover {
+  transform: translateX(5px);
+  box-shadow: 0 8px 30px rgba(13, 92, 145, 0.12);
+}
+
+/* Highlight box for first paragraph */
+.about-section p:first-of-type {
+  background: linear-gradient(135deg, rgba(13, 92, 145, 0.05) 0%, rgba(52, 153, 64, 0.05) 100%);
+  border-left: 4px solid var(--accent);
+  font-size: 18px;
+  font-weight: 500;
+  padding: 30px 35px;
+}
+
+/* Add icon bullets for key points */
+.about-section p strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .about-section {
+    padding: 80px 0;
+  }
+
+  .about-section h2 {
+    font-size: 32px;
+  }
+
+  .about-section h3 {
+    font-size: 26px;
+    margin-top: 40px;
+    padding-left: 20px;
+  }
+
+  .about-section h3::before {
+    height: 35px;
+  }
+
+  .about-section p {
+    font-size: 16px;
+    padding: 20px 25px;
+  }
+
+  .about-section p:first-of-type {
+    font-size: 17px;
+    padding: 25px 30px;
+  }
+
+  .about-section::before,
+  .about-section::after {
+    width: 300px;
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-section h2 {
+    font-size: 28px;
+  }
+
+  .about-section h3 {
+    font-size: 22px;
+  }
+
+  .about-section p {
+    padding: 18px 20px;
+  }
 }
 
 /* CTA Section */
