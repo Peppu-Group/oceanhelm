@@ -4,6 +4,8 @@ import store from '../store'
 
 import HomeView from '../views/HomeView.vue'
 import FeaturesView from '../views/FeaturesView.vue'
+import CaseStudies from '../views/CaseStudies.vue'
+import IndustriesView from '../views/IndustriesView.vue'
 import ContactUs from '../views/ContactUs.vue'
 import PricingView from '../views/PricingView.vue'
 import MaintenanceView from '../views/MaintenanceView.vue'
@@ -37,6 +39,16 @@ const router = createRouter({
       path: '/features',
       name: 'features',
       component: FeaturesView
+    },
+    {
+      path: '/case-studies',
+      name: 'case-studies',
+      component: CaseStudies
+    },
+    {
+      path: '/industries',
+      name: 'industries',
+      component: IndustriesView
     },
     {
       path: '/contact',
