@@ -101,26 +101,10 @@
 import NavBar from '@/components/NavBar.vue';
 import FooterView from '../components/FooterView.vue'
 import axios from 'axios';
-import { useHead } from '@vueuse/head'
 
 export default {
     name: 'ContactView',
     components: { NavBar, FooterView },
-    setup() {
-        useHead({
-            title: 'Contact Us - Request Demo | OceanHelm Maritime Software',
-            meta: [
-                {
-                    name: 'description',
-                    content: 'Contact OceanHelm for a personalized demo of our maritime fleet management software. Email: marine@peppubuild.com | Phone: +234 907 699 3818 | Port Harcourt, Nigeria.'
-                },
-                {
-                    name: 'robots',
-                    content: 'index, follow'
-                }
-            ]
-        })
-    },
     data() {
         return {
             formData: {

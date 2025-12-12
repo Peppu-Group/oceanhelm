@@ -38,27 +38,50 @@ const router = createRouter({
     {
       path: '/features',
       name: 'features',
-      component: FeaturesView
+      component: FeaturesView,
+      meta: {
+        title: "Features | OceanHelm Maritime Software",
+        description:
+          "Explore OceanHelm's features: maintenance, inventory, crew management, voyage tracking, and compliance."
+      }
     },
     {
       path: '/case-studies',
       name: 'case-studies',
-      component: CaseStudies
+      component: CaseStudies,
+      meta: {
+        title: "Case Studies",
+        description:
+          "See how African maritime companies reduced costs by 37% and downtime by 42% with OceanHelm fleet management software. Real customer success stories and results."
+      }
     },
     {
       path: '/industries',
       name: 'industries',
-      component: IndustriesView
+      component: IndustriesView,
+      meta: {
+        title: "Industries We Serve | OceanHelm",
+        description:
+          "Discover how OceanHelm supports maritime logistics, oil & gas, shipping, and port operations."
+      }
     },
     {
       path: '/contact',
       name: 'contact',
-      component: ContactUs
+      component: ContactUs,
+      meta: {
+        title: "Contact Us | OceanHelm",
+        description: "Reach the OceanHelm team for support, partnerships, or product inquiries."
+      }
     },
     {
       path: '/pricing',
       name: 'pricing',
-      component: PricingView
+      component: PricingView,
+      meta: {
+        title: "Pricing Plans",
+        description: "ransparent pricing for OceanHelm maritime fleet management software. Flexible plans for vessel operators, ship managers, and maritime companies in Nigeria and Africa."
+      }
     },
     {
       path: '/app/maintenance/:id',
@@ -186,6 +209,21 @@ router.beforeEach(async (to, from, next) => {
     next(); // All checks passed
   } else {
     next(); // Route doesn't require auth
+  }
+});
+
+router.afterEach((to) => {
+  // Update title
+  if (to.meta.title) {
+    document.title = to.meta.title;
+  }
+
+  // Update description meta tag
+  if (to.meta.description) {
+    let tag = document.querySelector("meta[name='description']");
+    if (tag) {
+      tag.setAttribute("content", to.meta.description);
+    }
   }
 });
 

@@ -26,22 +26,9 @@
 <script>
 import NavBar from '../components/NavBar.vue'
 import FooterView from '../components/FooterView.vue'
-import { useHead } from '@vueuse/head'
-
 export default {
   name: 'PricingView',
   components: { NavBar, FooterView },
-  setup() {
-    useHead({
-      title: 'Pricing Plans - Affordable Maritime Software | OceanHelm',
-      meta: [
-        {
-          name: 'description',
-          content: 'Transparent pricing for OceanHelm maritime fleet management software. Flexible plans for vessel operators, ship managers, and maritime companies in Nigeria and West Africa.'
-        }
-      ]
-    })
-  }
 
 }
 </script>

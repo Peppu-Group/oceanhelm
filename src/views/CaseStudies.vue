@@ -404,23 +404,10 @@
 <script>
 import NavBar from '../components/NavBar.vue'
 import FooterView from '../components/FooterView.vue'
-import { useHead } from '@vueuse/head'
 
 export default {
     name: 'CaseStudiesView',
     components: { NavBar, FooterView },
-
-    setup() {
-        useHead({
-            title: 'Success Stories | OceanHelm Case Studies',
-            meta: [
-                {
-                    name: 'description',
-                    content: 'See how African maritime companies reduced costs by 37% and downtime by 42% with OceanHelm fleet management software. Real customer success stories and results.'
-                }
-            ]
-        })
-    }
 }
 </script>
   

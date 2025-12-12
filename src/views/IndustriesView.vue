@@ -737,22 +737,10 @@
 <script>
 import NavBar from '../components/NavBar.vue'
 import FooterView from '../components/FooterView.vue'
-import { useHead } from '@vueuse/head'
 
 export default {
     name: 'IndustriesView',
     components: { NavBar, FooterView },
-    setup() {
-        useHead({
-            title: 'Industries',
-            meta: [
-                {
-                    name: 'description',
-                    content: 'OceanHelm serves offshore support vessels, cargo ships, tugboats, tankers, passenger vessels, and fishing fleets. Industry-specific maritime management solutions.'
-                }
-            ]
-        })
-    }
 }
 </script>
   
