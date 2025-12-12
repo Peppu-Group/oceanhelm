@@ -4,7 +4,7 @@
     <!-- Hero Section -->
     <section class="case-studies-hero">
         <div class="container">
-            <h1>Customer Success Stories</h1>
+            <h1>Success Stories</h1>
             <p>Discover how maritime companies across Nigeria and West Africa are transforming their operations with
                 OceanHelm's comprehensive fleet management platform.</p>
         </div>

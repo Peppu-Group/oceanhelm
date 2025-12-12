@@ -4,7 +4,7 @@
     <!-- Hero Section -->
     <section class="features-hero">
         <div class="container">
-            <h1>Our Complete Maritime Fleet Management Offering</h1>
+            <h1>Our Offering</h1>
             <p>Discover how OceanHelm's comprehensive suite of features helps maritime companies streamline operations,
                 reduce costs, and maintain compliance.</p>
         </div>

@@ -8,7 +8,7 @@
             <div class="contact-wrapper">
                 <!-- Left Side - Info Card -->
                 <div class="info-card">
-                    <h1 class="info-title">Let's Talk</h1>
+                    <h1 class="info-title">Contact Us</h1>
                     <h2 class="info-subtitle">Got questions about OceanHelm?</h2>
                     <p class="info-text">Contact us and one of our team members will be happy to help.</p>
 
