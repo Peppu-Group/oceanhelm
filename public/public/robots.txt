@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /login
+Disallow: /dashboard
+Disallow: /admin
+Sitemap: https://oceanhelmtech.com/sitemap.xml

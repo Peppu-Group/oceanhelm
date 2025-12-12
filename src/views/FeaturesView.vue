@@ -511,10 +511,31 @@
 <script>
 import NavBar from '../components/NavBar.vue'
 import FooterView from '../components/FooterView.vue'
+import { useHead } from '@vueuse/head'
 
 export default {
     name: 'FeaturesView',
-    components: { NavBar, FooterView }
+    components: { NavBar, FooterView },
+
+    setup() {
+    useHead({
+      title: 'Features | OceanHelm Software',
+      meta: [
+        {
+          name: 'description',
+          content: 'Explore OceanHelm\'s comprehensive features: maintenance management, inventory control, requisition processing, crew management, voyage tracking, and compliance management for maritime fleets.'
+        },
+        {
+          property: 'og:title',
+          content: 'Features | OceanHelm'
+        },
+        {
+          property: 'og:description',
+          content: 'Comprehensive maritime management features including maintenance, inventory, requisitions, crew management, and compliance tracking.'
+        }
+      ]
+    })
+  }
 }
 </script>
   
