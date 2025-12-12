@@ -421,7 +421,7 @@
                 <div class="capability-card teal">
                     <div class="card-content">
                         <h3>Data Security</h3>
-                        <p>Your data is protected with bank-level encryption both in transit and at rest. Regular automated
+                        <p>Your data is protected with high-level encryption both in transit and at rest. Regular automated
                             backups ensure data is never lost, and our infrastructure meets international security standards
                             including ISO 27001 compliance.</p>
                     </div>

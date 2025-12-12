@@ -5,8 +5,8 @@
   <!-- Hero Section -->
   <section class="hero" itemscope itemtype="https://schema.org/WebPage">
     <div class="container">
-      <h1 itemprop="name">Smart Maritime Software For Modern Fleets</h1>
-      <p itemprop="description">Streamline maintenance, optimize inventory, and enhance vessel communication with our
+      <h1 itemprop="name">Digitalizing Maritime in Africa</h1>
+      <p itemprop="description">Smart Maritime Software For Modern Fleets. Streamline maintenance, optimize inventory, and enhance vessel communication with our
         comprehensive maritime management platform. Built by maritime professionals for maritime professionals.</p>
       <div class="hero-buttons">
         <a href="/contact?intent=demo" @click.prevent="contactDemo()" class="primary-button"
@@ -117,7 +117,7 @@
   <!-- Video Section -->
   <section class="video-section" aria-label="Product demonstration video">
     <div class="container">
-      <h2 class="text-center mb-4">See OceanHelm in Action</h2>
+      <h2 class="text-center mb-4 top">See OceanHelm in Action</h2>
       <p class="text-center mb-4">Watch how maritime companies are transforming their operations with OceanHelm's
         comprehensive fleet management platform.</p>
       <div class="video-container">
@@ -213,7 +213,7 @@
       </div>
 
       <div class="row align-items-center">
-        <div class="col-lg-6 mb-4 mb-lg-0">
+        <div class="platform-content col-lg-6 mb-4 mb-lg-0">
           <h3>Transform Your Maritime Operations</h3>
           <p>Maritime companies using OceanHelm experience significant improvements across all operational metrics. Our
             comprehensive platform helps fleet managers reduce maintenance costs through predictive maintenance, optimize
@@ -454,6 +454,10 @@ button {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s;
+}
+
+.top {
+  margin-top: 5vh;
 }
 
 button:hover {

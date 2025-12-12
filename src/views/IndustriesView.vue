@@ -225,7 +225,7 @@
           </div>
           <div class="col-lg-6">
             <div class="industry-image">
-              <img src="https://drive.google.com/thumbnail?id=1rNjyOMILpTrkL-q-1T-gKL-aEpKjBn1s&sz=w1000" 
+              <img src="../assets/oromenamv.png" 
                    alt="Tugboat fleet management showing operational status and maintenance tracking" 
                    class="img-fluid rounded shadow" 
                    loading="lazy">
@@ -285,7 +285,7 @@
           </div>
           <div class="col-lg-6 order-lg-1">
             <div class="industry-image">
-              <img src="https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000" 
+              <img src="../assets/features.jpg" 
                    alt="Tanker fleet management with cargo system and environmental compliance tracking" 
                    class="img-fluid rounded shadow" 
                    loading="lazy">
@@ -345,7 +345,7 @@
           </div>
           <div class="col-lg-6">
             <div class="industry-image">
-              <img src="https://drive.google.com/thumbnail?id=1rNjyOMILpTrkL-q-1T-gKL-aEpKjBn1s&sz=w1000" 
+              <img src="../assets/ferry.jpg" 
                    alt="Passenger vessel management system focusing on safety and service reliability" 
                    class="img-fluid rounded shadow" 
                    loading="lazy">
@@ -405,7 +405,7 @@
           </div>
           <div class="col-lg-6 order-lg-1">
             <div class="industry-image">
-              <img src="https://drive.google.com/thumbnail?id=15I9OUgG-X0EU7hlj-4mJn496tYhA9SxE&sz=w1000" 
+              <img src="../assets/fishing.jpg" 
                    alt="Commercial fishing vessel fleet management with gear and equipment tracking" 
                    class="img-fluid rounded shadow" 
                    loading="lazy">

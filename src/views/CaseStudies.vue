@@ -5,7 +5,7 @@
     <section class="case-studies-hero">
         <div class="container">
             <h1>Customer Success Stories</h1>
-            <p>Discover how maritime companies across Nigeria and West Africa are transforming their operations with
+            <p>Discover how maritime companies Africa are transforming their operations with
                 OceanHelm's comprehensive fleet management platform.</p>
         </div>
     </section>
@@ -128,8 +128,8 @@
                 <div class="col-lg-6 mb-4">
                     <div class="case-study-card">
                         <div class="case-study-header">
-                            <h3>West African Shipping Company</h3>
-                            <p class="company-type">Cargo Vessels | Lagos, Nigeria</p>
+                            <h3>Shipping Company</h3>
+                            <p class="company-type">Cargo Vessels</p>
                         </div>
 
                         <div class="case-study-body">
@@ -142,8 +142,8 @@
 
                             <div class="solution-box">
                                 <h4>Solution</h4>
-                                <p>Implemented OceanHelm's maintenance and compliance modules, digitizing all maintenance
-                                    records and certificate tracking. The system now alerts the team 60 days before any
+                                <p>Implementing OceanHelm's maintenance and compliance modules, digitilizes all maintenance
+                                    records and certificate tracking. The system will alert the team 60 days before any
                                     certificate expiration.</p>
                             </div>
 
@@ -164,8 +164,8 @@
                 <div class="col-lg-6 mb-4">
                     <div class="case-study-card">
                         <div class="case-study-header">
-                            <h3>Delta Marine Services</h3>
-                            <p class="company-type">Tugboat Operations | Warri, Nigeria</p>
+                            <h3>Marine Services</h3>
+                            <p class="company-type">Tugboat Operations</p>
                         </div>
 
                         <div class="case-study-body">
@@ -178,8 +178,8 @@
 
                             <div class="solution-box">
                                 <h4>Solution</h4>
-                                <p>Deployed OceanHelm's inventory management system with automatic reorder alerts and
-                                    consumption analytics. Integrated inventory with maintenance planning to reserve parts
+                                <p>OceanHelm's inventory management system with automatic reorder alerts and
+                                    consumption analytics. Integrating inventory with maintenance planning to reserve parts
                                     for scheduled work.</p>
                             </div>
 
@@ -200,21 +200,21 @@
                 <div class="col-lg-6 mb-4">
                     <div class="case-study-card">
                         <div class="case-study-header">
-                            <h3>Atlantic Crew Boats</h3>
-                            <p class="company-type">Crew Transfer Vessels | Onne, Nigeria</p>
+                            <h3>Crew Boats</h3>
+                            <p class="company-type">Crew Transfer Vessels</p>
                         </div>
 
                         <div class="case-study-body">
                             <div class="challenge-box">
                                 <h4>Challenge</h4>
-                                <p>Manual timesheet preparation taking 2-3 days each month, leading to delayed client
+                                <p>Manual timesheet preparation takes 2-3 days each month, leading to delayed client
                                     invoicing. Difficulty tracking crew certifications across multiple vessels, resulting in
                                     near-misses with expired certificates.</p>
                             </div>
 
                             <div class="solution-box">
                                 <h4>Solution</h4>
-                                <p>Implemented OceanHelm's voyage management for automated timesheet generation and crew
+                                <p>OceanHelm's voyage management for automated timesheet generation and crew
                                     management module for certification tracking with 60-day expiry alerts.</p>
                             </div>
 
@@ -235,8 +235,8 @@
                 <div class="col-lg-6 mb-4">
                     <div class="case-study-card">
                         <div class="case-study-header">
-                            <h3>Coastal Tankers Ltd</h3>
-                            <p class="company-type">Product Tankers | Lagos, Nigeria</p>
+                            <h3>Coastal Tankers</h3>
+                            <p class="company-type">Product Tankers</p>
                         </div>
 
                         <div class="case-study-body">
@@ -249,7 +249,7 @@
 
                             <div class="solution-box">
                                 <h4>Solution</h4>
-                                <p>Digitized the entire requisition workflow with OceanHelm's requisition processing module,
+                                <p>Digitalization of the entire requisition workflow with OceanHelm's requisition processing module,
                                     implementing multi-level approval workflows and vendor quote management.</p>
                             </div>
 
