@@ -8,7 +8,7 @@
             <div class="contact-wrapper">
                 <!-- Left Side - Info Card -->
                 <div class="info-card">
-                    <h1 class="info-title">Contact Us</h1>
+                    <h1 class="info-title">Let's Talk</h1>
                     <h2 class="info-subtitle">Got questions about OceanHelm?</h2>
                     <p class="info-text">Contact us and one of our team members will be happy to help.</p>
 
@@ -101,10 +101,26 @@
 import NavBar from '@/components/NavBar.vue';
 import FooterView from '../components/FooterView.vue'
 import axios from 'axios';
+import { useHead } from '@vueuse/head'
 
 export default {
     name: 'ContactView',
     components: { NavBar, FooterView },
+    setup() {
+        useHead({
+            title: 'Contact Us - Request Demo',
+            meta: [
+                {
+                    name: 'description',
+                    content: 'Contact OceanHelm for a personalized demo of our maritime fleet management software. Email: marine@peppubuild.com | Phone: +234 907 699 3818 | Port Harcourt, Nigeria.'
+                },
+                {
+                    name: 'robots',
+                    content: 'index, follow'
+                }
+            ]
+        })
+    },
     data() {
         return {
             formData: {

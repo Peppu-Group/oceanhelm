@@ -4,7 +4,7 @@
     <!-- Hero Section -->
     <section class="case-studies-hero">
         <div class="container">
-            <h1>Success Stories</h1>
+            <h1>Customer Success Stories</h1>
             <p>Discover how maritime companies across Nigeria and West Africa are transforming their operations with
                 OceanHelm's comprehensive fleet management platform.</p>
         </div>
@@ -404,10 +404,23 @@
 <script>
 import NavBar from '../components/NavBar.vue'
 import FooterView from '../components/FooterView.vue'
+import { useHead } from '@vueuse/head'
 
 export default {
     name: 'CaseStudiesView',
     components: { NavBar, FooterView },
+
+    setup() {
+        useHead({
+            title: 'Success Stories',
+            meta: [
+                {
+                    name: 'description',
+                    content: 'See how African maritime companies reduced costs by 37% and downtime by 42% with OceanHelm fleet management software. Real customer success stories and results.'
+                }
+            ]
+        })
+    }
 }
 </script>
   
